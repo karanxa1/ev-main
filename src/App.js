@@ -6,6 +6,7 @@ import Signup from './pages/auth/Signup';
 import HostDashboard from './components/host/HostDashboard';
 import DriverDashboard from './pages/driver/DriverDashboard';
 import PrivateRoute from './components/auth/PrivateRoute';
+import HomePage from './pages/home/HomePage';
 import './App.css';
 
 // Main App Component
@@ -15,8 +16,12 @@ function App() {
       <AuthProvider>
         <div className="app">
           <Routes>
+            {/* Public routes that don't require authentication */}
+            <Route path="/" element={<HomePage />} /> {/* This ensures HomePage is shown when website is visited */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+
+            {/* Protected routes that require authentication */}
             <Route path="/host" element={
               <PrivateRoute>
                 <HostDashboard />
@@ -27,7 +32,9 @@ function App() {
                 <DriverDashboard />
               </PrivateRoute>
             } />
-            <Route path="*" element={<Navigate to="/login" />} />
+
+            {/* Redirect any unknown routes to homepage */}
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
       </AuthProvider>
