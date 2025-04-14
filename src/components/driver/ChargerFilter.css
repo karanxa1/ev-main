@@ -1,0 +1,118 @@
+.filter-section {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filter-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.toggle-filter-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-form {
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.form-group {
+  flex: 1 1 calc(50% - 0.5rem);
+  min-width: 150px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.amenities-group {
+  flex-basis: 100%;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: 1rem;
+  font-weight: normal;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-basis: 100%;
+  margin-top: 1rem;
+}
+
+.apply-filter-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.clear-filter-button {
+  background-color: transparent;
+  color: #666;
+  border: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .filter-section {
+    position: relative;
+  }
+  
+  .filter-section:not(.expanded) .filter-form {
+    display: none;
+  }
+  
+  .form-group {
+    flex: 1 1 100%;
+  }
+}

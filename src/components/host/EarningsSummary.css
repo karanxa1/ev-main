@@ -1,0 +1,195 @@
+.earnings-summary {
+  width: 100%;
+}
+
+.earnings-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  /* Updated with colors from Indian flag */
+  background-color: #f1f8e9;
+  border-left: 4px solid #FF9933;
+  padding: 1rem;
+  border-radius: 8px;
+  flex: 1;
+  min-width: 150px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card:nth-child(2) {
+  border-left-color: #FFFFFF;
+}
+
+.stat-card:nth-child(3) {
+  border-left-color: #138808;
+}
+
+.stat-card h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+.chart-container {
+  height: 250px;
+  margin-bottom: 2rem;
+}
+
+.bar-chart {
+  display: flex;
+  height: 200px;
+  align-items: flex-end;
+  gap: 10px;
+  padding-top: 30px;
+}
+
+.chart-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bar {
+  width: 80%;
+  /* Changed to a color from Indian flag */
+  background-color: #138808;
+  position: relative;
+  border-radius: 3px 3px 0 0;
+  min-height: 5px;
+  transition: height 0.3s;
+}
+
+.bar-value {
+  position: absolute;
+  top: -25px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.bar-label {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  text-align: center;
+  color: #666;
+}
+
+.earnings-table {
+  margin-bottom: 2rem;
+  overflow-x: auto;
+}
+
+.earnings-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.earnings-table th,
+.earnings-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.earnings-table th {
+  background-color: #f8f9fa;
+  font-weight: 500;
+  color: #333;
+}
+
+.withdraw-section {
+  /* Updated with colors inspired by UPI payment apps */
+  background-color: #f0f7ff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+  border: 1px solid #d0e8ff;
+}
+
+.withdraw-section h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #136fb6;
+}
+
+.withdraw-button {
+  background-color: #6A5ACD;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.withdraw-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.withdraw-note {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Added new styles for UPI payment options */
+.payment-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.payment-option {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.payment-option:hover {
+  background-color: #f9f9f9;
+  border-color: #aaa;
+}
+
+@media (max-width: 768px) {
+  .earnings-stats {
+    flex-direction: column;
+  }
+  
+  .bar-chart {
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+  
+  .chart-column {
+    min-width: 60px;
+  }
+  
+  .bar-label {
+    transform: rotate(-45deg);
+    white-space: nowrap;
+  }
+}

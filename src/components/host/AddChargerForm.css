@@ -1,0 +1,230 @@
+.add-charger-form {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+}
+
+.add-charger-form h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.form-step h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #0C5F2C;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #0C5F2C;
+  box-shadow: 0 0 0 2px rgba(12, 95, 44, 0.1);
+  outline: none;
+}
+
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  font-weight: normal;
+  margin-bottom: 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+.map-container {
+  height: 300px;
+  margin-bottom: 1rem;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.map-instruction {
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.selected-location {
+  background-color: #f8f9fa;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.next-button, .submit-button {
+  background-color: #0C5F2C;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.next-button:hover, .submit-button:hover {
+  background-color: #094222;
+}
+
+.back-button, .cancel-button {
+  background-color: transparent;
+  border: 1px solid #E0E0E0;
+  color: #333;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.back-button:hover, .cancel-button:hover {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+}
+
+.rupee-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.rupee-symbol {
+  position: absolute;
+  left: 10px;
+  font-size: 1rem;
+  color: #333;
+  z-index: 1;
+}
+
+.rupee-input input {
+  padding-left: 25px;
+  width: 100%;
+}
+
+.price-info {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  gap: 10px;
+}
+
+.image-preview img {
+  border-radius: 8px;
+  object-fit: cover;
+  width: 80px;
+  height: 80px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.image-preview img:hover {
+  transform: scale(1.05);
+}
+
+input[type="file"] {
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+}
+
+/* Progress indicator */
+.steps-indicator {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #E0E0E0;
+  margin: 0 5px;
+}
+
+.step-dot.active {
+  background-color: #0C5F2C;
+  transform: scale(1.2);
+}
+
+.step-line {
+  height: 2px;
+  width: 30px;
+  background-color: #E0E0E0;
+  align-self: center;
+}
+
+.step-line.active {
+  background-color: #0C5F2C;
+}

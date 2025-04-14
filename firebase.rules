@@ -1,0 +1,71 @@
+// Firestore rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Allow read for authenticated users
+      allow read: if request.auth != null;
+      // Allow write only if the user is editing their own document
+      allow create, update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Chargers collection rules
+    match /chargers/{chargerId} {
+      // Allow read for all authenticated users
+      allow read: if request.auth != null;
+      // Allow write only if the user is the owner
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+    }
+    
+    // Bookings collection rules
+    match /bookings/{bookingId} {
+      // Allow read for authenticated users who are either the booking user or the charger owner
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || 
+        exists(/databases/$(database)/documents/chargers/$(resource.data.chargerId)) && 
+        get(/databases/$(database)/documents/chargers/$(resource.data.chargerId)).data.ownerId == request.auth.uid);
+      
+      // Allow create for authenticated users
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // Allow update/delete for the booking user or the charger owner
+      allow update, delete: if request.auth != null && (resource.data.userId == request.auth.uid || 
+        exists(/databases/$(database)/documents/chargers/$(resource.data.chargerId)) && 
+        get(/databases/$(database)/documents/chargers/$(resource.data.chargerId)).data.ownerId == request.auth.uid);
+    }
+  }
+}
+
+// Storage rules
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Default deny all access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    
+    // User profile images
+    match /users/{userId}/profile/{fileName} {
+      // Allow read for authenticated users
+      allow read: if request.auth != null;
+      // Allow write only for the user's own profile
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Charger images
+    match /chargers/{chargerId}/{fileName} {
+      // Allow read for authenticated users
+      allow read: if request.auth != null;
+      // Allow write only for the charger owner
+      allow write: if request.auth != null && 
+        exists(/databases/$(database)/documents/chargers/$(chargerId)) && 
+        get(/databases/$(database)/documents/chargers/$(chargerId)).data.ownerId == request.auth.uid;
+    }
+  }
+}

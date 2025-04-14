@@ -1,0 +1,127 @@
+.payment-container {
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.payment-amount {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.payment-method {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.payment-method:hover {
+  background-color: #f9f9f9;
+}
+
+.payment-method.selected {
+  border-color: #6A5ACD;
+  background-color: rgba(106, 90, 205, 0.05);
+}
+
+.method-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upi-icon {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSIxNiIgZmlsbD0iIzZBNUFDRCIgZmlsbC1vcGFjaXR5PSIwLjEiLz48cGF0aCBkPSJNMjIuNjY3IDguNjY3TDkuMzMzIDIzLjMzMyIgc3Ryb2tlPSIjNkE1QUNEIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05LjMzMyA4LjY2N0w5LjMzMyAxNi4wMDFMMTYuNjY3IDE2LjAwMSIgc3Ryb2tlPSIjNkE1QUNEIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0yMi42NjcgMjMuMzMzTDIyLjY2NyAxNi4wMDFMMTUuMzMzIDE2LjAwMSIgc3Ryb2tlPSIjNkE1QUNEIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==');
+  background-size: contain;
+}
+
+.method-name {
+  font-weight: bold;
+}
+
+.method-description {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.upi-options {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f8f8f8;
+  border-radius: 4px;
+}
+
+.upi-popular {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.upi-app {
+  padding: 0.5rem;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.upi-app:hover {
+  background-color: #f0f0f0;
+}
+
+.upi-input-container input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.pay-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #6A5ACD;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.pay-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.payment-security {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #666;
+}

@@ -1,0 +1,128 @@
+.bookings-list {
+  width: 100%;
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-buttons button {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.filter-buttons button.active {
+  background-color: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+
+.bookings-list table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+
+.bookings-list th, 
+.bookings-list td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.bookings-list th {
+  background-color: #f8f9fa;
+  font-weight: 500;
+  color: #333;
+}
+
+.booking-status {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.status-confirmed {
+  background-color: rgba(33, 150, 243, 0.1);
+  color: #1976d2;
+}
+
+.status-completed {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+}
+
+.status-cancelled {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #d32f2f;
+}
+
+.status-pending {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #e65100;
+}
+
+.confirm-button,
+.reject-button,
+.complete-button {
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-right: 0.25rem;
+}
+
+.confirm-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.reject-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.complete-button {
+  background-color: #2196f3;
+  color: white;
+}
+
+.no-bookings {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .bookings-list {
+    overflow-x: auto;
+  }
+  
+  .bookings-list {
+    font-size: 0.85rem;
+  }
+  
+  .filter-buttons {
+    justify-content: center;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+}
