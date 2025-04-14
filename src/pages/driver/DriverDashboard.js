@@ -23,15 +23,30 @@ const DriverDashboard = () => {
   const [infoWindowData, setInfoWindowData] = useState(null);
   const [vehicleType, setVehicleType] = useState('4-wheeler'); // Default to 4-wheeler
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapLoadError, setMapLoadError] = useState(false);
+
+  // Google Maps API key from environment variable
+  const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
 
   const handleMapLoad = useCallback(map => {
-    // The map is loaded and available
     setMapLoaded(true);
+    setMapLoadError(false);
   }, []);
   
-  // Get user's location
+  const handleMapLoadError = useCallback(error => {
+    console.error('Google Maps loading error:', error);
+    setMapLoadError(true);
+    setLoading(false);
+  }, []);
+  
+  // Get user's location with error handling for deployed environments
   useEffect(() => {
-    if (navigator.geolocation) {
+    // Check if the protocol is secure (required for geolocation in production)
+    const isSecure = window.location.protocol === 'https:' || 
+                      window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1';
+                      
+    if (navigator.geolocation && isSecure) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setUserLocation({
@@ -40,9 +55,14 @@ const DriverDashboard = () => {
           });
         },
         (error) => {
-          console.error('Error getting location:', error);
-        }
+          console.error('Geolocation error:', error);
+          // Keep default location in case of error
+        },
+        { timeout: 10000, enableHighAccuracy: true }
       );
+    } else if (!isSecure) {
+      console.warn('Geolocation requires HTTPS in production environments');
+      // Keep default location for non-secure contexts
     }
   }, []);
   
@@ -253,59 +273,72 @@ const DriverDashboard = () => {
               </div>
             ) : (
               <div className="map-container">
-                <LoadScript googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
-                  <GoogleMap
-                    mapContainerStyle={{ height: '100%', width: '100%' }}
-                    center={userLocation}
-                    zoom={13}
-                    options={{
-                      styles: mapStyles,
-                      disableDefaultUI: true,
-                      zoomControl: true
-                    }}
-                    onLoad={handleMapLoad}
+                {!googleMapsApiKey ? (
+                  <div className="map-error">
+                    <p>Please configure your Google Maps API key in environment settings.</p>
+                  </div>
+                ) : mapLoadError ? (
+                  <div className="map-error">
+                    <p>Error loading Google Maps. Please try again later.</p>
+                  </div>
+                ) : (
+                  <LoadScript 
+                    googleMapsApiKey={googleMapsApiKey}
+                    onError={handleMapLoadError}
                   >
-                    {/* User location marker */}
-                    <Marker
-                      position={userLocation}
-                    />
-                    
-                    {/* Charger markers - only render when map is loaded */}
-                    {filteredChargers.map(charger => (
+                    <GoogleMap
+                      mapContainerStyle={{ height: '100%', width: '100%' }}
+                      center={userLocation}
+                      zoom={13}
+                      options={{
+                        styles: mapStyles,
+                        disableDefaultUI: true,
+                        zoomControl: true
+                      }}
+                      onLoad={handleMapLoad}
+                    >
+                      {/* User location marker */}
                       <Marker
-                        key={charger.id}
-                        position={{ lat: charger.latitude, lng: charger.longitude }}
-                        onClick={() => handleMarkerClick(charger)}
+                        position={userLocation}
                       />
-                    ))}
-                    
-                    {/* Info Window */}
-                    {infoWindowData && (
-                      <InfoWindow
-                        position={{ lat: infoWindowData.latitude, lng: infoWindowData.longitude }}
-                        onCloseClick={() => setInfoWindowData(null)}
-                      >
-                        <div className="info-window">
-                          <h4>{infoWindowData.name}</h4>
-                          <p className="info-address">{infoWindowData.address}</p>
-                          <div className="info-details">
-                            <span className="info-type">{infoWindowData.type}</span>
-                            <span className="info-power">{infoWindowData.power} kW</span>
+                      
+                      {/* Charger markers - only render when map is loaded */}
+                      {filteredChargers.map(charger => (
+                        <Marker
+                          key={charger.id}
+                          position={{ lat: charger.latitude, lng: charger.longitude }}
+                          onClick={() => handleMarkerClick(charger)}
+                        />
+                      ))}
+                      
+                      {/* Info Window */}
+                      {infoWindowData && (
+                        <InfoWindow
+                          position={{ lat: infoWindowData.latitude, lng: infoWindowData.longitude }}
+                          onCloseClick={() => setInfoWindowData(null)}
+                        >
+                          <div className="info-window">
+                            <h4>{infoWindowData.name}</h4>
+                            <p className="info-address">{infoWindowData.address}</p>
+                            <div className="info-details">
+                              <span className="info-type">{infoWindowData.type}</span>
+                              <span className="info-power">{infoWindowData.power} kW</span>
+                            </div>
+                            <button 
+                              className="info-button"
+                              onClick={() => {
+                                setSelectedCharger(infoWindowData);
+                                setInfoWindowData(null);
+                              }}
+                            >
+                              View Details
+                            </button>
                           </div>
-                          <button 
-                            className="info-button"
-                            onClick={() => {
-                              setSelectedCharger(infoWindowData);
-                              setInfoWindowData(null);
-                            }}
-                          >
-                            View Details
-                          </button>
-                        </div>
-                      </InfoWindow>
-                    )}
-                  </GoogleMap>
-                </LoadScript>
+                        </InfoWindow>
+                      )}
+                    </GoogleMap>
+                  </LoadScript>
+                )}
               </div>
             )}
           </div>
