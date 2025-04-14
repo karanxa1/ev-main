@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import './AuthPages.css';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [userType, setUserType] = useState('driver'); // Add user type selection
+  const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
@@ -14,83 +15,97 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     
     if (password !== confirmPassword) {
       return setError('Passwords do not match');
     }
     
     try {
+      setError('');
       setLoading(true);
-      await signup(email, password, userType); // Pass userType to signup function
-      navigate(userType === 'host' ? '/host' : '/driver');
+      await signup(email, password, username);
+      navigate('/driver'); // Redirect to driver dashboard after successful signup
     } catch (err) {
-      setError(err.message || 'Failed to create an account');
+      setError('Failed to create an account.');
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-form">
-      <h2>Sign Up</h2>
-      {error && <div className="error">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Email</label>
-          <input 
-            type="email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            required 
-          />
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-header">
+          <h2>Sign Up</h2>
+          <p>Join the EV revolution today</p>
         </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
-          />
-        </div>
-        <div className="form-group">
-          <label>Confirm Password</label>
-          <input 
-            type="password" 
-            value={confirmPassword} 
-            onChange={(e) => setConfirmPassword(e.target.value)} 
-            required 
-          />
-        </div>
-        <div className="form-group">
-          <label>I am a:</label>
-          <div className="radio-group">
-            <label>
-              <input
-                type="radio"
-                value="driver"
-                checked={userType === 'driver'}
-                onChange={() => setUserType('driver')}
-              />
-              EV Driver
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="host"
-                checked={userType === 'host'}
-                onChange={() => setUserType('host')}
-              />
-              Charger Host
-            </label>
+
+        {error && <div className="auth-error">{error}</div>}
+        
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="input-group">
+            <label htmlFor="username">Username</label>
+            <input 
+              type="text" 
+              id="username"
+              placeholder="Choose a username" 
+              required 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
+          
+          <div className="input-group">
+            <label htmlFor="email">Email</label>
+            <input 
+              type="email" 
+              id="email"
+              placeholder="your@email.com" 
+              required 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          
+          <div className="input-group">
+            <label htmlFor="password">Password</label>
+            <input 
+              type="password"
+              id="password"
+              placeholder="Choose a strong password" 
+              required 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          
+          <div className="input-group">
+            <label htmlFor="confirm-password">Confirm Password</label>
+            <input 
+              type="password"
+              id="confirm-password"
+              placeholder="Confirm your password" 
+              required 
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            className="auth-button" 
+            disabled={loading}
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          <p>Already have an account? <Link to="/login">Login</Link></p>
+          <Link to="/" className="home-link">← Back to Home</Link>
         </div>
-        <button disabled={loading} type="submit">
-          {loading ? "Signing up..." : "Sign Up"}
-        </button>
-      </form>
-      <p>Already have an account? <a href="/login">Log in</a></p>
+      </div>
     </div>
   );
 };
