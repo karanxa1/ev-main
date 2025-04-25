@@ -1,0 +1,59 @@
+/* ...existing styles... */
+
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.google-button:hover {
+  background-color: #f1f1f1;
+}
+
+.google-button:disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.separator span {
+  padding: 0 10px;
+  color: #777;
+}
+
+.error-message {
+  background-color: #fdecea;
+  color: #b71c1c;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
