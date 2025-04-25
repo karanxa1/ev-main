@@ -6,12 +6,12 @@ import { getStorage } from 'firebase/storage';
 // Use direct configuration values instead of environment variables
 // This helps isolate potential environment variable loading issues
 const firebaseConfig = {
-  apiKey: "AIzaSyBnD2JEGsef_iFvBA1Q_aeMU57cgZDDGK0",
-  authDomain: "neuronet-35d6e.firebaseapp.com",
-  projectId: "neuronet-35d6e",
-  storageBucket: "neuronet-35d6e.firebasestorage.app",
-  messagingSenderId: "571998141302",
-  appId: "1:571998141302:web:00bfdc3bd053276cb9d857"
+  apiKey: "AIzaSyCFM2BkzLKbEizBHyd3DI1AG6axoCiYA08",
+  authDomain: "sample-firbase-ai-app-c1fc3.firebaseapp.com",
+  projectId: "sample-firbase-ai-app-c1fc3",
+  storageBucket: "sample-firbase-ai-app-c1fc3.firebasestorage.app",
+  messagingSenderId: "251353888761",
+  appId: "1:251353888761:web:d861ad2ae68751c695ef28"
 };
 
 // Initialize Firebase

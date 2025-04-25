@@ -1,11 +1,13 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { 
   getAuth, 
   GoogleAuthProvider, 
   signInWithPopup, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  signOut 
+  signOut,
+  setPersistence, // Import setPersistence
+  browserLocalPersistence // Import the desired persistence type
 } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -17,9 +19,23 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Ensure Firebase is initialized only once
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
+
+// Set persistence BEFORE any auth operation might occur
+// This should ideally be called once, early in the app lifecycle.
+// Placing it here ensures it's configured when auth is initialized.
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    // Persistence set successfully. You can optionally perform actions here,
+    // but usually, the onAuthStateChanged listener handles the user state.
+    console.log("Firebase auth persistence set to local.");
+  })
+  .catch((error) => {
+    // Handle errors setting persistence (e.g., browser restrictions)
+    console.error("Error setting Firebase auth persistence: ", error);
+  });
 
 // Create Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
