@@ -1,15 +1,19 @@
+// Update to use the centralized Firebase instance
+
 import { db } from './config';
 import { 
   collection, 
-  query, 
-  where, 
+  doc, 
+  getDoc, 
   getDocs, 
   addDoc, 
   updateDoc, 
-  doc, 
-  getDoc, 
-  GeoPoint,
-  serverTimestamp
+  deleteDoc, 
+  query, 
+  where,
+  orderBy,
+  limit,
+  serverTimestamp 
 } from 'firebase/firestore';
 
 // Charger related functions
@@ -103,4 +107,5 @@ export const getUserBookings = async (userId) => {
   }
 };
 
-// Add more Firestore functions as needed
+// Export firestore database for direct access if needed
+export { db };
