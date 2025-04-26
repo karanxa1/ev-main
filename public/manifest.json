@@ -1,6 +1,6 @@
 {
-  "short_name": "EV Charge",
-  "name": "EV Charging Network",
+  "short_name": "EV Charging",
+  "name": "EV Charging Station Network",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,7 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#4CAF50",
-  "background_color": "#ffffff",
-  "orientation": "portrait"
+  "theme_color": "#0b9748",
+  "background_color": "#ffffff"
 }

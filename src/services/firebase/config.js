@@ -1,6 +1,6 @@
-// Firebase configuration consolidated to prevent duplicate initialization
+// Completely refactored Firebase initialization to prevent duplicate instances
 
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
@@ -14,23 +14,22 @@ const firebaseConfig = {
   appId: "1:230456789012:web:5e12afd56789a0bc1def34"
 };
 
-// Initialize Firebase only if it hasn't been initialized yet
+// Initialize Firebase - using a singleton pattern
 let firebaseApp;
-if (!getApps().length) {
-  try {
-    firebaseApp = initializeApp(firebaseConfig);
-    console.log("Firebase initialized successfully");
-  } catch (error) {
-    console.error("Firebase initialization error", error);
-    // Don't throw error so the app can still function
-  }
-} else {
-  firebaseApp = getApps()[0];
+
+try {
+  firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  console.log("Firebase initialized successfully");
+} catch (error) {
+  console.error("Firebase initialization error", error);
 }
 
 // Initialize services
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
+
+// Export a flag to indicate whether Firebase is already initialized
+export const isFirebaseInitialized = getApps().length > 0;
 
 export { firebaseApp, auth, db };
 export default firebaseApp;
