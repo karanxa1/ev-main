@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
 import './BookingsList.css';
 
+/**
+ * BookingsList Component:
+ * A component that displays a list of bookings and allows hosts to update the booking status.
+ * @param {array} bookings - An array of booking objects to display.
+ * @param {function} onUpdateStatus - The function to call when the booking status is updated.
+ */
 const BookingsList = ({ bookings, onUpdateStatus }) => {
   const [filter, setFilter] = useState('all');
   
+  /**
+   * formatDate Function:
+   * Formats a date object into a readable string.
+   * @param {Date} date - The date object to format.
+   * @returns {string} - The formatted date string.
+   */
   const formatDate = (date) => {
     if (!date) return '';
     
@@ -11,9 +23,16 @@ const BookingsList = ({ bookings, onUpdateStatus }) => {
       date = new Date(date);
     }
     
-    return date.toLocaleDateString();
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString(undefined, options);
   };
   
+  /**
+   * getBookingStatusClass Function:
+   * Returns a CSS class based on the booking status.
+   * @param {string} status - The status of the booking.
+   * @returns {string} - The corresponding CSS class.
+   */
   const getBookingStatusClass = (status) => {
     switch (status) {
       case 'confirmed':
@@ -29,12 +48,18 @@ const BookingsList = ({ bookings, onUpdateStatus }) => {
     }
   };
   
+  /**
+   * Filter bookings based on the selected filter.
+   * If the filter is 'all', return all bookings.
+   * Otherwise, return bookings that match the selected status.
+   */
   const filteredBookings = filter === 'all' 
     ? bookings 
     : bookings.filter(booking => booking.status === filter);
 
   return (
     <div className="bookings-list">
+      {/* Filter buttons to filter bookings by status */}
       <div className="filter-buttons">
         <button 
           className={filter === 'all' ? 'active' : ''}
@@ -68,6 +93,7 @@ const BookingsList = ({ bookings, onUpdateStatus }) => {
         </button>
       </div>
       
+      {/* Display a message if no bookings are found for the selected filter */}
       {filteredBookings.length === 0 ? (
         <p className="no-bookings">No {filter !== 'all' ? filter : ''} bookings found.</p>
       ) : (
@@ -97,6 +123,7 @@ const BookingsList = ({ bookings, onUpdateStatus }) => {
                 </td>
                 <td>${booking.totalAmount.toFixed(2)}</td>
                 <td>
+                  {/* Display action buttons based on the booking status */}
                   {booking.status === 'pending' && (
                     <div className="action-buttons">
                       <button 

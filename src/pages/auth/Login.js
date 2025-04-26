@@ -6,6 +6,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faEye, faEyeSlash, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import './AuthPages.css';
 
+/**
+ * Login Component:
+ * A form component that allows users to log in to their accounts.
+ * It provides options for logging in with email and password or using Google Sign-In.
+ * The component also includes error handling and loading states.
+ */
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,6 +22,11 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  /**
+   * handleSubmit Function:
+   * Handles the form submission for email and password login.
+   * @param {Event} e - The form submit event.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -32,6 +43,10 @@ const Login = () => {
     }
   };
 
+  /**
+   * handleGoogleSignIn Function:
+   * Handles the Google Sign-In process.
+   */
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     setLoading(false);

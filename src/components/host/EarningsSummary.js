@@ -2,6 +2,15 @@ import React from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import './EarningsSummary.css';
 
+/**
+ * EarningsSummary Component:
+ * A component that displays a summary of earnings for the host.
+ * 
+ * Props:
+ * - chargers: Array of charger objects containing id, name, and revenue.
+ * - bookings: Array of booking objects containing details of each booking.
+ * - totalEarnings: Total earnings amount.
+ */
 const EarningsSummary = ({ chargers, bookings, totalEarnings }) => {
   // Calculate earnings by charger
   const earningsByCharger = chargers.map(charger => ({
@@ -45,6 +54,7 @@ const EarningsSummary = ({ chargers, bookings, totalEarnings }) => {
 
   return (
     <div className="earnings-summary">
+      {/* Display total earnings, total bookings, and average booking value */}
       <div className="earnings-stats">
         <div className="stat-card">
           <h4>Total Earnings</h4>
@@ -62,6 +72,7 @@ const EarningsSummary = ({ chargers, bookings, totalEarnings }) => {
         </div>
       </div>
 
+      {/* Display monthly earnings in a bar chart */}
       <h3>Monthly Earnings</h3>
       <div className="chart-container">
         <div className="bar-chart">
@@ -81,6 +92,7 @@ const EarningsSummary = ({ chargers, bookings, totalEarnings }) => {
         </div>
       </div>
 
+      {/* Display earnings by charger in a table */}
       <h3>Earnings by Charger</h3>
       <div className="earnings-table">
         <table>
@@ -108,6 +120,7 @@ const EarningsSummary = ({ chargers, bookings, totalEarnings }) => {
         </table>
       </div>
 
+      {/* Withdraw earnings section */}
       <div className="withdraw-section">
         <h3>Withdraw Earnings</h3>
         <p>Current available balance: <strong>{formatCurrency(totalEarnings)}</strong></p>

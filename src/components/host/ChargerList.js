@@ -1,44 +1,64 @@
 import React, { useState } from 'react';
-import './ChargerList.css';
+import './ChargerList.css'; // Import the CSS file for styling
 
+/**
+ * ChargerList Component:
+ * A component that displays a list of chargers with editing functionality.
+ * @param {array} chargers - An array of charger objects to display.
+ */
 const ChargerList = ({ chargers }) => {
-  const [editingChargerId, setEditingChargerId] = useState(null);
+  const [editingChargerId, setEditingChargerId] = useState(null); // State to track the ID of the charger being edited
   const [editFormData, setEditFormData] = useState({
     name: '',
     pricePerKwh: '',
     availability: true
-  });
+  }); // State to store the form data for editing
 
+  /**
+   * Initiates editing mode for a specific charger.
+   * @param {Object} charger - The charger object to edit.
+   */
   const startEditing = (charger) => {
-    setEditingChargerId(charger.id);
+    setEditingChargerId(charger.id); // Set the ID of the charger being edited
     setEditFormData({
       name: charger.name,
       pricePerKwh: charger.pricePerKwh,
       availability: charger.availability
-    });
+    }); // Populate the form data with the selected charger's details
   };
 
+  /**
+   * Cancels editing mode and resets the form data.
+   */
   const cancelEditing = () => {
-    setEditingChargerId(null);
+    setEditingChargerId(null); // Clear the editing ID
     setEditFormData({
       name: '',
       pricePerKwh: '',
       availability: true
-    });
+    }); // Reset the form data
   };
 
+  /**
+   * Handles input changes in the edit form.
+   * @param {Object} e - The event object from the input change.
+   */
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked } = e.target; // Destructure the event target properties
     setEditFormData({
       ...editFormData,
       [name]: type === 'checkbox' ? checked : value
-    });
+    }); // Update the form data based on the input change
   };
 
+  /**
+   * Saves changes made to a specific charger.
+   * @param {string} id - The ID of the charger being edited.
+   */
   const saveChanges = (id) => {
     // In a real app, this would update data in Firestore
-    console.log(`Changes saved for charger ${id}:`, editFormData);
-    setEditingChargerId(null);
+    console.log(`Changes saved for charger ${id}:`, editFormData); // Log the changes
+    setEditingChargerId(null); // Exit editing mode
   };
 
   return (

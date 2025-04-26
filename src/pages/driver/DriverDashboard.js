@@ -8,6 +8,16 @@ import ChargerFilter from '../../components/driver/ChargerFilter';
 import { indianCities, formatCurrency } from '../../utils/formatters';
 import './DriverDashboard.css';
 
+/**
+ * DriverDashboard Component:
+ * The main dashboard for EV drivers to find and book charging stations.
+ * 
+ * Features:
+ * - Displays a map with nearby charging stations.
+ * - Allows filtering of charging stations based on various criteria.
+ * - Provides details of selected charging stations.
+ * - Enables booking of charging slots.
+ */
 const DriverDashboard = () => {
   const { logout, currentUser } = useAuth();
   const [chargers, setChargers] = useState([]);

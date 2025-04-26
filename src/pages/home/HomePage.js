@@ -4,6 +4,12 @@ import { LoadScript, GoogleMap, Marker, InfoWindow } from '@react-google-maps/ap
 import { indianCities, formatCurrency } from '../../utils/formatters';
 import './HomePage.css';
 
+/**
+ * HomePage Component:
+ * A public landing page for the application.
+ * Displays information about EV charging stations, allows users to select cities,
+ * view stations on a map, and explore station details.
+ */
 const HomePage = () => {
   const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState(indianCities.pune);

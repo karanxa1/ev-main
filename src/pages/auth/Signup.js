@@ -6,6 +6,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faLock, faEye, faEyeSlash, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import './AuthPages.css';
 
+/**
+ * Signup Component:
+ * A form component that allows users to create a new account.
+ */
 const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,6 +23,11 @@ const Signup = () => {
   const { signup } = useAuth();
   const navigate = useNavigate();
 
+  /**
+   * handleSubmit Function:
+   * Handles the form submission.
+   * @param {Event} e - The form submit event.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -40,6 +49,10 @@ const Signup = () => {
     }
   };
 
+  /**
+   * handleGoogleSignIn Function:
+   * Handles the Google sign-in process.
+   */
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     setLoading(false);

@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { LoadScript } from '@react-google-maps/api';
-import AddChargerForm from './AddChargerForm';
-import ChargerList from './ChargerList';
-import BookingsList from './BookingsList';
-import EarningsSummary from './EarningsSummary';
-import './HostDashboard.css';
+import { useAuth } from '../../contexts/AuthContext'; // Import the useAuth hook from the AuthContext
+import { LoadScript } from '@react-google-maps/api'; // Import LoadScript to load Google Maps API
+import AddChargerForm from './AddChargerForm'; // Import the AddChargerForm component
+import ChargerList from './ChargerList'; // Import the ChargerList component
+import BookingsList from './BookingsList'; // Import the BookingsList component
+import EarningsSummary from './EarningsSummary'; // Import the EarningsSummary component
+import './HostDashboard.css'; // Import the CSS file for styling
 
+/**
+ * HostDashboard Component:
+ * This component serves as the main dashboard for charger hosts.
+ * It allows hosts to manage their chargers, view bookings, and track earnings.
+ */
 const HostDashboard = () => {
+  // Use the useAuth hook to get the logout function and current user
   const { logout, currentUser } = useAuth();
+  // State variables for chargers, bookings, total earnings, active tab, add form visibility, and loading state
   const [chargers, setChargers] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [totalEarnings, setTotalEarnings] = useState(0);
@@ -19,13 +26,13 @@ const HostDashboard = () => {
   // Fetch chargers for the current user
   useEffect(() => {
     const fetchChargers = async () => {
-      if (!currentUser) return;
-      
+      if (!currentUser) return; // If there is no current user, return
+
       try {
-        setLoading(true);
+        setLoading(true); // Set loading to true while fetching data
         // Will replace with actual Firestore fetching
         // const userChargers = await getUserChargers(currentUser.uid);
-        
+
         // Mock data for now
         const mockChargers = [
           {
@@ -53,32 +60,32 @@ const HostDashboard = () => {
             revenue: 320.75
           }
         ];
-        
-        setChargers(mockChargers);
-        
+
+        setChargers(mockChargers); // Set the chargers state with the fetched data
+
         // Calculate total earnings
         const total = mockChargers.reduce((sum, charger) => sum + charger.revenue, 0);
-        setTotalEarnings(total);
-        
+        setTotalEarnings(total); // Set the total earnings state
+
       } catch (error) {
-        console.error('Error fetching chargers:', error);
+        console.error('Error fetching chargers:', error); // Log any errors
       } finally {
-        setLoading(false);
+        setLoading(false); // Set loading to false after fetching data
       }
     };
-    
-    fetchChargers();
-  }, [currentUser]);
+
+    fetchChargers(); // Call the fetchChargers function
+  }, [currentUser]); // Run this effect whenever the currentUser changes
 
   // Fetch bookings for all user chargers
   useEffect(() => {
     const fetchBookings = async () => {
-      if (!currentUser || chargers.length === 0) return;
-      
+      if (!currentUser || chargers.length === 0) return; // If there is no current user or chargers, return
+
       try {
         // Will replace with actual Firestore fetching
         // const allBookings = await getChargerBookings(chargers.map(c => c.id));
-        
+
         // Mock data
         const mockBookings = [
           {
@@ -118,16 +125,21 @@ const HostDashboard = () => {
             totalAmount: 15.20
           }
         ];
-        
-        setBookings(mockBookings);
+
+        setBookings(mockBookings); // Set the bookings state with the fetched data
       } catch (error) {
-        console.error('Error fetching bookings:', error);
+        console.error('Error fetching bookings:', error); // Log any errors
       }
     };
-    
-    fetchBookings();
-  }, [currentUser, chargers]);
 
+    fetchBookings(); // Call the fetchBookings function
+  }, [currentUser, chargers]); // Run this effect whenever the currentUser or chargers change
+
+  /**
+   * handleAddCharger Function:
+   * Handles the addition of a new charger.
+   * @param {object} newCharger - The new charger object.
+   */
   const handleAddCharger = (newCharger) => {
     // In a real app, this would save to Firestore
     const chargerWithId = {
@@ -136,17 +148,23 @@ const HostDashboard = () => {
       totalBookings: 0,
       revenue: 0
     };
-    
-    setChargers([...chargers, chargerWithId]);
-    setShowAddForm(false);
+
+    setChargers([...chargers, chargerWithId]); // Add the new charger to the chargers state
+    setShowAddForm(false); // Hide the add charger form
   };
 
+  /**
+   * handleUpdateBookingStatus Function:
+   * Handles the updating of a booking status.
+   * @param {string} bookingId - The ID of the booking to update.
+   * @param {string} newStatus - The new status of the booking.
+   */
   const handleUpdateBookingStatus = (bookingId, newStatus) => {
     // Update booking status (will connect to Firestore in real app)
-    const updatedBookings = bookings.map(booking => 
+    const updatedBookings = bookings.map(booking =>
       booking.id === bookingId ? { ...booking, status: newStatus } : booking
     );
-    setBookings(updatedBookings);
+    setBookings(updatedBookings); // Update the bookings state with the updated booking
   };
 
   return (
@@ -172,19 +190,19 @@ const HostDashboard = () => {
       </div>
 
       <div className="dashboard-tabs">
-        <button 
+        <button
           className={`tab-button ${activeTab === 'chargers' ? 'active' : ''}`}
           onClick={() => setActiveTab('chargers')}
         >
           My Chargers
         </button>
-        <button 
+        <button
           className={`tab-button ${activeTab === 'bookings' ? 'active' : ''}`}
           onClick={() => setActiveTab('bookings')}
         >
           Bookings
         </button>
-        <button 
+        <button
           className={`tab-button ${activeTab === 'earnings' ? 'active' : ''}`}
           onClick={() => setActiveTab('earnings')}
         >
@@ -197,20 +215,20 @@ const HostDashboard = () => {
           <>
             <div className="section-header">
               <h3>My Charging Stations</h3>
-              <button 
+              <button
                 className="add-button"
                 onClick={() => setShowAddForm(true)}
               >
                 Add New Charger
               </button>
             </div>
-            
+
             {loading ? (
               <p>Loading chargers...</p>
             ) : chargers.length === 0 ? (
               <div className="empty-state">
                 <p>You haven't added any charging stations yet.</p>
-                <button 
+                <button
                   className="add-button"
                   onClick={() => setShowAddForm(true)}
                 >
@@ -222,25 +240,25 @@ const HostDashboard = () => {
             )}
           </>
         )}
-        
+
         {activeTab === 'bookings' && (
           <>
             <h3>Booking Requests</h3>
             {bookings.length === 0 ? (
               <p>No bookings yet.</p>
             ) : (
-              <BookingsList 
-                bookings={bookings} 
-                onUpdateStatus={handleUpdateBookingStatus} 
+              <BookingsList
+                bookings={bookings}
+                onUpdateStatus={handleUpdateBookingStatus}
               />
             )}
           </>
         )}
-        
+
         {activeTab === 'earnings' && (
           <>
             <h3>Earnings Summary</h3>
-            <EarningsSummary 
+            <EarningsSummary
               chargers={chargers}
               bookings={bookings}
               totalEarnings={totalEarnings}
@@ -253,7 +271,7 @@ const HostDashboard = () => {
         <div className="modal-overlay">
           <div className="modal">
             <LoadScript googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
-              <AddChargerForm 
+              <AddChargerForm
                 onSubmit={handleAddCharger}
                 onCancel={() => setShowAddForm(false)}
               />
