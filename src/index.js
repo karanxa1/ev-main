@@ -1,8 +1,7 @@
-// Updated to ensure Firebase is properly initialized before rendering
+// Fixed Router nesting issue
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
@@ -19,12 +18,11 @@ window.addEventListener('error', (event) => {
   console.error('Global error caught:', event.error);
 });
 
+// Render without BrowserRouter since it's likely already included in App.js
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </React.StrictMode>
 );
