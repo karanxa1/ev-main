@@ -6,12 +6,13 @@ import './Login.css'; // Using the same CSS file
 /**
  * Signup Component:
  * A modern, card-based sign up form with validation and error handling.
+ * Optimized for Vercel deployment.
  */
 const Signup = () => {
   // Navigation hooks
   const navigate = useNavigate();
   
-  // Auth context - add signInWithGoogle to the destructured properties
+  // Auth context
   const { signup, signInWithGoogle, currentUser, authError, setAuthError } = useAuth();
 
   // Form state
@@ -81,8 +82,22 @@ const Signup = () => {
     return true;
   };
 
+  // Add error handling specifically for deployment environments
+  const handleError = (error) => {
+    console.error('Authentication error:', error);
+    
+    // Handle different error types with user-friendly messages
+    if (error.code === 'auth/network-request-failed') {
+      setValidationError('Network error. Please check your connection and try again.');
+    } else if (error.code === 'auth/email-already-in-use') {
+      setValidationError('This email is already registered. Please try logging in instead.');
+    } else {
+      setValidationError(error.message || 'An error occurred during signup. Please try again.');
+    }
+  };
+
   /**
-   * Handle form submission
+   * Handle form submission with improved error handling for production
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -96,29 +111,25 @@ const Signup = () => {
     try {
       await signup(email, password);
       
-      // In a real app, you would save additional user information (name, account type)
-      // to a database like Firestore
-      
       // Navigate based on account type
       navigate(accountType === 'driver' ? '/driver' : '/host', { replace: true });
     } catch (error) {
-      console.error(error);
+      handleError(error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Add handler for Google Sign In
+  /**
+   * Handle Google Sign In with improved error handling for production
+   */
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      // Call the Google sign-in function from AuthContext
       await signInWithGoogle();
-      // Navigate based on account type
       navigate(accountType === 'driver' ? '/driver' : '/host', { replace: true });
     } catch (error) {
-      console.error('Google sign in error:', error);
-      setValidationError('Failed to sign in with Google. Please try again.');
+      handleError(error);
     } finally {
       setLoading(false);
     }
