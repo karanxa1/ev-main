@@ -1,14 +1,16 @@
+// Improve error handling in AuthContext
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { auth } from '../services/firebase/config';
 import { 
-  auth, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged, 
+  signOut,
+  onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
-  sendPasswordResetEmail
-} from '../firebase';
+  sendPasswordResetEmail 
+} from 'firebase/auth';
 
 // Create the auth context
 const AuthContext = createContext();
@@ -19,9 +21,7 @@ export function useAuth() {
 }
 
 /**
- * AuthProvider Component:
- * Provides authentication state and methods to the application.
- * Uses localStorage to persist authentication between page reloads and browser navigation.
+ * AuthProvider Component with improved error handling
  */
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
@@ -29,14 +29,12 @@ export function AuthProvider({ children }) {
   const [authError, setAuthError] = useState("");
   
   /**
-   * Signup Function:
-   * Creates a new user account with email and password
+   * Signup Function with enhanced error handling
    */
   async function signup(email, password) {
     try {
       setAuthError("");
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // Store user authentication in localStorage for persistence
       localStorage.setItem('authUser', JSON.stringify({
         uid: userCredential.user.uid,
         email: userCredential.user.email
@@ -44,20 +42,31 @@ export function AuthProvider({ children }) {
       return userCredential;
     } catch (error) {
       console.error("Signup error:", error.message);
-      setAuthError(error.message);
+      // Provide more user-friendly error messages
+      if (error.code === 'auth/email-already-in-use') {
+        setAuthError("This email is already registered. Try logging in instead.");
+      } else if (error.code === 'auth/invalid-email') {
+        setAuthError("Please enter a valid email address.");
+      } else if (error.code === 'auth/weak-password') {
+        setAuthError("Password should be at least 6 characters.");
+      } else if (error.code === 'auth/network-request-failed') {
+        setAuthError("Network error. Please check your connection and try again.");
+      } else if (error.code === 'auth/api-key-not-valid') {
+        setAuthError("Authentication service unavailable. Please try again later.");
+      } else {
+        setAuthError(error.message || "Failed to create account. Please try again.");
+      }
       throw error;
     }
   }
   
   /**
-   * Login Function:
-   * Signs in an existing user
+   * Login Function with enhanced error handling
    */
   async function login(email, password) {
     try {
       setAuthError("");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Store user authentication in localStorage for persistence
       localStorage.setItem('authUser', JSON.stringify({
         uid: userCredential.user.uid,
         email: userCredential.user.email
@@ -65,14 +74,24 @@ export function AuthProvider({ children }) {
       return userCredential;
     } catch (error) {
       console.error("Login error:", error.message);
-      setAuthError(error.message);
+      // Provide more user-friendly error messages
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        setAuthError("Invalid email or password. Please try again.");
+      } else if (error.code === 'auth/too-many-requests') {
+        setAuthError("Too many failed attempts. Please try again later.");
+      } else if (error.code === 'auth/network-request-failed') {
+        setAuthError("Network error. Please check your connection and try again.");
+      } else if (error.code === 'auth/api-key-not-valid') {
+        setAuthError("Authentication service unavailable. Please try again later.");
+      } else {
+        setAuthError(error.message || "Failed to sign in. Please try again.");
+      }
       throw error;
     }
   }
 
   /**
-   * Google Sign In Function:
-   * Signs in using Google authentication
+   * Google Sign In with enhanced error handling
    */
   async function signInWithGoogle() {
     try {
@@ -80,7 +99,6 @@ export function AuthProvider({ children }) {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       
-      // Store user data in localStorage
       localStorage.setItem('authUser', JSON.stringify({
         uid: result.user.uid,
         email: result.user.email,
@@ -90,27 +108,22 @@ export function AuthProvider({ children }) {
       
       return result;
     } catch (error) {
-      console.error("Google sign in error:", error.message);
-      setAuthError(error.message);
+      console.error("Google sign in error:", error);
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        setAuthError("Login cancelled. Please try again.");
+      } else if (error.code === 'auth/popup-blocked') {
+        setAuthError("Pop-up blocked. Please allow pop-ups for this site.");
+      } else if (error.code === 'auth/api-key-not-valid') {
+        setAuthError("Authentication service unavailable. Please try again later.");
+      } else {
+        setAuthError("Google sign-in failed. Please try another method.");
+      }
+      
       throw error;
     }
   }
 
-  /**
-   * Send Password Reset Email Function:
-   * Sends a password reset email to the user
-   */
-  async function sendPasswordReset(email) {
-    try {
-      setAuthError("");
-      await sendPasswordResetEmail(auth, email);
-    } catch (error) {
-      console.error("Password reset error:", error.message);
-      setAuthError(error.message);
-      throw error;
-    }
-  }
-  
   /**
    * Logout Function:
    * Signs out the current user
@@ -118,47 +131,48 @@ export function AuthProvider({ children }) {
   async function logout() {
     try {
       await signOut(auth);
-      // Remove user data from localStorage
       localStorage.removeItem('authUser');
     } catch (error) {
-      console.error("Logout error:", error.message);
-      setAuthError(error.message);
-      throw error;
+      console.error("Logout error:", error);
+      setAuthError("Failed to log out. Please try again.");
     }
   }
 
-  // Effect to listen to auth state changes and handle persistence
+  // Effect for auth state changes
   useEffect(() => {
-    // First check localStorage for existing session
+    // Get saved user first
     const savedUser = localStorage.getItem('authUser');
     if (savedUser && !currentUser) {
       setCurrentUser(JSON.parse(savedUser));
     }
 
-    // Then set up Firebase auth listener
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in
-        setCurrentUser(user);
-        localStorage.setItem('authUser', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL
-        }));
-      } else {
-        // User is signed out
-        setCurrentUser(null);
-        localStorage.removeItem('authUser');
-      }
+    // Set up auth state listener with error handling
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setCurrentUser(user);
+          localStorage.setItem('authUser', JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || null,
+            photoURL: user.photoURL || null
+          }));
+        } else {
+          setCurrentUser(null);
+          localStorage.removeItem('authUser');
+        }
+        setLoading(false);
+      });
+    } catch (error) {
+      console.error("Auth state subscription error:", error);
       setLoading(false);
-    });
+    }
 
-    // Cleanup subscription
     return unsubscribe;
   }, [currentUser]);
 
-  // Context value
+  // Provide value
   const value = {
     currentUser,
     authError,
@@ -166,8 +180,28 @@ export function AuthProvider({ children }) {
     signup,
     login,
     signInWithGoogle,
-    sendPasswordReset,
-    logout,
+    logout: async () => {
+      try {
+        await signOut(auth);
+        localStorage.removeItem('authUser');
+      } catch (error) {
+        console.error("Logout error:", error);
+        setAuthError("Failed to log out. Please try again.");
+      }
+    },
+    sendPasswordReset: async (email) => {
+      try {
+        await sendPasswordResetEmail(auth, email);
+      } catch (error) {
+        console.error("Password reset error:", error);
+        if (error.code === 'auth/user-not-found') {
+          setAuthError("No account found with this email.");
+        } else {
+          setAuthError("Failed to send reset email. Please try again.");
+        }
+        throw error;
+      }
+    },
     loading
   };
 

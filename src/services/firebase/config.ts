@@ -2,7 +2,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Use environment variables for Firebase configuration
+// Firebase configuration using environment variables
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -19,9 +19,6 @@ if (!process.env.REACT_APP_FIREBASE_API_KEY) {
 
 // Initialize Firebase safely
 let firebaseApp;
-let auth;
-let db;
-
 try {
   // Check if Firebase is already initialized
   if (getApps().length) {
@@ -29,23 +26,16 @@ try {
   } else {
     firebaseApp = initializeApp(firebaseConfig);
   }
-  
-  auth = getAuth(firebaseApp);
-  db = getFirestore(firebaseApp);
   console.log("Firebase initialized successfully");
 } catch (error) {
-  console.error("Firebase initialization error:", error.message);
-  
-  // Create placeholders to prevent crashes
-  if (!firebaseApp) firebaseApp = {};
-  if (!auth) auth = { 
-    currentUser: null, 
-    onAuthStateChanged: () => {}, 
-    signInWithEmailAndPassword: () => Promise.reject(new Error("Auth not available")),
-    createUserWithEmailAndPassword: () => Promise.reject(new Error("Auth not available"))
-  };
-  if (!db) db = {};
+  console.error("Firebase initialization error:", error);
+  // Create a placeholder to prevent crashes
+  firebaseApp = {} as any;
 }
+
+// Initialize services
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
 export { firebaseApp, auth, db };
 export default firebaseApp;

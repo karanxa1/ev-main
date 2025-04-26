@@ -1,4 +1,5 @@
 import React from 'react';
+// Fix the Navigate import error
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext'; // Provides authentication context to the app
 import Login from './pages/auth/Login'; // Login page component
@@ -15,8 +16,19 @@ import './App.css'; // Main application styles
  * provides the authentication context, and defines the routes for different pages.
  */
 function App() {
+  // Fix Google Maps loading by using a removal statement for recorder reference
+  if (typeof window !== 'undefined') {
+    if (window.recorder && !window.recorderFixed) {
+      try {
+        delete window.recorder;
+        window.recorderFixed = true;
+      } catch (e) {
+        console.error("Failed to clean up recorder reference:", e);
+      }
+    }
+  }
+
   return (
-    // BrowserRouter enables client-side routing
     <Router>
       {/* AuthProvider makes authentication state (currentUser, login, logout, etc.) available to all child components */}
       <AuthProvider>

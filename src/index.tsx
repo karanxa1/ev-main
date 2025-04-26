@@ -2,9 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-// Assuming these files exist directly in the src directory
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
+
+// Pre-load Firebase config to ensure environment variables are processed first
+import './services/firebase/config';
+
+// Check for required environment variables
+if (
+  !process.env.REACT_APP_FIREBASE_API_KEY ||
+  !process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+) {
+  console.warn(
+    'Warning: Missing environment variables. Make sure your .env file is properly configured.'
+  );
+}
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

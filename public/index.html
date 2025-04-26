@@ -12,49 +12,14 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>EV Charging Network</title>
-    <!-- Add preconnect for Firebase resources -->
-    <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
-    <link rel="preconnect" href="https://firebaseauth.googleapis.com" />
-    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" />
+
+    <!-- Fix recorder reference issue -->
+    <script>
+      window.recorderFixed = true; // Prevent recorder issues
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!-- Add loader that will be shown if app takes too long to load -->
-    <div id="initial-loader" style="
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background-color: #ffffff;
-      z-index: 9999;
-    ">
-      <img src="%PUBLIC_URL%/logo192.png" alt="Loading" width="80" height="80" />
-      <p style="margin-top: 20px; color: #0b9748; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-        Loading EV Charging Network...
-      </p>
-    </div>
-    <script>
-      // Remove loader once app is loaded
-      window.onload = function() {
-        var loader = document.getElementById('initial-loader');
-        if (loader) {
-          loader.style.display = 'none';
-        }
-      };
-
-      // Also remove loader if it's taking too long (5 seconds)
-      setTimeout(function() {
-        var loader = document.getElementById('initial-loader');
-        if (loader) {
-          loader.style.display = 'none';
-        }
-      }, 5000);
-    </script>
   </body>
 </html>

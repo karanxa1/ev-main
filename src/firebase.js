@@ -1,6 +1,6 @@
-// Import from the centralized config to prevent duplicate initialization
+// Re-export from consolidated firebase config to maintain compatibility
 
-import { isFirebaseInitialized, firebaseApp, auth } from './services/firebase/config';
+import { firebaseApp, auth } from './services/firebase/config';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -10,8 +10,6 @@ import {
   signInWithPopup,
   sendPasswordResetEmail 
 } from 'firebase/auth';
-
-console.log(`Firebase already initialized: ${isFirebaseInitialized}`);
 
 // Export auth functions for easier use throughout the app
 export {
@@ -26,3 +24,6 @@ export {
 };
 
 export default firebaseApp;
+
+// Export Maps API key for consistency
+export const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
