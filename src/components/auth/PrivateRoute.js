@@ -1,18 +1,33 @@
-import React, { useContext } from 'react';
-import { Route, Navigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * PrivateRoute Component:
- * A wrapper component that protects routes by checking if the user is authenticated.
- * If the user is authenticated, it renders the requested component; otherwise, it redirects to the login page.
+ * Protects routes that require authentication.
+ * Redirects to login if user is not authenticated and saves the intended destination.
+ * 
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - The children components to render if authenticated
+ * @returns {React.ReactElement} - The rendered component or redirect
  */
 const PrivateRoute = ({ children }) => {
-  // Access the current user from the AuthContext
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, loading } = useAuth();
+  const location = useLocation();
 
-  // If there is no current user, redirect to the login page; otherwise, render the children components
-  return currentUser ? children : <Navigate to="/login" />;
+  // If still loading auth state, show nothing or a loading indicator
+  if (loading) {
+    return <div className="loading-spinner">Loading...</div>;
+  }
+
+  // If no user is authenticated, redirect to login page with the return location
+  if (!currentUser) {
+    // Save the current location they were trying to access for redirecting after login
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  // If user is authenticated, render the protected route component
+  return children;
 };
 
 export default PrivateRoute;

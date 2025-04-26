@@ -1,148 +1,181 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, db } from '../services/firebase/config';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+  auth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged, 
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail
+} from '../firebase';
 
-// Create the AuthContext
+// Create the auth context
 const AuthContext = createContext();
 
-/**
- * useAuth Hook:
- * Custom hook to use the AuthContext.
- * @returns {Object} - The authentication context value.
- */
+// Custom hook to use the auth context
 export function useAuth() {
   return useContext(AuthContext);
 }
 
 /**
  * AuthProvider Component:
- * Provides the authentication context to the application.
- * It manages the user's authentication state and provides methods for login, signup, and logout.
+ * Provides authentication state and methods to the application.
+ * Uses localStorage to persist authentication between page reloads and browser navigation.
  */
 export function AuthProvider({ children }) {
-  // State to hold the current user
   const [currentUser, setCurrentUser] = useState(null);
-  // State to hold the user type (e.g., driver, admin)
-  const [userType, setUserType] = useState(null);
-  // State to indicate if the authentication state is being loaded
   const [loading, setLoading] = useState(true);
-
+  const [authError, setAuthError] = useState("");
+  
   /**
    * Signup Function:
-   * Creates a new user with the given email and password using Firebase authentication.
-   * Also creates a user document in Firestore with additional user information.
-   * @param {string} email - The user's email address.
-   * @param {string} password - The user's password.
-   * @param {string} type - The type of user (default is 'driver').
-   * @returns {Promise} - A promise that resolves after the user is successfully created.
+   * Creates a new user account with email and password
    */
-  const signup = async (email, password, type = 'driver') => {
+  async function signup(email, password) {
     try {
-      // Create auth user
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      const user = result.user;
-      
-      // Create user document in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        email,
-        userType: type,
-        createdAt: new Date().toISOString(),
-      });
-      
-      setUserType(type);
-      return user;
+      setAuthError("");
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Store user authentication in localStorage for persistence
+      localStorage.setItem('authUser', JSON.stringify({
+        uid: userCredential.user.uid,
+        email: userCredential.user.email
+      }));
+      return userCredential;
     } catch (error) {
-      console.error('Error in signup:', error);
+      console.error("Signup error:", error.message);
+      setAuthError(error.message);
       throw error;
     }
-  };
-
+  }
+  
   /**
    * Login Function:
-   * Signs in an existing user with the given email and password using Firebase authentication.
-   * Retrieves the user type from Firestore after successful login.
-   * @param {string} email - The user's email address.
-   * @param {string} password - The user's password.
-   * @returns {Promise} - A promise that resolves after the user is successfully signed in.
+   * Signs in an existing user
    */
-  const login = async (email, password) => {
+  async function login(email, password) {
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      const user = result.user;
-      
-      // Get user type from Firestore
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (userDoc.exists()) {
-        setUserType(userDoc.data().userType);
-      }
-      
-      return user;
+      setAuthError("");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // Store user authentication in localStorage for persistence
+      localStorage.setItem('authUser', JSON.stringify({
+        uid: userCredential.user.uid,
+        email: userCredential.user.email
+      }));
+      return userCredential;
     } catch (error) {
-      console.error('Error in login:', error);
+      console.error("Login error:", error.message);
+      setAuthError(error.message);
       throw error;
     }
-  };
+  }
 
   /**
-   * Logout Function:
-   * Signs out the current user using Firebase authentication.
-   * Resets the user type to null after successful logout.
-   * @returns {Promise} - A promise that resolves after the user is successfully signed out.
+   * Google Sign In Function:
+   * Signs in using Google authentication
    */
-  const logout = async () => {
+  async function signInWithGoogle() {
     try {
-      await signOut(auth);
-      setUserType(null);
+      setAuthError("");
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      
+      // Store user data in localStorage
+      localStorage.setItem('authUser', JSON.stringify({
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL
+      }));
+      
+      return result;
     } catch (error) {
-      console.error('Error in logout:', error);
+      console.error("Google sign in error:", error.message);
+      setAuthError(error.message);
       throw error;
     }
-  };
+  }
 
-  // UseEffect hook to subscribe to authentication state changes
+  /**
+   * Send Password Reset Email Function:
+   * Sends a password reset email to the user
+   */
+  async function sendPasswordReset(email) {
+    try {
+      setAuthError("");
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error("Password reset error:", error.message);
+      setAuthError(error.message);
+      throw error;
+    }
+  }
+  
+  /**
+   * Logout Function:
+   * Signs out the current user
+   */
+  async function logout() {
+    try {
+      await signOut(auth);
+      // Remove user data from localStorage
+      localStorage.removeItem('authUser');
+    } catch (error) {
+      console.error("Logout error:", error.message);
+      setAuthError(error.message);
+      throw error;
+    }
+  }
+
+  // Effect to listen to auth state changes and handle persistence
   useEffect(() => {
-    // Firebase method that returns an unsubscribe function when the component unmounts
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user); // Set the current user
-      
-      if (user) {
-        // Get user data from Firestore
-        try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
-            setUserType(userDoc.data().userType);
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      }
-      
-      setLoading(false); // Set loading to false once the user is loaded
-    });
-    
-    // Cleanup subscription on unmount
-    return unsubscribe;
-  }, []);
+    // First check localStorage for existing session
+    const savedUser = localStorage.getItem('authUser');
+    if (savedUser && !currentUser) {
+      setCurrentUser(JSON.parse(savedUser));
+    }
 
-  // Context value object that will be provided to all consumers
+    // Then set up Firebase auth listener
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        setCurrentUser(user);
+        localStorage.setItem('authUser', JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL
+        }));
+      } else {
+        // User is signed out
+        setCurrentUser(null);
+        localStorage.removeItem('authUser');
+      }
+      setLoading(false);
+    });
+
+    // Cleanup subscription
+    return unsubscribe;
+  }, [currentUser]);
+
+  // Context value
   const value = {
     currentUser,
-    userType,
+    authError,
+    setAuthError,
     signup,
     login,
+    signInWithGoogle,
+    sendPasswordReset,
     logout,
+    loading
   };
 
-  // Provide the authentication context to the children components
   return (
     <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   );
 }
+
+export { AuthContext };
