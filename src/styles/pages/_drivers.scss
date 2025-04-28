@@ -1,0 +1,36 @@
+.drivers-page {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+
+  .driver-card {
+    display: flex;
+    // If the layout was dependent on images, adjust it
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    
+    // Remove any image-related styling
+    // .driver-photo, .driver-image-container {
+    //   width: 80px;
+    //   height: 80px;
+    //   border-radius: 50%;
+    //   margin-right: 15px;
+    //   object-fit: cover;
+    // }
+    
+    .driver-info {
+      flex: 1;
+      // Adjust padding that might have been accounting for the image
+      padding-left: 0;
+      
+      h3 {
+        margin-top: 0;
+      }
+    }
+    
+    // ...existing code...
+  }
+}
