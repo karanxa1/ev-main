@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Map from 'react-map-gl/mapbox';
-import { Marker, Popup } from '@vis.gl/react-mapbox';
+import Map, { NavigationControl, Marker, Popup } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { indianCities, formatCurrency } from '../../utils/formatters';
 import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
@@ -35,6 +34,15 @@ const HomePage = () => {
   const [selectedCity, setSelectedCity] = useState('pune');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [locationFound, setLocationFound] = useState(false);
+  const [viewState, setViewState] = useState({
+    longitude: indianCities.pune.lng,
+    latitude: indianCities.pune.lat,
+    zoom: 12,
+    bearing: 0,
+    pitch: 0
+  });
+  // Add state for popup visibility
+  const [showPopup, setShowPopup] = useState(false);
 
   // Common fallback image that's guaranteed to exist
   const commonFallbackImage = '/images/charging-stations/commonoimage.jpg';
@@ -792,6 +800,16 @@ const HomePage = () => {
     setSelectedCity(city);
     setUserLocation(cityLocations[city]);
     setSelectedStation(null);
+    
+    // Update map view for the selected city
+    setViewState({
+      longitude: cityLocations[city].lng,
+      latitude: cityLocations[city].lat,
+      zoom: 12,
+      bearing: 0,
+      pitch: 0,
+      transitionDuration: 1000 // Smooth animation
+    });
   };
 
   const handleImageError = (stationId) => {
@@ -856,9 +874,10 @@ const HomePage = () => {
     }
   };
 
-  // Locate on Map button enhancement
+  // Enhance handleLocateOnMap to also show the popup
   const handleLocateOnMap = (station) => {
     setSelectedStation(station);
+    setShowPopup(true); // Show popup when station is selected
     scrollToSection(stationsRef);
     
     // Update map view to focus on the selected station with animation
@@ -866,6 +885,16 @@ const HomePage = () => {
       setUserLocation({
         lat: station.latitude,
         lng: station.longitude
+      });
+      
+      // Update viewState to move map to station
+      setViewState({
+        longitude: station.longitude,
+        latitude: station.latitude,
+        zoom: 15, // Zoom in closer to the station
+        bearing: 0,
+        pitch: 0,
+        transitionDuration: 1000 // Smooth animation (1 second)
       });
       
       // Highlight the station on the map
@@ -877,6 +906,12 @@ const HomePage = () => {
         }, 2000);
       }
     }
+  };
+  
+  // Function to handle marker click directly
+  const handleMarkerClick = (station) => {
+    setSelectedStation(station);
+    setShowPopup(true);
   };
 
   // Get Started Today button in How It Works section
@@ -989,6 +1024,15 @@ const HomePage = () => {
           };
           setUserLocation(userCoords);
           setLocationFound(true);
+          
+          // Update viewState with user location
+          setViewState({
+            longitude: userCoords.lng,
+            latitude: userCoords.lat,
+            zoom: 12,
+            bearing: 0,
+            pitch: 0
+          });
           
           // Find closest city and auto-select it
           const cities = Object.entries(cityLocations);
@@ -1289,64 +1333,81 @@ const HomePage = () => {
                   )}
                   {MAPBOX_TOKEN && (
                     <Map
-                      initialViewState={{
-                        longitude: userLocation.lng || 73.8567,
-                        latitude: userLocation.lat || 18.5204,
-                        zoom: 12
-                      }}
-                      style={{width: '100%', height: '100%'}}
-                      mapStyle="mapbox://styles/mapbox/streets-v11"
                       mapboxAccessToken={MAPBOX_TOKEN}
+                      {...viewState}
+                      onMove={evt => setViewState(evt.viewState)}
+                      style={{ width: '100%', height: '100%' }}
+                      mapStyle="mapbox://styles/mapbox/streets-v11"
                     >
-                      {/* User location marker */}
-                      {userLocation && (
+                      <NavigationControl position="top-right" />
+                      
+                      {/* Add markers for charging stations */}
+                      {currentCityStations.map(station => (
                         <Marker 
-                          longitude={userLocation.lng} 
-                          latitude={userLocation.lat} 
-                          color="#4285F4"
-                        />
-                      )}
-                      {/* Station markers */}
-                      {currentCityStations
-                        .filter(station => station.latitude && station.longitude)
-                        .map(station => (
-                          <Marker
-                            key={station.id}
-                            longitude={station.longitude}
-                            latitude={station.latitude}
-                            color="#0C5F2C"
-                            onClick={e => {
-                              e.originalEvent.stopPropagation();
-                              setSelectedStation(station);
-                            }}
-                          />
-                        ))}
-                      {/* Info popup for selected station */}
-                      {selectedStation && selectedStation.latitude && selectedStation.longitude && (
+                          key={station.id}
+                          longitude={station.longitude}
+                          latitude={station.latitude}
+                          anchor="bottom"
+                          onClick={(e) => {
+                            e.originalEvent.stopPropagation();
+                            handleMarkerClick(station);
+                          }}
+                        >
+                          <div className="map-marker" style={{ 
+                            cursor: 'pointer',
+                            color: selectedStation && selectedStation.id === station.id ? '#ff6b6b' : '#4a90e2'
+                          }}>
+                            <div style={{ 
+                              fontSize: '24px', 
+                              filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' 
+                            }}>
+                              📍
+                            </div>
+                          </div>
+                        </Marker>
+                      ))}
+                      
+                      {/* Add popup for selected station */}
+                      {selectedStation && showPopup && (
                         <Popup
                           longitude={selectedStation.longitude}
                           latitude={selectedStation.latitude}
                           anchor="bottom"
-                          onClose={() => setSelectedStation(null)}
-                          closeButton={true}
+                          onClose={() => setShowPopup(false)}
                           closeOnClick={false}
+                          className="station-popup"
+                          style={{ maxWidth: '300px' }}
                         >
-                          <div className="station-infowindow">
+                          <div className="popup-content">
                             <h3>{selectedStation.name}</h3>
-                            <p className="address">{selectedStation.address}</p>
-                            <div className="info-details">
+                            <div className="popup-rating">
+                              <span>★</span> {selectedStation.rating}
+                            </div>
+                            <p className="popup-address">{selectedStation.address}</p>
+                            <div className="popup-details">
                               <p><strong>Type:</strong> {selectedStation.type}</p>
                               <p><strong>Power:</strong> {selectedStation.power} kW</p>
                               <p><strong>Price:</strong> ₹{selectedStation.pricePerKwh}/kWh</p>
                               <p><strong>Hours:</strong> {selectedStation.hours}</p>
                             </div>
-                            <button onClick={() => {
-                              const element = document.getElementById(`station-${selectedStation.id}`);
-                              element?.scrollIntoView({ behavior: 'smooth' });
-                              setSelectedStation(null);
-                            }}>
-                              See Details
-                            </button>
+                            <div className="popup-actions">
+                              <button 
+                                onClick={() => handleBookNow(selectedStation.id)} 
+                                className="popup-btn-book"
+                              >
+                                Book Now
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  setShowPopup(false);
+                                  const element = document.getElementById(`station-${selectedStation.id}`);
+                                  if (element) element.scrollIntoView({ behavior: 'smooth' });
+                                }} 
+                                className="popup-btn-details"
+                              >
+                                More Details
+                              </button>
+                            </div>
                           </div>
                         </Popup>
                       )}
