@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Map from 'react-map-gl/mapbox';
-import { Marker } from '@vis.gl/react-mapbox';
+import { Marker, Popup } from '@vis.gl/react-mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { indianCities, formatCurrency } from '../../utils/formatters';
 import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
@@ -567,7 +567,7 @@ const HomePage = () => {
                   {MAPBOX_TOKEN && (
                     <Map
                       initialViewState={{
-                        longitude: userLocation.lng || 73.8567, 
+                        longitude: userLocation.lng || 73.8567,
                         latitude: userLocation.lat || 18.5204,
                         zoom: 12
                       }}
@@ -583,7 +583,6 @@ const HomePage = () => {
                           color="#4285F4"
                         />
                       )}
-                      
                       {/* Station markers */}
                       {currentCityStations
                         .filter(station => station.latitude && station.longitude)
@@ -593,8 +592,41 @@ const HomePage = () => {
                             longitude={station.longitude}
                             latitude={station.latitude}
                             color="#0C5F2C"
+                            onClick={e => {
+                              e.originalEvent.stopPropagation();
+                              setSelectedStation(station);
+                            }}
                           />
                         ))}
+                      {/* Info popup for selected station */}
+                      {selectedStation && selectedStation.latitude && selectedStation.longitude && (
+                        <Popup
+                          longitude={selectedStation.longitude}
+                          latitude={selectedStation.latitude}
+                          anchor="bottom"
+                          onClose={() => setSelectedStation(null)}
+                          closeButton={true}
+                          closeOnClick={false}
+                        >
+                          <div className="station-infowindow">
+                            <h3>{selectedStation.name}</h3>
+                            <p className="address">{selectedStation.address}</p>
+                            <div className="info-details">
+                              <p><strong>Type:</strong> {selectedStation.type}</p>
+                              <p><strong>Power:</strong> {selectedStation.power} kW</p>
+                              <p><strong>Price:</strong> ₹{selectedStation.pricePerKwh}/kWh</p>
+                              <p><strong>Hours:</strong> {selectedStation.hours}</p>
+                            </div>
+                            <button onClick={() => {
+                              const element = document.getElementById(`station-${selectedStation.id}`);
+                              element?.scrollIntoView({ behavior: 'smooth' });
+                              setSelectedStation(null);
+                            }}>
+                              See Details
+                            </button>
+                          </div>
+                        </Popup>
+                      )}
                     </Map>
                   )}
                 </>
