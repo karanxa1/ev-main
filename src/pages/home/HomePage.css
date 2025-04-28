@@ -210,10 +210,29 @@
 }
 
 .map-container {
-  height: 400px;
+  height: 500px;
+  width: 100%;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Ensure Mapbox UI elements are visible */
+.mapboxgl-ctrl-logo, 
+.mapboxgl-ctrl-attrib {
+  display: block !important;
+}
+
+.mapboxgl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Make sure popups are styled properly */
+.mapboxgl-popup-content {
+  padding: 10px;
+  border-radius: 4px;
 }
 
 .station-infowindow {

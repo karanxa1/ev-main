@@ -1,26 +1,39 @@
 import React from 'react';
+import { LoadScript, GoogleMap as GoogleMapComponent, Marker } from '@react-google-maps/api';
 
-// Use environment variable for Maps API key
 const MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
-// Check if API key is available
 if (!MAPS_API_KEY) {
   console.warn('Google Maps API key is missing. Check your .env file.');
 }
 
 interface GoogleMapProps {
-  // Define your props here
+  center?: { lat: number; lng: number };
+  zoom?: number;
 }
 
-const GoogleMap: React.FC<GoogleMapProps> = (props) => {
-  // ...existing code...
-  
-  // Make sure to use the environment variable anywhere you reference the Maps API key
-  // For example:
-  // const mapUrl = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}&libraries=places`;
+const defaultCenter = { lat: 28.6139, lng: 77.209 };
+const defaultZoom = 12;
 
+const GoogleMap: React.FC<GoogleMapProps> = ({ center = defaultCenter, zoom = defaultZoom }) => {
   return (
-    // ...existing component JSX...
+    <div style={{ height: '400px', width: '100%' }}>
+      {MAPS_API_KEY ? (
+        <LoadScript googleMapsApiKey={MAPS_API_KEY}>
+          <GoogleMapComponent
+            mapContainerStyle={{ height: '100%', width: '100%' }}
+            center={center}
+            zoom={zoom}
+          >
+            <Marker position={center} />
+          </GoogleMapComponent>
+        </LoadScript>
+      ) : (
+        <div style={{ padding: 20, textAlign: 'center', color: 'red' }}>
+          Google Maps API key is missing.
+        </div>
+      )}
+    </div>
   );
 };
 

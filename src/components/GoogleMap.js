@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
-// ...existing imports...
+import { LoadScript, GoogleMap as GoogleMapComponent, Marker } from '@react-google-maps/api';
+
+const MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+
+const defaultCenter = { lat: 28.6139, lng: 77.209 };
+const defaultZoom = 12;
 
 // GoogleMap component with error handling
-const GoogleMap = ({ /* ...props */ }) => {
+const GoogleMap = ({ center = defaultCenter, zoom = defaultZoom }) => {
   const [mapError, setMapError] = useState(false);
 
   useEffect(() => {
     // Listen for Google Maps errors
     const handleMapError = () => {
-      console.log("Google Maps failed to load - showing fallback content");
       setMapError(true);
     };
-
     window.gm_authFailure = handleMapError;
-
     return () => {
       window.gm_authFailure = null;
     };
@@ -37,7 +39,25 @@ const GoogleMap = ({ /* ...props */ }) => {
     );
   }
 
-  // ...existing component code...
+  return (
+    <div style={{ height: '400px', width: '100%' }}>
+      {MAPS_API_KEY ? (
+        <LoadScript googleMapsApiKey={MAPS_API_KEY}>
+          <GoogleMapComponent
+            mapContainerStyle={{ height: '100%', width: '100%' }}
+            center={center}
+            zoom={zoom}
+          >
+            <Marker position={center} />
+          </GoogleMapComponent>
+        </LoadScript>
+      ) : (
+        <div style={{ padding: 20, textAlign: 'center', color: 'red' }}>
+          Google Maps API key is missing.
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default GoogleMap;

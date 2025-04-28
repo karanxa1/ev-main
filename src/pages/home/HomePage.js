@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LoadScript, GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
+import Map from 'react-map-gl/mapbox';
+import { Marker } from '@vis.gl/react-mapbox';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { indianCities, formatCurrency } from '../../utils/formatters';
+import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
 import './HomePage.css';
+
+// Log token availability for debugging
+console.log("Mapbox token directly imported:", MAPBOX_TOKEN ? "Yes" : "No");
 
 /**
  * HomePage Component:
@@ -258,7 +264,7 @@ const HomePage = () => {
         connectorTypes: ['CCS', 'Type 2'],
         amenities: ['Parking', 'Security'],
         image: '/images/charging-stations/pune-statiq-wakad.jpg',
-        fallbackImage: 'https://www.statiq.in/assets/news/press-releases/statiq-installs-evzon.jpg'
+        fallbackImage: 'https://www.statiq.in/wp-content/uploads/2022/09/statiq-charging-station.png'
       },
       {
         id: 'pune-15',
@@ -540,79 +546,58 @@ const HomePage = () => {
             <h2>EV Charging Stations in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</h2>
             <p className="section-intro">Below is a map of available charging stations. Click on any marker to see details.</p>
             
-            <div className="map-container">
+            {/* Map container with explicit styling */}
+            <div 
+              className="map-container" 
+              id="map-container"
+              style={{
+                height: '500px',
+                width: '100%',
+                position: 'relative',
+                border: '1px solid #ddd'
+              }}
+            >
               {!loading && (
-                <LoadScript googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
-                  <GoogleMap
-                    mapContainerStyle={{ height: '500px', width: '100%' }}
-                    center={userLocation}
-                    zoom={12}
-                    options={{
-                      styles: mapStyles,
-                      disableDefaultUI: false,
-                      zoomControl: true
-                    }}
-                  >
-                    {/* User location marker */}
-                    <Marker
-                      position={userLocation}
-                      icon={{
-                        path: 0, // Circle
-                        scale: 7,
-                        fillColor: '#4285F4',
-                        fillOpacity: 1,
-                        strokeWeight: 2,
-                        strokeColor: '#FFFFFF'
+                <>
+                  {!MAPBOX_TOKEN && (
+                    <h3 style={{textAlign: 'center', marginTop: '20px'}}>
+                      Mapbox token not found. Please add your token to the .env file.
+                    </h3>
+                  )}
+                  {MAPBOX_TOKEN && (
+                    <Map
+                      initialViewState={{
+                        longitude: userLocation.lng || 73.8567, 
+                        latitude: userLocation.lat || 18.5204,
+                        zoom: 12
                       }}
-                    />
-
-                    {/* Station markers for current selected city */}
-                    {currentCityStations.map(station => (
-                      <Marker
-                        key={station.id}
-                        position={{ lat: station.latitude, lng: station.longitude }}
-                        onClick={() => setSelectedStation(station)}
-                        icon={{
-                          path: 0, // Circle
-                          scale: 7,
-                          fillColor: '#0C5F2C',
-                          fillOpacity: 1,
-                          strokeWeight: 2,
-                          strokeColor: '#FFFFFF'
-                        }}
-                      />
-                    ))}
-
-                    {/* Info Window for selected station */}
-                    {selectedStation && (
-                      <InfoWindow
-                        position={{ 
-                          lat: selectedStation.latitude, 
-                          lng: selectedStation.longitude 
-                        }}
-                        onCloseClick={() => setSelectedStation(null)}
-                      >
-                        <div className="station-infowindow">
-                          <h3>{selectedStation.name}</h3>
-                          <p className="address">{selectedStation.address}</p>
-                          <div className="info-details">
-                            <p>Type: {selectedStation.type}</p>
-                            <p>Power: {selectedStation.power} kW</p>
-                            <p>Price: ₹{selectedStation.pricePerKwh}/kWh</p>
-                          </div>
-                          <button 
-                            onClick={() => {
-                              const element = document.getElementById(`station-${selectedStation.id}`);
-                              element?.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                          >
-                            See Details
-                          </button>
-                        </div>
-                      </InfoWindow>
-                    )}
-                  </GoogleMap>
-                </LoadScript>
+                      style={{width: '100%', height: '100%'}}
+                      mapStyle="mapbox://styles/mapbox/streets-v11"
+                      mapboxAccessToken={MAPBOX_TOKEN}
+                    >
+                      {/* User location marker */}
+                      {userLocation && (
+                        <Marker 
+                          longitude={userLocation.lng} 
+                          latitude={userLocation.lat} 
+                          color="#4285F4"
+                        />
+                      )}
+                      
+                      {/* Station markers */}
+                      {currentCityStations
+                        .filter(station => station.latitude && station.longitude)
+                        .map(station => (
+                          <Marker
+                            key={station.id}
+                            longitude={station.longitude}
+                            latitude={station.latitude}
+                            color="#0C5F2C"
+                          />
+                        ))}
+                    </Map>
+                  )}
+                </>
               )}
             </div>
           </div>
