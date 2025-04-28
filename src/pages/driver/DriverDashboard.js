@@ -36,7 +36,9 @@ const DriverDashboard = () => {
   const [vehicleType, setVehicleType] = useState('4-wheeler'); // Default to 4-wheeler
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapLoadError, setMapLoadError] = useState(false);
-
+  const [nearestChargers, setNearestChargers] = useState([]);
+  const [locationAccepted, setLocationAccepted] = useState(false);
+  
   // Google Maps API key from environment variable
   const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
 
@@ -50,6 +52,50 @@ const DriverDashboard = () => {
     setMapLoadError(true);
     setLoading(false);
   }, []);
+  
+  // Calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance;
+  };
+
+  // Find nearest chargers based on user's location
+  const findNearestChargers = useCallback((location, allChargers, limit = 3) => {
+    if (!location || !location.lat || !location.lng || !allChargers.length) {
+      return [];
+    }
+
+    const chargersWithDistance = allChargers.map(charger => ({
+      ...charger,
+      distance: calculateDistance(
+        location.lat,
+        location.lng,
+        charger.latitude,
+        charger.longitude
+      )
+    }));
+
+    // Sort by distance (nearest first)
+    return chargersWithDistance
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, limit);
+  }, []);
+
+  // Update nearestChargers whenever user location or all chargers change
+  useEffect(() => {
+    if (userLocation && chargers.length > 0) {
+      const nearest = findNearestChargers(userLocation, chargers);
+      setNearestChargers(nearest);
+    }
+  }, [userLocation, chargers, findNearestChargers]);
   
   // Get user's location with error handling for deployed environments
   useEffect(() => {
@@ -65,16 +111,17 @@ const DriverDashboard = () => {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           });
+          setLocationAccepted(true);
         },
         (error) => {
           console.error('Geolocation error:', error);
-          // Keep default location in case of error
+          setLocationAccepted(false);
         },
         { timeout: 10000, enableHighAccuracy: true }
       );
     } else if (!isSecure) {
       console.warn('Geolocation requires HTTPS in production environments');
-      // Keep default location for non-secure contexts
+      setLocationAccepted(false);
     }
   }, []);
   
@@ -1130,6 +1177,40 @@ const DriverDashboard = () => {
       <div className="hero-section">
         <div className="container">
           <h1>Find EV charging stations near you</h1>
+          
+          {/* Display nearest chargers recommendation if location is accepted */}
+          {locationAccepted && nearestChargers.length > 0 && (
+            <div className="nearest-chargers-container">
+              <h2>Nearest Charging Stations</h2>
+              <div className="nearest-chargers">
+                {nearestChargers.map(charger => (
+                  <div 
+                    key={charger.id} 
+                    className="nearest-charger-card"
+                    onClick={() => {
+                      setSelectedCharger(charger);
+                      setUserLocation({
+                        lat: charger.latitude,
+                        lng: charger.longitude
+                      });
+                    }}
+                  >
+                    <h3>{charger.name}</h3>
+                    <p className="distance">{charger.distance.toFixed(1)} km away</p>
+                    <div className="charger-quick-info">
+                      <span className="connector-type">{charger.type}</span>
+                      <span className="power">{charger.power} kW</span>
+                      <span className={`status ${charger.availability ? 'available' : 'occupied'}`}>
+                        {charger.availability ? 'Available' : 'Occupied'}
+                      </span>
+                    </div>
+                    <button className="view-details-btn">View Details</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <div className="search-box">
             <input
               type="text"
