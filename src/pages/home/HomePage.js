@@ -5,6 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { indianCities, formatCurrency } from '../../utils/formatters';
 import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
 import { useAuth } from '../../contexts/AuthContext';
+import { getAllStations, getStationsByCity, findNearestStations } from '../../services/dataService';
 import './HomePage.css';
 
 // Log token availability for debugging
@@ -41,8 +42,10 @@ const HomePage = () => {
     bearing: 0,
     pitch: 0
   });
-  // Add state for popup visibility
+  // Add state for popup visibility and stations data
   const [showPopup, setShowPopup] = useState(false);
+  const [allStations, setAllStations] = useState([]);
+  const [currentCityStations, setCurrentCityStations] = useState([]);
 
   // Common fallback image that's guaranteed to exist
   const commonFallbackImage = '/images/charging-stations/commonoimage.jpg';
@@ -57,759 +60,53 @@ const HomePage = () => {
     hyderabad: indianCities.hyderabad
   };
 
-  // Comprehensive EV charging station data for multiple cities
-  const allChargingStations = {
-    pune: [
-      // Real Pune charging stations based on data from ZigWheels
-      {
-        id: 'pune-1',
-        name: 'Tata Power Charging Station - Koregaon Park',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.50,
-        latitude: 18.5395,
-        longitude: 73.8950,
-        address: 'Koregaon Park, Pune, Maharashtra 411001',
-        rating: 4.7,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Parking', 'Café', 'Restrooms'],
-        image: '/images/charging-stations/pune-tata-koregaon.jpg',
-        fallbackImage: 'https://evrevo.in/uploads/profile/2239_profile.jpg'
-      },
-      {
-        id: 'pune-2',
-        name: 'HPCL EV Charging Station - University Road',
-        type: 'AC Charger',
-        power: 22,
-        pricePerKwh: 16.00,
-        latitude: 18.5218,
-        longitude: 73.8560,
-        address: 'HPCL Petrol Pump, University Road, Shivajinagar, Pune 411016',
-        rating: 4.2,
-        hours: '6 AM - 11 PM',
-        connectorTypes: ['Type 2', 'Bharat AC-001'],
-        amenities: ['Convenience Store', 'Fuel Station'],
-        image: '/images/charging-stations/pune-hpcl-university.jpg',
-        fallbackImage: 'https://www.thehindubusinessline.com/companies/article65505171.ece/alternates/FREE_1200/Worldline%20EV%20charging%20station%20at%20HPCL%20in%20Bengaluru.JPG'
-      },
-      {
-        id: 'pune-3',
-        name: 'Magenta ChargeGrid - Amanora Mall',
-        type: 'DC Fast Charger',
-        power: 60,
-        pricePerKwh: 19.50,
-        latitude: 18.5180,
-        longitude: 73.9430,
-        address: 'Amanora Mall, Hadapsar, Pune 411028',
-        rating: 4.6,
-        hours: 'Mall Hours',
-        connectorTypes: ['CCS', 'CHAdeMO', 'Type 2'],
-        amenities: ['Shopping Mall', 'Food Court', 'Restrooms'],
-        image: '/images/charging-stations/pune-magenta-amanora.jpg',
-        fallbackImage: 'https://www.chargepoints.org/sites/default/files/styles/details_image/public/EV_Charging_Stations_at_Pune_Mall.jpg'
-      },
-      {
-        id: 'pune-4',
-        name: 'Ather Charging Grid - FC Road',
-        type: 'AC Charger',
-        power: 3.3,
-        pricePerKwh: 14.50,
-        latitude: 18.5210,
-        longitude: 73.8433,
-        address: 'FC Road, Shivajinagar, Pune 411005',
-        rating: 4.4,
-        hours: '10 AM - 8 PM',
-        connectorTypes: ['Ather Connector'],
-        amenities: ['Shopping Area', 'Restaurants'],
-        image: '/images/charging-stations/pune-ather-fc.jpg',
-        fallbackImage: 'https://cdn.atherenergy.com/Ather-Energy.jpg'
-      },
-      {
-        id: 'pune-5',
-        name: 'EON Free Charging Station - IT Park',
-        type: 'AC/DC Charger',
-        power: 25,
-        pricePerKwh: 0.00, // Free
-        latitude: 18.5510,
-        longitude: 73.9520,
-        address: 'EON IT Park, Kharadi, Pune 411014',
-        rating: 4.8,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2', 'Bharat AC-001'],
-        amenities: ['IT Park', 'Free Charging', 'Security'],
-        image: '/images/charging-stations/pune-eon-kharadi.jpg',
-        fallbackImage: 'https://www.electricvehicleweb.in/wp-content/uploads/2021/04/Tata-Power-EV-charging-station-IT-Park.jpg'
-      },
-      {
-        id: 'pune-6',
-        name: 'IOCL Fast Charging Hub - Baner',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5590,
-        longitude: 73.7868,
-        address: 'IOCL Petrol Pump, Baner Road, Pune 411045',
-        rating: 4.3,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Convenience Store', 'Restrooms', '24/7 Service'],
-        image: '/images/charging-stations/pune-iocl-baner.jpg',
-        fallbackImage: 'https://imageio.forbes.com/specials-images/imageserve/627bd291a1b0752889105d4e/IOCL-petrol-pump-with-EV-charging/960x0.jpg'
-      },
-      {
-        id: 'pune-7',
-        name: 'Statiq Charging - Hinjewadi Phase 1',
-        type: 'AC/DC Charger',
-        power: 30,
-        pricePerKwh: 17.50,
-        latitude: 18.5893,
-        longitude: 73.7388,
-        address: 'Rajiv Gandhi Infotech Park, Hinjewadi Phase 1, Pune 411057',
-        rating: 4.5,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2'],
-        amenities: ['IT Park', 'Cafés', 'Security'],
-        image: '/images/charging-stations/pune-statiq-hinjewadi.jpg',
-        fallbackImage: 'https://cdn.statiq.in/wp-content/uploads/2022/09/statiq-charging-station.png'
-      },
-      {
-        id: 'pune-8',
-        name: 'BESCOM Charging Point - Shivaji Nagar',
-        type: 'AC Charger',
-        power: 22,
-        pricePerKwh: 15.00,
-        latitude: 18.5314,
-        longitude: 73.8446,
-        address: 'Shivaji Nagar Bus Station, Pune 411005',
-        rating: 3.9,
-        hours: '6 AM - 10 PM',
-        connectorTypes: ['Type 2', 'Bharat AC-001'],
-        amenities: ['Bus Station', 'Public Transport'],
-        image: '/images/charging-stations/pune-bescom-shivaji.jpg',
-        fallbackImage: 'https://static.toiimg.com/thumb/msid-67005437,width-1280,height-720,resizemode-4/.jpg'
-      },
-      {
-        id: 'pune-9',
-        name: 'Jio-bp Pulse - Baner Road',
-        type: 'DC Fast Charger',
-        power: 60,
-        pricePerKwh: 20.50,
-        latitude: 18.5598,
-        longitude: 73.7882,
-        address: 'Baner Road, Baner, Pune 411045',
-        rating: 4.7,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO', 'Type 2'],
-        amenities: ['Café', 'Convenience Store', '24/7 Service', 'Wifi'],
-        image: '/images/charging-stations/pune-jio-bp.jpg',
-        fallbackImage: 'https://evreporter.com/wp-content/uploads/2023/01/Jio-bp-pulse.png'
-      },
-      {
-        id: 'pune-10',
-        name: 'BPCL EV Charging - FC Road',
-        type: 'AC/DC Charger',
-        power: 30,
-        pricePerKwh: 16.00,
-        latitude: 18.5234,
-        longitude: 73.8406,
-        address: 'BPCL, FC Road, Shivajinagar, Pune 411005',
-        rating: 4.0,
-        hours: '6 AM - 11 PM',
-        connectorTypes: ['CCS', 'Type 2', 'Bharat AC-001'],
-        amenities: ['Convenience Store', 'Restrooms'],
-        image: '/images/charging-stations/pune-bpcl-fc.jpg',
-        fallbackImage: 'https://www.bharatpetroleum.in/images/EV-charging-station1-10-Dec-2020.jpg'
-      },
-      {
-        id: 'pune-11',
-        name: 'Exicom Charging - Kharadi',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5504,
-        longitude: 73.9584,
-        address: 'EON IT Park, Kharadi, Pune 411014',
-        rating: 4.5,
-        hours: 'Office Hours',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['IT Park', 'Food Court', 'Parking'],
-        image: '/images/charging-stations/pune-exicom-kharadi.jpg',
-        fallbackImage: 'https://www.exicom.in/images/Exicom-EV-chargers.jpg'
-      },
-      {
-        id: 'pune-12',
-        name: 'Okaya Power - Hinjewadi',
-        type: 'DC Fast Charger',
-        power: 60,
-        pricePerKwh: 19.00,
-        latitude: 18.5793,
-        longitude: 73.7398,
-        address: 'Rajiv Gandhi Infotech Park, Hinjewadi Phase 1, Pune 411057',
-        rating: 4.3,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO', 'Type 2'],
-        amenities: ['IT Park', 'Parking', '24/7 Support', 'Cafeteria'],
-        image: '/images/charging-stations/pune-okaya-hinjewadi.jpg',
-        fallbackImage: 'https://auto.hindustantimes.com/auto/news/okaya-ev-installs-over-500-charging-stations-across-india-aims-to-add-500-more-41661507042488.html'
-      },
-      {
-        id: 'pune-13',
-        name: 'Ather Grid - Kalyani Nagar',
-        type: 'AC Charger',
-        power: 3.3,
-        pricePerKwh: 12.00,
-        latitude: 18.5470,
-        longitude: 73.9000,
-        address: 'Kalyani Nagar, Pune 411006',
-        rating: 4.6,
-        hours: '9 AM - 9 PM',
-        connectorTypes: ['Ather Connector'],
-        amenities: ['Shopping Area', 'Cafés'],
-        image: '/images/charging-stations/pune-ather-kalyani.jpg',
-        fallbackImage: 'https://www.91wheels.com/assets/ather-genericpages/img/grid.jpg'
-      },
-      {
-        id: 'pune-14',
-        name: 'Statiq Charging - Wakad',
-        type: 'AC/DC Charger',
-        power: 25,
-        pricePerKwh: 15.50,
-        latitude: 18.5968,
-        longitude: 73.7614,
-        address: 'Wakad, Pune 411057',
-        rating: 4.2,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2'],
-        amenities: ['Parking', 'Security'],
-        image: '/images/charging-stations/pune-statiq-wakad.jpg',
-        fallbackImage: 'https://www.statiq.in/wp-content/uploads/2022/09/statiq-charging-station.png'
-      },
-      {
-        id: 'pune-15',
-        name: 'Delta EV Charging - Chinchwad',
-        type: 'DC Fast Charger',
-        power: 60,
-        pricePerKwh: 18.50,
-        latitude: 18.6298,
-        longitude: 73.7997,
-        address: 'Chinchwad, Pune 411033',
-        rating: 4.1,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Industrial Area', 'Parking'],
-        image: '/images/charging-stations/pune-delta-chinchwad.jpg',
-        fallbackImage: 'https://www.deltaelectronicsindia.com/wp-content/uploads/2020/08/Delta-EV-Chargers.png'
-      },
-      {
-        id: 'pune-16',
-        name: 'ReVolt EV Station - Wagholi',
-        type: 'AC Charger',
-        power: 22,
-        pricePerKwh: 15.00,
-        latitude: 18.5725,
-        longitude: 73.9881,
-        address: 'Wagholi, Pune 412207',
-        rating: 3.9,
-        hours: '8 AM - 10 PM',
-        connectorTypes: ['Type 2', 'Bharat AC-001'],
-        amenities: ['Parking', 'Residential Area'],
-        image: '/images/charging-stations/pune-revolt-wagholi.jpg',
-        fallbackImage: 'https://auto.economictimes.indiatimes.com/news/oil-and-lubes/ev-charging-station-at-retail-outlets-to-accelerate/75446762'
-      },
-      {
-        id: 'pune-17',
-        name: 'Tata Power EZ Charge - Magarpatta City',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5156,
-        longitude: 73.9261,
-        address: 'Magarpatta City, Hadapsar, Pune 411028',
-        rating: 4.5,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Township', 'Shopping', 'Restaurants'],
-        image: '/images/charging-stations/pune-tata-magarpatta.jpg',
-        fallbackImage: 'https://tatapower.com/images/all-india-ev-charging.jpg'
-      },
-      {
-        id: 'pune-18',
-        name: 'ChargeZone - NIBM Road',
-        type: 'AC/DC Charger',
-        power: 30,
-        pricePerKwh: 16.50,
-        latitude: 18.4820,
-        longitude: 73.9031,
-        address: 'NIBM Road, Pune 411048',
-        rating: 4.3,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2'],
-        amenities: ['Residential Area', 'Cafés', 'Parking'],
-        image: '/images/charging-stations/pune-chargezone-nibm.jpg',
-        fallbackImage: 'https://ev.chargezone.in/wp-content/uploads/2022/09/chargezone-home-img.png'
-      },
-      {
-        id: 'pune-19',
-        name: 'Volttic Charging - Viman Nagar',
-        type: 'DC Fast Charger',
-        power: 60,
-        pricePerKwh: 19.00,
-        latitude: 18.5746,
-        longitude: 73.9184,
-        address: 'Viman Nagar, Pune 411014',
-        rating: 4.4,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO', 'Type 2'],
-        amenities: ['24/7 Service', 'Security', 'Residential Area'],
-        image: '/images/charging-stations/pune-volttic-viman.jpg',
-        fallbackImage: 'https://volttic.com/wp-content/themes/volttic/assets/images/volttic-charging-unity.jpg'
-      },
-      {
-        id: 'pune-20',
-        name: 'Ola Hypercharger - Shivaji Nagar',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5245,
-        longitude: 73.8478,
-        address: 'Shivaji Nagar, Pune 411005',
-        rating: 4.4,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2'],
-        amenities: ['Central Location', 'Shopping', 'Restaurants'],
-        image: '/images/charging-stations/pune-ola-shivajinagar.jpg',
-        fallbackImage: 'https://www.91wheels.com/assets/images/images/olanewsimages/Ola%20hypercharger.jpg'
-      },
-      {
-        id: 'pune-21',
-        name: 'TML Balajee Auto - Aundh',
-        type: 'AC Type-2 Charger',
-        power: 22,
-        pricePerKwh: 33.15,
-        latitude: 18.5578,
-        longitude: 73.8077,
-        address: 'Phase 2, Siddarth Nagar, Aundh, Pune',
-        rating: 4.2,
-        hours: '24/7',
-        connectorTypes: ['Type 2'],
-        amenities: ['Service Center', 'Waiting Area'],
-        image: '/images/charging-stations/pune-tml-balajee.jpg',
-        fallbackImage: 'https://www.bigwitenergy.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-22',
-        name: 'Vilux Theater - Khadki',
-        type: 'AC Type-2 Charger',
-        power: 22,
-        pricePerKwh: 33.15,
-        latitude: 18.5679,
-        longitude: 73.8567,
-        address: 'Vilux Theater, Khadki, Pune',
-        rating: 4.0,
-        hours: '24/7',
-        connectorTypes: ['Type 2'],
-        amenities: ['Cinema', 'Food Court'],
-        image: '/images/charging-stations/pune-vilux-khadki.jpg',
-        fallbackImage: 'https://www.bigwitenergy.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-23',
-        name: 'Tata Motors (Bafna) - Baner',
-        type: 'Bharat DC001 Charger',
-        power: 15,
-        pricePerKwh: 67.5,
-        latitude: 18.5590,
-        longitude: 73.7865,
-        address: 'Supreme Headquarters, Showroom No 36, Baner, Pune',
-        rating: 4.3,
-        hours: '24/7',
-        connectorTypes: ['Bharat DC001'],
-        amenities: ['Showroom', 'Customer Lounge'],
-        image: '/images/charging-stations/pune-tata-baner.jpg',
-        fallbackImage: 'https://www.bigwitenergy.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-24',
-        name: 'Tata Motors (Panchajanya) - Bhosari',
-        type: 'Multi-Charger Station',
-        power: 50,
-        pricePerKwh: 112.5,
-        latitude: 18.6186,
-        longitude: 73.8478,
-        address: 'Panchajanya, Bhosari, Pune',
-        rating: 4.5,
-        hours: '24/7',
-        connectorTypes: ['CHAdeMO', 'CCS-2', 'Bharat DC001'],
-        amenities: ['Service Center', 'Restrooms'],
-        image: '/images/charging-stations/pune-tata-bhosari.jpg',
-        fallbackImage: 'https://www.bigwitenergy.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-25',
-        name: 'IOCL Trishul Service Station',
-        type: 'Multi-Charger Station',
-        power: 50,
-        pricePerKwh: 112.5,
-        latitude: 18.6185,
-        longitude: 73.8420,
-        address: 'Trishul Service Station, Pune',
-        rating: 4.4,
-        hours: '24/7',
-        connectorTypes: ['CHAdeMO', 'CCS-2', 'AC Type-2'],
-        amenities: ['Petrol Pump', 'Convenience Store'],
-        image: '/images/charging-stations/pune-iocl-trishul.jpg',
-        fallbackImage: 'https://www.bigwitenergy.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-26',
-        name: 'Ginger Hotel - Wakad',
-        type: 'Tatapower Charger',
-        power: 22,
-        pricePerKwh: 33.15,
-        latitude: 18.5994,
-        longitude: 73.7665,
-        address: 'Near Indira College Rd, Kala Khadak, Wakad, Pune',
-        rating: 4.1,
-        hours: '24/7',
-        connectorTypes: ['Type 2'],
-        amenities: ['Hotel', 'Restaurant'],
-        image: '/images/charging-stations/pune-ginger-wakad.jpg',
-        fallbackImage: 'https://electricpe.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-27',
-        name: 'Lodha Belmondo - Opp MCA Stadium',
-        type: 'Tatapower Private Charger',
-        power: 22,
-        pricePerKwh: 33.15,
-        latitude: 18.6500,
-        longitude: 73.7600,
-        address: 'Lodha Belmondo, Mumbai - Pune Expy, Opposite MCA Stadium, Pune',
-        rating: 4.0,
-        hours: 'Private Access',
-        connectorTypes: ['Type 2'],
-        amenities: ['Residential Complex', 'Security'],
-        image: '/images/charging-stations/pune-lodha-belmondo.jpg',
-        fallbackImage: 'https://electricpe.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-28',
-        name: 'VEVC-79 - Infosys Parking, Hinjewadi Phase 2',
-        type: 'Volttic Charger',
-        power: 50,
-        pricePerKwh: 112.5,
-        latitude: 18.5916,
-        longitude: 73.7389,
-        address: 'Infosys Parking, MLPL Gate 5, Hinjewadi Phase 2, Pune',
-        rating: 4.6,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['IT Park', 'Security'],
-        image: '/images/charging-stations/pune-vevc-79.jpg',
-        fallbackImage: 'https://electricpe.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-29',
-        name: 'Bhajan Singh Da Dhabha Charging Station',
-        type: 'Sunfuel Charger',
-        power: 22,
-        pricePerKwh: 33.15,
-        latitude: 18.5000,
-        longitude: 73.8500,
-        address: 'Bhajan Singh Da Dhabha, Pune',
-        rating: 4.2,
-        hours: '24/7',
-        connectorTypes: ['Type 2'],
-        amenities: ['Restaurant', 'Parking'],
-        image: '/images/charging-stations/pune-bhajan-singh.jpg',
-        fallbackImage: 'https://www.statiq.in/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-30',
-        name: 'Sunfuel - Club Mahindra Resort - Tungi',
-        type: 'Sunfuel Charger',
-        power: 22,
-        pricePerKwh: 33.15,
-        latitude: 18.6000,
-        longitude: 73.7000,
-        address: 'Club Mahindra Resort, Tungi, Pune',
-        rating: 4.3,
-        hours: '24/7',
-        connectorTypes: ['Type 2'],
-        amenities: ['Resort', 'Recreation'],
-        image: '/images/charging-stations/pune-club-mahindra.jpg',
-        fallbackImage: 'https://www.statiq.in/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-31',
-        name: 'Tata Power Charging Station - Panchjanya Motors',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.6186,
-        longitude: 73.8478,
-        address: 'Wakad - Bhosari BRTS Road, Century Enka Colony, Bhosari, Pimpri-Chinchwad, Maharashtra 411039',
-        rating: 4.5,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Service Center', 'Restrooms'],
-        image: '/images/charging-stations/pune-panchjanya.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-32',
-        name: 'Tata Power Charging Station - Rudra Motors',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5760,
-        longitude: 73.9866,
-        address: 'Gat No. 1343/A2, Near Ubale Nagar Bus Stop, Wagholi, Pune-412207',
-        rating: 4.4,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Showroom', 'Customer Lounge'],
-        image: '/images/charging-stations/pune-rudra-motors.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-33',
-        name: 'Tata Power Charging Station - Concorde Tathawade',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5921,
-        longitude: 73.7550,
-        address: 'Gate No. 129/2B/1, Mumbai Bangalore Express Highway, Ashok Nagar, Tathawade, Pune-411033',
-        rating: 4.3,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Service Center', 'Restrooms'],
-        image: '/images/charging-stations/pune-concorde-tathawade.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-34',
-        name: 'Tata Power Charging Station - Concorde Baner',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5590,
-        longitude: 73.7865,
-        address: 'Supreme Headquarters, Showroom No. 36, Mumbai-Bangalore Highway, Mohan Nagar Co-Op Society, Baner, Pune, Maharashtra 411045',
-        rating: 4.2,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Showroom', 'Customer Lounge'],
-        image: '/images/charging-stations/pune-concorde-baner.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-35',
-        name: 'Tata Power Charging Station - TACO Hinjewadi Phase II',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5916,
-        longitude: 73.7389,
-        address: 'SR. NO 280 & 281, Hinjawadi Phase II, Hinjewadi Rajiv Gandhi Infotech Park, Hinjawadi, Pune, Maharashtra 411057',
-        rating: 4.6,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['IT Park', 'Security'],
-        image: '/images/charging-stations/pune-taco-hinjewadi.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-36',
-        name: 'Tata Power Charging Station - Amanora Urban Plaza',
-        type: 'AC Charger',
-        power: 22,
-        pricePerKwh: 16.50,
-        latitude: 18.5196,
-        longitude: 73.9345,
-        address: '58, Amanora Park Town, Hadapsar, Pune, Maharashtra 411028',
-        rating: 4.3,
-        hours: '24/7',
-        connectorTypes: ['Type 2'],
-        amenities: ['Shopping Mall', 'Restaurants'],
-        image: '/images/charging-stations/pune-amanora.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-37',
-        name: 'Tata Power Charging Station - Ginger Hotel Wakad',
-        type: 'AC Charger',
-        power: 22,
-        pricePerKwh: 16.50,
-        latitude: 18.5994,
-        longitude: 73.7665,
-        address: 'Near Indira College Rd, Kala Khadak, Wakad, Pune',
-        rating: 4.1,
-        hours: '24/7',
-        connectorTypes: ['Type 2'],
-        amenities: ['Hotel', 'Restaurant'],
-        image: '/images/charging-stations/pune-ginger-wakad.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-38',
-        name: 'Tata Power Charging Station - Bafna Motors Erandwane',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5090,
-        longitude: 73.8291,
-        address: 'Swojas Capital, Law College Rd, Shanti Sheela Society, Apex Colony, Erandwane, Pune, Maharashtra 411008',
-        rating: 4.4,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Showroom', 'Customer Lounge'],
-        image: '/images/charging-stations/pune-bafna-erandwane.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-40',
-        name: 'Tata Power Charging Station - Rudra Motors Wagholi',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5760,
-        longitude: 73.9870,
-        address: 'Gat No.1343/A, Near Ubale Nagar Bus Stop, Wagholi-412207',
-        rating: 4.4,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Showroom', 'Customer Lounge'],
-        image: '/images/charging-stations/pune-rudra-wagholi.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      // Adding from second batch (skipping duplicates)
-      {
-        id: 'pune-45',
-        name: 'Tata Power Charging Station - TACO Hinjewadi Phase II',
-        type: 'DC Fast Charger',
-        power: 50,
-        pricePerKwh: 18.00,
-        latitude: 18.5916,
-        longitude: 73.7380,
-        address: 'SR. NO 280 & 281, Hinjawadi Phase II, Hinjewadi Rajiv Gandhi Infotech Park, Hinjawadi, Pune, Maharashtra 411057',
-        rating: 4.3,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'CHAdeMO'],
-        amenities: ['Tech Park', 'Cafeteria'],
-        image: '/images/charging-stations/pune-taco-hinjewadi.jpg',
-        fallbackImage: 'https://www.tatapower.com/images/ev-charging.jpg'
-      },
-      {
-        id: 'pune-46',
-        name: 'ChargeZone - Novotel Hotel Viman Nagar',
-        type: 'AC/DC Charger',
-        power: 30,
-        pricePerKwh: 16.50,
-        latitude: 18.5679,
-        longitude: 73.9143,
-        address: 'Novotel Hotel, Block-D, 1F, Sakore Nagar, Viman Nagar, Pune, Maharashtra 411014',
-        rating: 4.4,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2'],
-        amenities: ['Hotel', 'Restaurants'],
-        image: '/images/charging-stations/pune-chargezone-novotel.jpg',
-        fallbackImage: 'https://ev.chargezone.in/wp-content/uploads/2022/09/chargezone-home-img.png'
-      },
-      {
-        id: 'pune-47',
-        name: 'ChargeZone - JW Marriott Senapati Bapat Road',
-        type: 'AC/DC Charger',
-        power: 30,
-        pricePerKwh: 16.50,
-        latitude: 18.5285,
-        longitude: 73.8291,
-        address: 'JW Marriott Hotel, Senapati Bapat Rd, Pune, Maharashtra 411053',
-        rating: 4.5,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2'],
-        amenities: ['Hotel', 'Shopping'],
-        image: '/images/charging-stations/pune-chargezone-jwmarriott.jpg',
-        fallbackImage: 'https://ev.chargezone.in/wp-content/uploads/2022/09/chargezone-home-img.png'
-      },
-      {
-        id: 'pune-48',
-        name: 'ChargeZone - The Ritz-Carlton Yerawada',
-        type: 'AC/DC Charger',
-        power: 30,
-        pricePerKwh: 16.50,
-        latitude: 18.5628,
-        longitude: 73.8986,
-        address: 'The Ritz-Carlton, Golf Course Square, Airport Rd, Yerawada, Pune, Maharashtra 411006',
-        rating: 4.6,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2'],
-        amenities: ['Luxury Hotel', 'Dining'],
-        image: '/images/charging-stations/pune-chargezone-ritzcarlton.jpg',
-        fallbackImage: 'https://ev.chargezone.in/wp-content/uploads/2022/09/chargezone-home-img.png'
-      },
-      {
-        id: 'pune-49',
-        name: 'ChargeZone - Marriott Suites Fatima Nagar',
-        type: 'AC/DC Charger',
-        power: 30,
-        pricePerKwh: 16.50,
-        latitude: 18.5018,
-        longitude: 73.9021,
-        address: 'Marriott Suites Pune, 81, Mundhwa Rd, Fatima Nagar, Pune, Maharashtra 411036',
-        rating: 4.4,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2'],
-        amenities: ['Hotel', 'Restaurants'],
-        image: '/images/charging-stations/pune-chargezone-marriott.jpg',
-        fallbackImage: 'https://ev.chargezone.in/wp-content/uploads/2022/09/chargezone-home-img.png'
-      },
-      {
-        id: 'pune-50',
-        name: 'ChargeZone - ONYX Koregaon Park',
-        type: 'AC/DC Charger',
-        power: 30,
-        pricePerKwh: 16.50,
-        latitude: 18.5362,
-        longitude: 73.8938,
-        address: 'ONYX, N Main Rd, Koregaon Park Annexe, Koregaon Park, Pune, Maharashtra 411001',
-        rating: 4.3,
-        hours: '24/7',
-        connectorTypes: ['CCS', 'Type 2'],
-        amenities: ['Shopping', 'Cafés'],
-        image: '/images/charging-stations/pune-chargezone-onyx.jpg',
-        fallbackImage: 'https://ev.chargezone.in/wp-content/uploads/2022/09/chargezone-home-img.png'
+  // Fetch all stations when component loads
+  useEffect(() => {
+    const loadStations = async () => {
+      try {
+        setLoading(true);
+        const stations = await getAllStations();
+        setAllStations(stations);
+        
+        // Set current city stations
+        const cityStations = await getStationsByCity(selectedCity);
+        setCurrentCityStations(cityStations);
+      } catch (error) {
+        console.error('Error loading stations:', error);
+      } finally {
+        setLoading(false);
       }
-    ],
-    delhi: [
-      // ...existing delhi stations...
-    ],
-    mumbai: [
-      // ...existing mumbai stations...
-    ],
-    // ...remaining cities...
-  };
-
-  // Get currently selected city's stations
-  const currentCityStations = allChargingStations[selectedCity] || [];
+    };
+    
+    loadStations();
+  }, []);
 
   // Event handlers
-  const handleCityChange = (city) => {
+  const handleCityChange = async (city) => {
     setSelectedCity(city);
     setUserLocation(cityLocations[city]);
     setSelectedStation(null);
     
-    // Update map view for the selected city
-    setViewState({
-      longitude: cityLocations[city].lng,
-      latitude: cityLocations[city].lat,
-      zoom: 12,
-      bearing: 0,
-      pitch: 0,
-      transitionDuration: 1000 // Smooth animation
-    });
+    try {
+      setLoading(true);
+      // Get stations for the selected city
+      const cityStations = await getStationsByCity(city);
+      setCurrentCityStations(cityStations);
+      
+      // Update map view for the selected city
+      setViewState({
+        longitude: cityLocations[city].lng,
+        latitude: cityLocations[city].lat,
+        zoom: 12,
+        bearing: 0,
+        pitch: 0,
+        transitionDuration: 1000 // Smooth animation
+      });
+    } catch (error) {
+      console.error(`Error loading stations for ${city}:`, error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleImageError = (stationId) => {
@@ -851,19 +148,15 @@ const HomePage = () => {
     }
   };
 
-  // Enhanced button handlers to ensure all buttons work correctly
-
-  // Join Now button in hero section
+  // Other handlers
   const handleJoinNow = () => {
     navigate('/signup');
   };
 
-  // View Stations button in hero section
   const handleViewStations = () => {
     scrollToSection(stationsRef);
   };
 
-  // Book Now button in station cards
   const handleBookNow = (stationId) => {
     if (currentUser) {
       // If user is logged in, navigate to booking page with station ID
@@ -874,7 +167,6 @@ const HomePage = () => {
     }
   };
 
-  // Enhance handleLocateOnMap to also show the popup
   const handleLocateOnMap = (station) => {
     setSelectedStation(station);
     setShowPopup(true); // Show popup when station is selected
@@ -908,18 +200,15 @@ const HomePage = () => {
     }
   };
   
-  // Function to handle marker click directly
   const handleMarkerClick = (station) => {
     setSelectedStation(station);
     setShowPopup(true);
   };
 
-  // Get Started Today button in How It Works section
   const handleGetStarted = () => {
     navigate('/signup');
   };
 
-  // Enhanced profile navigation with user type routing
   const handleProfileNavigation = (path) => {
     // Close the profile dropdown menu
     setProfileMenuOpen(false);
@@ -955,7 +244,6 @@ const HomePage = () => {
     }
   };
 
-  // Enhanced logout with confirmation
   const handleLogout = async () => {
     if (window.confirm('Are you sure you want to log out?')) {
       try {
@@ -968,7 +256,6 @@ const HomePage = () => {
     }
   };
 
-  // Social media links
   const handleSocialLink = (platform) => {
     const socialUrls = {
       facebook: 'https://facebook.com/evchargingnetwork',
@@ -985,7 +272,6 @@ const HomePage = () => {
     }
   };
 
-  // Function to handle clicking "View Details" in the nearest station card
   const handleViewDetails = (station) => {
     handleLocateOnMap(station);
     
@@ -1054,7 +340,7 @@ const HomePage = () => {
           });
           
           // Update selected city based on user location
-          setSelectedCity(closestCity[0]);
+          handleCityChange(closestCity[0]);
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -1080,26 +366,10 @@ const HomePage = () => {
     return distance;
   };
 
-  // Find nearest charging stations to user
+  // Find nearest charging stations to user using our data service
   const getNearestStations = () => {
-    if (!locationFound) return [];
-    
-    // Get all stations from all cities
-    const allStations = Object.values(allChargingStations).flat();
-    
-    // Calculate distance for each station
-    const stationsWithDistance = allStations.map(station => ({
-      ...station,
-      distance: calculateDistance(
-        userLocation.lat, userLocation.lng,
-        station.latitude, station.longitude
-      )
-    }));
-    
-    // Sort by distance and return top 3
-    return stationsWithDistance
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 3);
+    if (!locationFound || !allStations?.length) return [];
+    return findNearestStations(userLocation, allStations, 3);
   };
 
   return (
@@ -1230,7 +500,7 @@ const HomePage = () => {
               <div className="nearest-stations">
                 <h3>Nearest Charging Stations to You</h3>
                 <div className="nearest-stations-cards">
-                  {getNearestStations().map(station => (
+                  {getNearestStations()?.map(station => (
                     <div 
                       key={station.id} 
                       className="nearest-station-card"
@@ -1317,12 +587,6 @@ const HomePage = () => {
             <div 
               className="map-container" 
               id="map-container"
-              style={{
-                height: '500px',
-                width: '100%',
-                position: 'relative',
-                border: '1px solid #ddd'
-              }}
             >
               {!loading && (
                 <>
@@ -1331,7 +595,7 @@ const HomePage = () => {
                       Mapbox token not found. Please add your token to the .env file.
                     </h3>
                   )}
-                  {MAPBOX_TOKEN && (
+                  {MAPBOX_TOKEN && !loading && (
                     <Map
                       mapboxAccessToken={MAPBOX_TOKEN}
                       {...viewState}
@@ -1341,8 +605,8 @@ const HomePage = () => {
                     >
                       <NavigationControl position="top-right" />
                       
-                      {/* Add markers for charging stations */}
-                      {currentCityStations.map(station => (
+                      {/* Add markers for charging stations with null check */}
+                      {currentCityStations?.map(station => (
                         <Marker 
                           key={station.id}
                           longitude={station.longitude}
@@ -1424,7 +688,7 @@ const HomePage = () => {
           <div className="container">
             <h2>Charging Stations in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</h2>
             <div className="stations-grid">
-              {currentCityStations.map(station => (
+              {currentCityStations?.map(station => (
                 <div key={station.id} id={`station-${station.id}`} className="station-card">
                   <div className="station-image">
                     {/* Image with enhanced fallback strategy */}
@@ -1473,17 +737,17 @@ const HomePage = () => {
                     <div className="connectors">
                       <span className="detail-label">Connectors:</span>
                       <div className="connector-tags">
-                        {station.connectorTypes.map((connector, idx) => (
+                        {station.connectorTypes?.map((connector, idx) => (
                           <span key={idx} className="connector-tag">{connector}</span>
-                        ))}
+                        )) || <span>Not available</span>}
                       </div>
                     </div>
                     <div className="station-amenities">
                       <span className="detail-label">Amenities:</span>
                       <div className="amenity-tags">
-                        {station.amenities.map((amenity, idx) => (
+                        {station.amenities?.map((amenity, idx) => (
                           <span key={idx} className="amenity-tag">{amenity}</span>
-                        ))}
+                        )) || <span>Not available</span>}
                       </div>
                     </div>
                     <div className="station-cta">
