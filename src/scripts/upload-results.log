@@ -1,0 +1,83 @@
+=== CHARGING STATION UPLOAD LOG ===
+[2025-05-03T13:35:13.202Z] Starting upload of all 50 charging stations...
+[2025-05-03T13:35:13.215Z] Using Firebase project: sample-firbase-ai-app-c1fc3
+
+[2025-05-03T13:35:13.216Z] Firebase rules have been updated to allow writes - this should work now!
+
+[2025-05-03T13:35:13.217Z] Performing test upload to verify connection and permissions...
+[2025-05-03T13:35:14.778Z] ✅ Test upload successful - proceeding with station data
+
+[2025-05-03T13:35:14.780Z] 
+Processing batch 1/5 (stations 1-10)
+[2025-05-03T13:35:15.179Z] ✅ Station #1 "MG Road Fast Charger" uploaded successfully
+[2025-05-03T13:35:15.675Z] ✅ Station #2 "Metro Station Charger" uploaded successfully
+[2025-05-03T13:35:16.097Z] ✅ Station #3 "Hotel Charging Station" uploaded successfully
+[2025-05-03T13:35:16.496Z] ✅ Station #4 "South Delhi EV Hub" uploaded successfully
+[2025-05-03T13:35:16.917Z] ✅ Station #5 "North Delhi Fast Charger" uploaded successfully
+[2025-05-03T13:35:17.307Z] ✅ Station #6 "Shopping Mall Charger" uploaded successfully
+[2025-05-03T13:35:17.726Z] ✅ Station #7 "Office Complex Station" uploaded successfully
+[2025-05-03T13:35:18.112Z] ✅ Station #8 "Residential Society Charger" uploaded successfully
+[2025-05-03T13:35:18.512Z] ✅ Station #9 "Highway Rest Stop" uploaded successfully
+[2025-05-03T13:35:18.914Z] ✅ Station #10 "Airport Charging Point" uploaded successfully
+[2025-05-03T13:35:18.918Z] Batch 1 complete: Success=10, Errors=0
+[2025-05-03T13:35:18.919Z] 
+Processing batch 2/5 (stations 11-20)
+[2025-05-03T13:35:19.297Z] ✅ Station #11 "Bandra Worli Sea Link EV Station" uploaded successfully
+[2025-05-03T13:35:19.781Z] ✅ Station #12 "Andheri Metro Station Charger" uploaded successfully
+[2025-05-03T13:35:20.147Z] ✅ Station #13 "Powai Lake EV Hub" uploaded successfully
+[2025-05-03T13:35:20.501Z] ✅ Station #14 "MG Road Tech Park" uploaded successfully
+[2025-05-03T13:35:20.900Z] ✅ Station #15 "Electronic City Fast Charger" uploaded successfully
+[2025-05-03T13:35:21.290Z] ✅ Station #16 "Whitefield Mall Charging Point" uploaded successfully
+[2025-05-03T13:35:21.646Z] ✅ Station #17 "Marina Beach EV Point" uploaded successfully
+[2025-05-03T13:35:22.034Z] ✅ Station #18 "IT Corridor Fast Charger" uploaded successfully
+[2025-05-03T13:35:22.411Z] ✅ Station #19 "Hitech City Charging Hub" uploaded successfully
+[2025-05-03T13:35:22.857Z] ✅ Station #20 "Charminar Tourist EV Point" uploaded successfully
+[2025-05-03T13:35:22.860Z] Batch 2 complete: Success=20, Errors=0
+[2025-05-03T13:35:22.862Z] 
+Processing batch 3/5 (stations 21-30)
+[2025-05-03T13:35:23.265Z] ✅ Station #21 "Salt Lake Stadium Charger" uploaded successfully
+[2025-05-03T13:35:23.674Z] ✅ Station #22 "Howrah Bridge EV Station" uploaded successfully
+[2025-05-03T13:35:24.085Z] ✅ Station #23 "Koregaon Park Charging Hub" uploaded successfully
+[2025-05-03T13:35:24.598Z] ✅ Station #24 "Hinjewadi IT Park Charger" uploaded successfully
+[2025-05-03T13:35:25.015Z] ✅ Station #25 "TML Balajee Auto - Aundh" uploaded successfully
+[2025-05-03T13:35:25.402Z] ✅ Station #26 "Vilux Theater - Khadki" uploaded successfully
+[2025-05-03T13:35:25.795Z] ✅ Station #27 "Tata Motors (Bafna) - Baner" uploaded successfully
+[2025-05-03T13:35:26.141Z] ✅ Station #28 "Tata Motors (Panchajanya) - Bhosari" uploaded successfully
+[2025-05-03T13:35:26.518Z] ✅ Station #29 "IOCL Trishul Service Station" uploaded successfully
+[2025-05-03T13:35:27.085Z] ✅ Station #30 "Ginger Hotel - Wakad" uploaded successfully
+[2025-05-03T13:35:27.532Z] Batch 3 complete: Success=30, Errors=0
+[2025-05-03T13:35:27.543Z] 
+Processing batch 4/5 (stations 31-40)
+[2025-05-03T13:35:27.978Z] ✅ Station #31 "Lodha Belmondo - Opp MCA Stadium" uploaded successfully
+[2025-05-03T13:35:28.342Z] ✅ Station #32 "VEVC-79 - Infosys Parking, Hinjewadi Phase 2" uploaded successfully
+[2025-05-03T13:35:28.798Z] ✅ Station #33 "Bhajan Singh Da Dhabha Charging Station" uploaded successfully
+[2025-05-03T13:35:29.181Z] ✅ Station #34 "Sunfuel - Club Mahindra Resort - Tungi" uploaded successfully
+[2025-05-03T13:35:29.616Z] ✅ Station #35 "Tata Power Charging Station - Panchjanya Motors" uploaded successfully
+[2025-05-03T13:35:29.997Z] ✅ Station #36 "Tata Power Charging Station - Rudra Motors" uploaded successfully
+[2025-05-03T13:35:30.434Z] ✅ Station #37 "Tata Power Charging Station - Concorde Tathawade" uploaded successfully
+[2025-05-03T13:35:30.827Z] ✅ Station #38 "Tata Power Charging Station - Concorde Baner" uploaded successfully
+[2025-05-03T13:35:31.450Z] ✅ Station #39 "Tata Power Charging Station - TACO Hinjewadi Phase II" uploaded successfully
+[2025-05-03T13:35:32.685Z] ✅ Station #40 "Tata Power Charging Station - Amanora Urban Plaza" uploaded successfully
+[2025-05-03T13:35:32.687Z] Batch 4 complete: Success=40, Errors=0
+[2025-05-03T13:35:32.689Z] 
+Processing batch 5/5 (stations 41-50)
+[2025-05-03T13:35:33.079Z] ✅ Station #41 "Tata Power Charging Station - Ginger Hotel Wakad" uploaded successfully
+[2025-05-03T13:35:33.471Z] ✅ Station #42 "Tata Power Charging Station - Bafna Motors Erandwane" uploaded successfully
+[2025-05-03T13:35:33.867Z] ✅ Station #43 "Tata Power Charging Station - TACO Phase II" uploaded successfully
+[2025-05-03T13:35:34.323Z] ✅ Station #44 "Tata Power Charging Station - Rudra Motors Wagholi" uploaded successfully
+[2025-05-03T13:35:34.695Z] ✅ Station #45 "Tata Power Charging Station - TACO Hinjewadi Phase II" uploaded successfully
+[2025-05-03T13:35:35.070Z] ✅ Station #46 "ChargeZone - Novotel Hotel Viman Nagar" uploaded successfully
+[2025-05-03T13:35:35.454Z] ✅ Station #47 "ChargeZone - JW Marriott Senapati Bapat Road" uploaded successfully
+[2025-05-03T13:35:35.842Z] ✅ Station #48 "ChargeZone - The Ritz-Carlton Yerawada" uploaded successfully
+[2025-05-03T13:35:36.229Z] ✅ Station #49 "ChargeZone - Marriott Suites Fatima Nagar" uploaded successfully
+[2025-05-03T13:35:36.608Z] ✅ Station #50 "ChargeZone - ONYX Koregaon Park" uploaded successfully
+[2025-05-03T13:35:36.611Z] Batch 5 complete: Success=50, Errors=0
+[2025-05-03T13:35:36.614Z] 
+=== UPLOAD SUMMARY ===
+[2025-05-03T13:35:36.639Z] Total stations processed: 50
+[2025-05-03T13:35:36.648Z] Successfully uploaded: 50
+[2025-05-03T13:35:36.650Z] Failed to upload: 0
+[2025-05-03T13:35:36.651Z] 
+🎉 ALL STATIONS SUCCESSFULLY UPLOADED!
+[2025-05-03T13:35:36.655Z] 
+Detailed log saved to: C:\Users\karan\Downloads\ev-main\src\scripts\upload-results.log

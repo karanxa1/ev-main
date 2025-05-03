@@ -5,11 +5,25 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { indianCities, formatCurrency } from '../../utils/formatters';
 import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
 import { useAuth } from '../../contexts/AuthContext';
-import { getAllStations, getStationsByCity, findNearestStations } from '../../services/dataService';
+import { getAllStations, getStationsByCity } from '../../services/dataService';
 import './HomePage.css';
 
 // Log token availability for debugging
 console.log("Mapbox token directly imported:", MAPBOX_TOKEN ? "Yes" : "No");
+
+// Helper function to ensure we always have an array
+const ensureArray = (possibleArray) => {
+  if (!possibleArray) return [];
+  return Array.isArray(possibleArray) ? possibleArray : [];
+};
+
+// Helper function to safely handle array or null values
+const safeArray = (value) => {
+  if (Array.isArray(value)) return value;
+  if (value === null || value === undefined) return [];
+  // If it's a single value, wrap it in an array
+  return [value];
+};
 
 /**
  * HomePage Component:
@@ -59,20 +73,109 @@ const HomePage = () => {
     chennai: indianCities.chennai,
     hyderabad: indianCities.hyderabad
   };
+  
+  // Function to get valid coordinates for stations - fixed for Firebase data structure
+  const getValidCoordinates = (station) => {
+    // First check for direct number values (as shown in Firebase)
+    if (typeof station.latitude === 'number' && typeof station.longitude === 'number') {
+      // Numbers coming directly from Firebase
+      if (station.latitude !== 0 && station.longitude !== 0) {
+        return {
+          latitude: station.latitude,
+          longitude: station.longitude
+        };
+      }
+    }
+    
+    // Check for string values that need parsing
+    if (station.latitude && station.longitude) {
+      const lat = parseFloat(station.latitude);
+      const lng = parseFloat(station.longitude);
+      
+      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+        return {
+          latitude: lat,
+          longitude: lng
+        };
+      }
+    }
+    
+    // Otherwise, use city center coordinates as fallback with wider distribution
+    if (station.city) {
+      const cityName = station.city.toLowerCase();
+      
+      // More deterministic distribution with station ID as seed
+      const getStationPosition = (stationId, cityCoords) => {
+        // Create a simple hash from the station ID or name
+        const hash = typeof stationId === 'string' ? 
+          stationId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) :
+          stationId || Math.floor(Math.random() * 1000);
+        
+        // Create a predictable but distributed angle (0-360 degrees)
+        const angle = (hash % 360) * (Math.PI / 180);
+        
+        // Distance from city center (0.5km to 3km)
+        const distance = 0.5 + (hash % 25) / 10; // 0.5km to 3km
+        
+        // Convert to lat/lng offsets using trigonometry
+        const latOffset = Math.sin(angle) * distance * 0.009; // ~1km = 0.009 degrees latitude
+        const lngOffset = Math.cos(angle) * distance * 0.009 / Math.cos(cityCoords.lat * Math.PI / 180);
+        
+        return {
+          latitude: cityCoords.lat + latOffset,
+          longitude: cityCoords.lng + lngOffset
+        };
+      };
+      
+      // Check if we have coordinates for this city
+      for (const [key, coords] of Object.entries(cityLocations)) {
+        if (cityName.includes(key) || key.includes(cityName)) {
+          return getStationPosition(station.id, coords);
+        }
+      }
+    }
+    
+    // If no match found, use a better scatter pattern based on station ID
+    console.warn(`No valid coordinates for station: ${station.name || 'Unknown'} (${station.id || 'No ID'})`);
+    
+    // Use selected city coordinates
+    const cityCoords = cityLocations[selectedCity.toLowerCase()] || cityLocations.pune;
+    
+    // Generate a relatively unique ID for this station if none exists
+    const uniqueId = station.id || station.name?.replace(/\s+/g, '') || Math.random().toString(36).substring(2, 10);
+    
+    // Create a scattered pattern with distance increasing from center
+    const hashCode = String(uniqueId).split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    const angle = Math.abs(hashCode % 360) * (Math.PI / 180);
+    const distance = (Math.abs(hashCode) % 30) / 10 + 1; // 1-4km
+    
+    return {
+      latitude: cityCoords.lat + (Math.sin(angle) * 0.009 * distance),
+      longitude: cityCoords.lng + (Math.cos(angle) * 0.009 * distance / Math.cos(cityCoords.lat * Math.PI / 180))
+    };
+  };
 
   // Fetch all stations when component loads
   useEffect(() => {
     const loadStations = async () => {
       try {
+        console.log('🔍 Starting to load stations...');
         setLoading(true);
         const stations = await getAllStations();
-        setAllStations(stations);
+        console.log('📊 Stations fetched:', stations ? stations.length : 0, 'stations');
+        console.log('📋 First station (sample):', stations && stations.length ? stations[0] : 'No stations');
+        setAllStations(stations || []);
         
         // Set current city stations
         const cityStations = await getStationsByCity(selectedCity);
-        setCurrentCityStations(cityStations);
+        console.log(`📍 ${selectedCity} stations:`, cityStations ? cityStations.length : 0, 'stations');
+        setCurrentCityStations(cityStations || []);
       } catch (error) {
-        console.error('Error loading stations:', error);
+        console.error('❌ Error loading stations:', error);
       } finally {
         setLoading(false);
       }
@@ -81,29 +184,173 @@ const HomePage = () => {
     loadStations();
   }, []);
 
+  // Render debug info in development mode
+  const renderDebugInfo = () => {
+    if (process.env.NODE_ENV !== 'development') return null;
+    
+    return (
+      <div style={{
+        margin: '20px 0',
+        padding: '10px',
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6',
+        borderRadius: '4px'
+      }}>
+        <h4>Debug Information</h4>
+        <p>All Stations: {allStations?.length || 0}</p>
+        <p>Current City Stations: {currentCityStations?.length || 0}</p>
+        <p>Selected City: <strong>{selectedCity}</strong></p>
+        <p>Location Found: {locationFound ? 'Yes' : 'No'}</p>
+        <p>Loading: {loading ? 'Yes' : 'No'}</p>
+        
+        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px' }}>
+          <button onClick={() => console.log('All Stations:', allStations)}>
+            Log All Stations
+          </button>
+          <button onClick={() => {
+            // Show cities from all stations
+            const cities = [...new Set(allStations.map(s => s.city))];
+            console.log('Available cities:', cities);
+          }}>
+            Log Available Cities
+          </button>
+          <button onClick={async () => {
+            // Force reload city data
+            console.log(`Manual reload for city: ${selectedCity}`);
+            const cityStations = await getStationsByCity(selectedCity);
+            setCurrentCityStations(cityStations);
+            console.log(`Reloaded ${cityStations.length} stations`);
+          }} style={{ backgroundColor: '#28a745', color: 'white' }}>
+            Reload City Data
+          </button>
+        </div>
+        
+        {/* Show cities from data with buttons to select each */}
+        <div style={{ marginTop: '10px' }}>
+          <p><strong>Cities in Data:</strong></p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+            {[...new Set(allStations.map(s => s.city))]
+              .filter(Boolean)
+              .map(cityName => (
+                <button 
+                  key={cityName} 
+                  onClick={() => handleCityChange(cityName)}
+                  style={{
+                    padding: '5px 10px',
+                    backgroundColor: cityName.toLowerCase() === selectedCity.toLowerCase() ? '#007bff' : '#e9ecef',
+                    color: cityName.toLowerCase() === selectedCity.toLowerCase() ? 'white' : 'black',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {cityName}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+        
+        {allStations?.length > 0 && (
+          <div style={{ marginTop: '10px' }}>
+            <p><strong>First Station Sample:</strong></p>
+            <pre style={{ 
+              background: '#f0f0f0', 
+              padding: '5px', 
+              fontSize: '12px',
+              maxHeight: '100px',
+              overflow: 'auto' 
+            }}>
+              {JSON.stringify(allStations[0], null, 2)}
+            </pre>
+            <p>
+              <strong>Coordinate Status:</strong> {' '}
+              {allStations.filter(s => s.latitude === 0 || s.longitude === 0).length} stations with zero coordinates
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Event handlers
   const handleCityChange = async (city) => {
-    setSelectedCity(city);
-    setUserLocation(cityLocations[city]);
+    // Ensure we normalize city name to lowercase for lookup
+    const cityLower = city.toLowerCase();
+    setSelectedCity(city); // Keep original city case for display
+    
+    // Find the location coordinates - handle case differences
+    const cityCoords = cityLocations[cityLower] || 
+                      cityLocations[Object.keys(cityLocations).find(key => 
+                        key.toLowerCase() === cityLower || 
+                        cityLower.includes(key) ||
+                        key.includes(cityLower)
+                      )];
+
+    // Log warning and use default if city coordinates not found
+    if (!cityCoords) {
+      console.warn(`⚠️ City coordinates not found for: ${city}`);
+      console.log('Available city keys:', Object.keys(cityLocations));
+      // Use Pune as fallback
+      setUserLocation(cityLocations.pune);
+    } else {
+      setUserLocation(cityCoords);
+    }
+    
     setSelectedStation(null);
     
     try {
       setLoading(true);
+      console.log(`🔄 Changing city to: ${city}`);
+      
       // Get stations for the selected city
       const cityStations = await getStationsByCity(city);
-      setCurrentCityStations(cityStations);
+      console.log(`📊 Retrieved ${cityStations.length} stations for ${city}`);
       
-      // Update map view for the selected city
-      setViewState({
-        longitude: cityLocations[city].lng,
-        latitude: cityLocations[city].lat,
-        zoom: 12,
-        bearing: 0,
-        pitch: 0,
-        transitionDuration: 1000 // Smooth animation
-      });
+      // Add fallback logic if no stations found
+      if (cityStations.length === 0) {
+        console.log(`⚠️ No stations found for ${city}, showing all nearby stations instead`);
+        
+        // Get all stations and filter by proximity to city center
+        const allStations = await getAllStations();
+        
+        // Use the found city coordinates or default to Pune
+        const targetCoords = cityCoords || cityLocations.pune;
+        
+        const stationsWithDistance = allStations.map(station => {
+          const distance = calculateDistance(
+            targetCoords.lat,
+            targetCoords.lng,
+            station.latitude || station.lat || 0,
+            station.longitude || station.lng || 0
+          );
+          return { ...station, distance };
+        });
+        
+        // Get the closest 10 stations to this city's center
+        const nearbyStations = stationsWithDistance
+          .sort((a, b) => a.distance - b.distance)
+          .slice(0, 10);
+        
+        console.log(`📍 Showing ${nearbyStations.length} nearby stations instead`);
+        setCurrentCityStations(nearbyStations);
+      } else {
+        setCurrentCityStations(cityStations);
+      }
+      
+      // Only update map view if city coordinates were found
+      if (cityCoords) {
+        setViewState({
+          longitude: cityCoords.lng,
+          latitude: cityCoords.lat,
+          zoom: 12,
+          bearing: 0,
+          pitch: 0,
+          transitionDuration: 1000
+        });
+      }
     } catch (error) {
-      console.error(`Error loading stations for ${city}:`, error);
+      console.error(`❌ Error loading stations for ${city}:`, error);
     } finally {
       setLoading(false);
     }
@@ -366,10 +613,41 @@ const HomePage = () => {
     return distance;
   };
 
-  // Find nearest charging stations to user using our data service
+  // Calculate nearest stations directly without relying on findNearestStations
   const getNearestStations = () => {
-    if (!locationFound || !allStations?.length) return [];
-    return findNearestStations(userLocation, allStations, 3);
+    if (!locationFound || !allStations || !Array.isArray(allStations) || allStations.length === 0) {
+      console.log("Can't find nearest stations: missing location or stations data");
+      return [];
+    }
+
+    try {
+      // Calculate distances manually
+      const stationsWithDistance = allStations.map(station => {
+        if (!station || !station.latitude || !station.longitude) {
+          return null; // Skip invalid stations
+        }
+        
+        const distance = calculateDistance(
+          userLocation.lat, 
+          userLocation.lng, 
+          parseFloat(station.latitude), 
+          parseFloat(station.longitude)
+        );
+        
+        return {
+          ...station,
+          distance
+        };
+      }).filter(Boolean); // Remove nulls
+      
+      // Sort by distance and take first 3
+      return stationsWithDistance
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 3);
+    } catch (error) {
+      console.error('Error calculating nearest stations:', error);
+      return [];
+    }
   };
 
   return (
@@ -500,25 +778,33 @@ const HomePage = () => {
               <div className="nearest-stations">
                 <h3>Nearest Charging Stations to You</h3>
                 <div className="nearest-stations-cards">
-                  {getNearestStations()?.map(station => (
-                    <div 
-                      key={station.id} 
-                      className="nearest-station-card"
-                      onClick={() => handleLocateOnMap(station)}
-                    >
-                      <h4>{station.name}</h4>
-                      <p>{station.distance.toFixed(1)} km away</p>
-                      <button 
-                        className="btn-view" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewDetails(station);
-                        }}
+                  {/* Use safe approach to render stations */}
+                  {(() => {
+                    const nearestStations = getNearestStations();
+                    if (!nearestStations || !Array.isArray(nearestStations) || nearestStations.length === 0) {
+                      return <p>No stations found near your location.</p>;
+                    }
+                    
+                    return nearestStations.map(station => (
+                      <div 
+                        key={station.id || `station-${Math.random()}`} 
+                        className="nearest-station-card"
+                        onClick={() => handleLocateOnMap(station)}
                       >
-                        View Details
-                      </button>
-                    </div>
-                  ))}
+                        <h4>{station.name || 'Unknown Station'}</h4>
+                        <p>{typeof station.distance === 'number' ? station.distance.toFixed(1) : "Unknown"} km away</p>
+                        <button 
+                          className="btn-view" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDetails(station);
+                          }}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    ));
+                  })()}
                 </div>
               </div>
             )}
@@ -577,6 +863,9 @@ const HomePage = () => {
           </div>
         </div>
 
+        {/* Debug Section - will only show in development */}
+        {renderDebugInfo()}
+
         {/* Map Section */}
         <section id="stations" ref={stationsRef} className="map-section">
           <div className="container">
@@ -587,6 +876,7 @@ const HomePage = () => {
             <div 
               className="map-container" 
               id="map-container"
+              style={{ width: '100%', height: '500px', position: 'relative' }}
             >
               {!loading && (
                 <>
@@ -605,37 +895,42 @@ const HomePage = () => {
                     >
                       <NavigationControl position="top-right" />
                       
-                      {/* Add markers for charging stations with null check */}
-                      {currentCityStations?.map(station => (
-                        <Marker 
-                          key={station.id}
-                          longitude={station.longitude}
-                          latitude={station.latitude}
-                          anchor="bottom"
-                          onClick={(e) => {
-                            e.originalEvent.stopPropagation();
-                            handleMarkerClick(station);
-                          }}
-                        >
-                          <div className="map-marker" style={{ 
-                            cursor: 'pointer',
-                            color: selectedStation && selectedStation.id === station.id ? '#ff6b6b' : '#4a90e2'
-                          }}>
-                            <div style={{ 
-                              fontSize: '24px', 
-                              filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' 
+                      {/* Add markers for charging stations with better null checking */}
+                      {ensureArray(currentCityStations).map(station => {
+                        // Get valid coordinates for this station
+                        const coords = getValidCoordinates(station);
+                        
+                        return (
+                          <Marker 
+                            key={station.id || `marker-${Math.random()}`}
+                            longitude={coords.longitude}
+                            latitude={coords.latitude}
+                            anchor="bottom"
+                            onClick={(e) => {
+                              e.originalEvent.stopPropagation();
+                              handleMarkerClick(station);
+                            }}
+                          >
+                            <div className="map-marker" style={{ 
+                              cursor: 'pointer',
+                              color: selectedStation && selectedStation.id === station.id ? '#ff6b6b' : '#4a90e2'
                             }}>
-                              📍
+                              <div style={{ 
+                                fontSize: '24px', 
+                                filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' 
+                              }}>
+                                📍
+                              </div>
                             </div>
-                          </div>
-                        </Marker>
-                      ))}
+                          </Marker>
+                        );
+                      })}
                       
                       {/* Add popup for selected station */}
                       {selectedStation && showPopup && (
                         <Popup
-                          longitude={selectedStation.longitude}
-                          latitude={selectedStation.latitude}
+                          longitude={getValidCoordinates(selectedStation).longitude}
+                          latitude={getValidCoordinates(selectedStation).latitude}
                           anchor="bottom"
                           onClose={() => setShowPopup(false)}
                           closeOnClick={false}
@@ -643,16 +938,16 @@ const HomePage = () => {
                           style={{ maxWidth: '300px' }}
                         >
                           <div className="popup-content">
-                            <h3>{selectedStation.name}</h3>
+                            <h3>{selectedStation.name || 'EV Charging Station'}</h3>
                             <div className="popup-rating">
-                              <span>★</span> {selectedStation.rating}
+                              <span>★</span> {selectedStation.rating || '4.0'}
                             </div>
-                            <p className="popup-address">{selectedStation.address}</p>
+                            <p className="popup-address">{selectedStation.address || 'Location information not available'}</p>
                             <div className="popup-details">
-                              <p><strong>Type:</strong> {selectedStation.type}</p>
-                              <p><strong>Power:</strong> {selectedStation.power} kW</p>
-                              <p><strong>Price:</strong> ₹{selectedStation.pricePerKwh}/kWh</p>
-                              <p><strong>Hours:</strong> {selectedStation.hours}</p>
+                              <p><strong>Type:</strong> {selectedStation.type || 'Standard'}</p>
+                              <p><strong>Power:</strong> {selectedStation.power ? `${selectedStation.power} kW` : 'Variable'}</p>
+                              <p><strong>Price:</strong> {selectedStation.pricePerKwh ? `₹${selectedStation.pricePerKwh}/kWh` : 'Contact station'}</p>
+                              <p><strong>Hours:</strong> {selectedStation.hours || '24 hours'}</p>
                             </div>
                             <div className="popup-actions">
                               <button 
@@ -719,35 +1014,47 @@ const HomePage = () => {
                     <div className="station-details">
                       <div className="detail">
                         <span className="detail-label">Charger Type:</span>
-                        <span className="detail-value">{station.type}</span>
+                        <span className="detail-value">{station.type || 'Standard'}</span>
                       </div>
                       <div className="detail">
                         <span className="detail-label">Power Output:</span>
-                        <span className="detail-value">{station.power} kW</span>
+                        <span className="detail-value">{station.power ? `${station.power} kW` : 'Variable'}</span>
                       </div>
                       <div className="detail">
                         <span className="detail-label">Price:</span>
-                        <span className="detail-value">₹{station.pricePerKwh}/kWh</span>
+                        <span className="detail-value">
+                          {station.pricePerKwh ? `₹${station.pricePerKwh}/kWh` : 'Contact station'}
+                        </span>
                       </div>
                       <div className="detail">
                         <span className="detail-label">Hours:</span>
-                        <span className="detail-value">{station.hours}</span>
+                        <span className="detail-value">{station.hours || '24 hours'}</span>
                       </div>
                     </div>
                     <div className="connectors">
                       <span className="detail-label">Connectors:</span>
                       <div className="connector-tags">
-                        {station.connectorTypes?.map((connector, idx) => (
-                          <span key={idx} className="connector-tag">{connector}</span>
-                        )) || <span>Not available</span>}
+                        {station.plugType ? (
+                          <span className="connector-tag">{station.plugType}</span>
+                        ) : safeArray(station.connectorTypes).length > 0 ? (
+                          safeArray(station.connectorTypes).map((connector, idx) => (
+                            <span key={idx} className="connector-tag">{connector}</span>
+                          ))
+                        ) : (
+                          <span>Standard connector</span>
+                        )}
                       </div>
                     </div>
                     <div className="station-amenities">
                       <span className="detail-label">Amenities:</span>
                       <div className="amenity-tags">
-                        {station.amenities?.map((amenity, idx) => (
-                          <span key={idx} className="amenity-tag">{amenity}</span>
-                        )) || <span>Not available</span>}
+                        {safeArray(station.amenities).length > 0 ? (
+                          safeArray(station.amenities).map((amenity, idx) => (
+                            <span key={idx} className="amenity-tag">{amenity}</span>
+                          ))
+                        ) : (
+                          <span>Not available</span>
+                        )}
                       </div>
                     </div>
                     <div className="station-cta">
