@@ -67,6 +67,8 @@ const HomePage = () => {
   const [allStations, setAllStations] = useState([]);
   const [currentCityStations, setCurrentCityStations] = useState([]);
   const [nearestStations, setNearestStations] = useState([]); // State for nearest stations
+  const [searchQuery, setSearchQuery] = useState(''); // State for search input
+  const [isSearching, setIsSearching] = useState(false); // State to track search status
 
   // Common fallback image that's guaranteed to exist
   const commonFallbackImage = '/images/charging-stations/commonoimage.jpg';
@@ -650,6 +652,58 @@ const HomePage = () => {
     }
   }, [userLocation, allStations, locationFound, calculateDistance, getValidCoordinates]); // Added calculateDistance and getValidCoordinates to deps
 
+  const handleSearchInputChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault(); // Prevent default form submission if wrapped in a form
+    const query = searchQuery.trim().toLowerCase();
+    
+    if (!query) {
+      // If search is cleared, reset to selected city view
+      setIsSearching(false);
+      handleCityChange(selectedCity); // Reload current city stations
+      return;
+    }
+
+    setIsSearching(true);
+    setLoading(true); // Show loading indicators
+
+    console.log(`🔍 Searching for: "${query}"`);
+
+    // Simulate search by filtering allStations (replace with backend search in production)
+    const results = allStations.filter(station => 
+      (station.name && station.name.toLowerCase().includes(query)) ||
+      (station.address && station.address.toLowerCase().includes(query)) ||
+      (station.city && station.city.toLowerCase().includes(query))
+    );
+
+    console.log(`📊 Found ${results.length} results`);
+    setCurrentCityStations(results);
+
+    // Update map view to focus on the first result, if any
+    if (results.length > 0) {
+      const firstResultCoords = getValidCoordinates(results[0]);
+      if (firstResultCoords.latitude && firstResultCoords.longitude) {
+        setViewState({
+          longitude: firstResultCoords.longitude,
+          latitude: firstResultCoords.latitude,
+          zoom: 14, // Zoom closer for search results
+          bearing: 0,
+          pitch: 0,
+          transitionDuration: 1000 
+        });
+      }
+    } else {
+      // Optional: Handle no results (e.g., keep current view or show wider view)
+      console.log('No stations found for the search query.');
+      // Maybe show a notification to the user
+    }
+
+    setLoading(false); // Hide loading indicators
+  };
+
   return (
     <div className="home-page">
       <header className="home-header">
@@ -747,6 +801,21 @@ const HomePage = () => {
           <div className="hero-content">
             <h1>Find EV Charging Stations Near You</h1>
             <p>Discover convenient and reliable charging stations for your electric vehicle across Pune and beyond.</p>
+            
+            {/* Search Bar Added */}
+            <form onSubmit={handleSearchSubmit} className="search-bar-container">
+              <input 
+                type="text" 
+                className="search-input"
+                placeholder="Search by City, Station Name, Address..."
+                value={searchQuery}
+                onChange={handleSearchInputChange}
+              />
+              <button type="submit" className="search-button">
+                Search
+              </button>
+            </form>
+
             <div className="hero-cta">
               <button 
                 onClick={handleJoinNow} 
@@ -811,6 +880,13 @@ const HomePage = () => {
           <h2>EV Charging Stations in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</h2>
           <p className="section-intro">Below is a map of available charging stations. Click on any marker to see details.</p>
           <div className="map-container" id="map-container">
+            {/* Map Loading Placeholder */}
+            {loading && (
+              <div className="map-loading-placeholder">
+                <div className="spinner"></div>
+                <p>Loading Map & Stations...</p>
+              </div>
+            )}
             {!loading && (
               <Map
                 mapboxAccessToken={MAPBOX_TOKEN}
@@ -908,81 +984,99 @@ const HomePage = () => {
       {/* Stations List Section */}
       <section className="stations-list-section">
         <div className="container">
-          <h2>Charging Stations in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</h2>
-          <div className="stations-grid">
-            {currentCityStations?.map(station => (
-              <div key={station.id} id={`station-${station.id}`} className="station-card">
-                <div className="station-image">
-                  {/* Image with enhanced fallback strategy */}
-                  <img 
-                    src={
-                      imageFallbackLevel[station.id] === 0 ? station.image : 
-                      imageFallbackLevel[station.id] === 1 ? station.fallbackImage : 
-                      commonFallbackImage
-                    }
-                    alt={station.name}
-                    onError={() => handleImageError(station.id)}
-                    onLoad={() => handleImageLoad(station.id)}
-                    loading="lazy"
-                  />
-                  <div className="station-rating">
-                    <span className="star-icon">★</span>
-                    {station.rating}
+          {/* Title changes based on search state */}
+          <h2>{isSearching ? `Search Results for "${searchQuery}"` : `Charging Stations in ${selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}`}</h2>
+          
+          {/* Stations Loading Placeholder */}
+          {loading && (
+            <div className="stations-loading-placeholder">
+              <div className="spinner"></div>
+              <p>Loading Stations...</p>
+            </div>
+          )}
+
+          {!loading && currentCityStations?.length === 0 && (
+             <p className="no-stations-message">
+                {isSearching ? "No stations found matching your search." : `No stations currently listed for ${selectedCity}.`}
+            </p>
+          )}
+
+          {!loading && currentCityStations?.length > 0 && (
+            <div className="stations-grid">
+              {currentCityStations.map(station => (
+                <div key={station.id || `station-${Math.random()}`} id={`station-${station.id}`} className="station-card">
+                  <div className="station-image">
+                    {/* Image with enhanced fallback strategy */}
+                    <img 
+                      src={
+                        imageFallbackLevel[station.id] === 0 ? station.image : 
+                        imageFallbackLevel[station.id] === 1 ? station.fallbackImage : 
+                        commonFallbackImage
+                      }
+                      alt={station.name}
+                      onError={() => handleImageError(station.id)}
+                      onLoad={() => handleImageLoad(station.id)}
+                      loading="lazy"
+                    />
+                    <div className="station-rating">
+                      <span className="star-icon">★</span>
+                      {station.rating}
+                    </div>
+                  </div>
+                  <div className="station-content">
+                    <h3>{station.name}</h3>
+                    <p className="address">{station.address}</p>
+                    <div className="station-details">
+                      <div className="detail">
+                        <span className="detail-label">Type:</span>
+                        <span className="detail-value">{station.type || 'Standard'}</span>
+                      </div>
+                      <div className="detail">
+                        <span className="detail-label">Power:</span>
+                        <span className="detail-value">{station.power ? `${station.power} kW` : 'Variable'}</span>
+                      </div>
+                      <div className="detail">
+                        <span className="detail-label">Price:</span>
+                        <span className="detail-value"> 
+                          {station.pricePerKwh ? `₹${station.pricePerKwh}/kWh` : 'Contact station'}
+                        </span>
+                      </div>
+                      <div className="detail">
+                        <span className="detail-label">Hours:</span>
+                        <span className="detail-value">{station.hours || '24 hours'}</span>
+                      </div>
+                    </div>
+                    <div className="station-amenities">
+                      <span className="detail-label">Amenities:</span>
+                      <div className="amenity-tags">
+                        {safeArray(station.amenities).length > 0 ? (
+                          safeArray(station.amenities).map((amenity, idx) => (
+                            <span key={idx} className="amenity-tag">{amenity}</span>
+                          ))
+                        ) : (
+                          <span>Not available</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="station-cta">
+                      <button 
+                        onClick={() => handleBookNow(station.id)} 
+                        className="btn-book"
+                      >
+                        Book Now
+                      </button>
+                      <button 
+                        onClick={() => handleLocateOnMap(station)} 
+                        className="btn-locate"
+                      >
+                        Locate on Map
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="station-content">
-                  <h3>{station.name}</h3>
-                  <p className="address">{station.address}</p>
-                  <div className="station-details">
-                    <div className="detail">
-                      <span className="detail-label">Type:</span>
-                      <span className="detail-value">{station.type || 'Standard'}</span>
-                    </div>
-                    <div className="detail">
-                      <span className="detail-label">Power:</span>
-                      <span className="detail-value">{station.power ? `${station.power} kW` : 'Variable'}</span>
-                    </div>
-                    <div className="detail">
-                      <span className="detail-label">Price:</span>
-                      <span className="detail-value"> 
-                        {station.pricePerKwh ? `₹${station.pricePerKwh}/kWh` : 'Contact station'}
-                      </span>
-                    </div>
-                    <div className="detail">
-                      <span className="detail-label">Hours:</span>
-                      <span className="detail-value">{station.hours || '24 hours'}</span>
-                    </div>
-                  </div>
-                  <div className="station-amenities">
-                    <span className="detail-label">Amenities:</span>
-                    <div className="amenity-tags">
-                      {safeArray(station.amenities).length > 0 ? (
-                        safeArray(station.amenities).map((amenity, idx) => (
-                          <span key={idx} className="amenity-tag">{amenity}</span>
-                        ))
-                      ) : (
-                        <span>Not available</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="station-cta">
-                    <button 
-                      onClick={() => handleBookNow(station.id)} 
-                      className="btn-book"
-                    >
-                      Book Now
-                    </button>
-                    <button 
-                      onClick={() => handleLocateOnMap(station)} 
-                      className="btn-locate"
-                    >
-                      Locate on Map
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
