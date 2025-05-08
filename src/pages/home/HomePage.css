@@ -1,3 +1,13 @@
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 .home-page {
   font-family: 'Poppins', sans-serif;
   color: #333;
@@ -12,12 +22,20 @@
   width: 100%;
   top: 0;
   z-index: 1000;
+  transition: padding 0.3s ease-in-out;
 }
 
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
 }
 
 .container {
@@ -81,6 +99,50 @@
 
 .btn-signup:hover {
   background-color: #094222;
+}
+
+/* Hamburger Menu Icon */
+.hamburger-menu {
+  display: none; /* Hidden on desktop by default */
+  flex-direction: column;
+  justify-content: space-around;
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1001; /* Ensure it's above other elements like nav links when they open */
+  /* margin-left: auto; /* Position will be handled in media query if needed */
+}
+
+.hamburger-menu:focus {
+  outline: none;
+}
+
+.hamburger-menu div {
+  width: 2rem;
+  height: 0.25rem;
+  background: #0C5F2C; /* Primary color, ensure this matches your theme */
+  border-radius: 10px;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  transform-origin: 1px; /* Crucial for the 'X' animation */
+}
+
+/* Animation for hamburger to 'X' when menu is open */
+/* This requires JS to add an 'open' class to the .hamburger-menu element */
+.hamburger-menu.open div:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px); /* Adjust translate values as needed */
+}
+
+.hamburger-menu.open div:nth-child(2) {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.hamburger-menu.open div:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px); /* Adjust translate values as needed */
 }
 
 /* Hero Banner */
@@ -705,28 +767,164 @@
     display: none;
   }
   
+  .logo-text {
+    font-size: 1.1rem; /* Further reduced logo text size */
+    margin-right: auto;
+  }
+  
+  .hero-banner {
+    padding: 20px 0; /* Further reduced vertical padding */
+    margin-top: 40px;
+  }
   .hero-content h1 {
-    font-size: 36px;
+    font-size: 1.5rem; /* Drastically reduced font size */
+    margin-bottom: 10px; /* Reduced margin */
   }
-  
   .hero-content p {
-    font-size: 16px;
+    font-size: 0.85rem; /* Reduced font size */
+    margin-bottom: 15px; /* Reduced margin */
   }
-  
-  .step {
-    flex-basis: 100%;
+  .hero-cta {
+    flex-direction: column;
+    gap: 10px; /* Reduced gap between buttons */
+    align-items: center;
   }
-  
+  .hero-cta .btn-primary, .hero-cta .btn-secondary {
+    width: 85%;
+    max-width: 280px;
+    padding: 10px 15px; /* Reduced button padding */
+    font-size: 0.9rem;  /* Reduced button font size */
+    margin: 0;
+  }
+  .home-header {
+    padding: 10px 0; /* Reduced vertical padding for mobile */
+  }
+  .hero-banner {
+    padding: 25px 0; /* Further reduced vertical padding */
+    margin-top: 40px; /* Should be correct from previous header adjustment */
+  }
+  .hero-content h1 {
+    font-size: 1.8rem; /* Adjusted font size */
+    margin-bottom: 12px; /* Reduced margin */
+  }
+  .hero-content p {
+    font-size: 0.9rem; /* Adjusted font size */
+    margin-bottom: 20px; /* Reduced margin */
+  }
+
+  .about-section,
+  .map-section,
+  .stations-list-section, /* Added */
+  .how-it-works,           /* Added with correct class */
+  .explore-more,          /* Added */
+  .how-it-works-section, /* This was in the original file, keeping it for now but .how-it-works is likely primary for HomePage.js */
+  .testimonials-section, /* Keeping from original file */
+  .faq-section {          /* Keeping from original file */
+    padding: 40px 0; /* Consistent reduced padding */
+  }
+
+  .features-grid, .steps {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .feature, .step {
+    padding: 25px;
+  }
+
+  .cities-grid {
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .city-option { font-size: 1.2rem; margin-bottom: 3px;}
+  .city-name { font-size: 0.75rem; }
+
+  /* Added style for city titles on mobile */
+  .city-title {
+    font-size: 1.6rem;
+    margin-top: 30px;
+    margin-bottom: 15px;
+  }
+
+  .map-container {
+    height: 300px; /* Reduced map height for mobile */
+  }
+
   .stations-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
-  
-  .map-container {
-    height: 400px;
+
+  .station-card {
+    flex-direction: column;
+    padding: 15px;
   }
-  
-  .cities-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .station-image-wrapper {
+    height: 160px; /* Adjust image height */
+    margin-bottom: 10px;
+  }
+  .station-content {
+    padding: 0;
+  }
+  .station-name {
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+  }
+  .station-details p, .station-pricing p, .station-availability p {
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+  }
+  .station-meta span {
+    font-size: 0.75rem;
+  }
+
+  .station-cta {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
+  }
+  .station-cta button {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .footer {
+    padding: 30px 0 15px 0;
+  }
+  .footer-columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .footer-column {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .footer-column:last-child {
+    margin-bottom: 0;
+  }
+  .footer-column h4 {
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+  }
+  .footer-links li, .footer-contact p {
+    margin-bottom: 5px;
+  }
+  .footer-links a, .footer-contact p, .footer-contact a {
+    font-size: 0.85rem;
+  }
+  .social-links {
+    justify-content: center;
+    gap: 12px;
+  }
+  .social-links a svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .copyright {
+    font-size: 0.75rem;
+    margin-top: 20px;
   }
 }
 
@@ -1508,95 +1706,219 @@ section {
 
 /* Small screens (Mobile) */
 @media (max-width: 768px) {
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.6rem; }
-  h3 { font-size: 1.2rem; }
+  .container {
+    padding: 0 15px; /* Adjust container padding for smaller screens */
+  }
+
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.1rem; }
 
   .header-container {
-    position: relative; /* Needed for potential mobile menu */
+    position: relative; /* Needed for absolute positioning of nav-links */
+    padding: 0 10px; /* Reduce padding in header */
+    align-items: center; /* Ensure vertical alignment */
+  }
+
+  .logo-text {
+    font-size: 1.1rem; /* Further reduced logo text size */
+    margin-right: auto;
+  }
+
+  .hamburger-menu {
+    display: flex; /* Show hamburger icon */
+    order: 3; /* Place hamburger after nav links (which are hidden) and auth buttons if auth buttons are kept visible */
+    margin-left: 10px; /* Space from auth buttons if they are visible */
   }
 
   .nav-links {
-    /* Basic mobile hiding - JS needed for toggle */
-    display: none; 
-    /* Example for when menu is open (controlled by JS) */
-    /* position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background-color: var(--white);
+    display: none; /* Hidden by default, JS toggles to 'flex' with 'open' class */
     flex-direction: column;
-    align-items: stretch;
-    box-shadow: var(--box-shadow);
-    padding: 1rem 0; */
+    position: absolute;
+    top: calc(100% + 5px); /* Position below the header, adjust if header height varies */
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: #ffffff; /* Solid background */
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
+    z-index: 1000; /* Ensure it's above other content */
+    border-top: 1px solid #eee;
+  }
+
+  .nav-links.open {
+    display: flex; /* Show menu when 'open' class is added by JS */
   }
 
   .nav-item {
-    margin: 0.5rem 1rem;
-    text-align: center;
+    margin: 0;
+    width: 100%;
+  }
+  .nav-item a, .nav-item button {
+    display: block;
+    padding: 0.8rem 1.5rem;
+    text-align: left;
+    width: 100%;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .nav-item:last-child a, .nav-item:last-child button {
+    border-bottom: none;
+  }
+  .nav-item a:hover, .nav-item button:hover {
+    background-color: #f9f9f9;
   }
 
   .auth-buttons {
-    margin-left: 0;
-    /* Adjust layout if nav-links are hidden/stacked */
+    /* Option: Keep auth buttons in header, or move them into the nav-links.open menu */
+    /* For this example, keeping them in header, ensure they don't overlap */
+    display: flex; /* Ensure they are displayed */
+    margin-left: 0; /* Reset margin if hamburger is on the far right */
+    order: 2; /* Place before hamburger if logo is order 1 */
+    gap: 8px;
   }
-  /* Add a hamburger icon button style here (requires HTML/JS change) */
-  /* .hamburger-menu { display: block; ... } */
+  .btn-login, .btn-signup {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
 
-
-  .hero-banner { padding: 4rem 0; }
-  .hero-content h1 { font-size: 2rem; }
-  .hero-content p { font-size: 1rem; }
+  .hero-banner {
+    padding: 20px 0; /* Further reduced vertical padding */
+    margin-top: 40px;
+  }
+  .hero-content h1 {
+    font-size: 1.5rem; /* Drastically reduced font size */
+    margin-bottom: 10px; /* Reduced margin */
+  }
+  .hero-content p {
+    font-size: 0.85rem; /* Reduced font size */
+    margin-bottom: 15px; /* Reduced margin */
+  }
   .hero-cta {
-    display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 10px; /* Reduced gap between buttons */
     align-items: center;
   }
-  .hero-cta button, .hero-cta a {
-    width: 80%;
-    max-width: 300px;
+  .hero-cta .btn-primary, .hero-cta .btn-secondary {
+    width: 85%;
+    max-width: 280px;
+    padding: 10px 15px; /* Reduced button padding */
+    font-size: 0.9rem;  /* Reduced button font size */
     margin: 0;
   }
 
-  .features-grid, .steps, .footer-columns {
-    grid-template-columns: 1fr; /* Stack columns */
+  /* Updated rule for consistent section padding on mobile */
+  .about-section,
+  .map-section,
+  .stations-list-section,
+  .how-it-works,
+  .explore-more,
+  .how-it-works-section, 
+  .testimonials-section,
+  .faq-section {
+    padding: 40px 0; /* Consistent reduced padding */
+  }
+
+  .features-grid, .steps {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .feature, .step {
+    padding: 25px;
   }
 
   .cities-grid {
-    gap: 0.5rem;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  .city-option {
-    padding: 0.8rem 1rem;
-    min-width: 80px;
+  .city-option { font-size: 1.2rem; margin-bottom: 3px;}
+  .city-name { font-size: 0.75rem; }
+
+  /* Added style for city titles on mobile */
+  .city-title {
+    font-size: 1.6rem;
+    margin-top: 30px;
+    margin-bottom: 15px;
   }
-  .city-icon { font-size: 1.5rem; }
-  .city-name { font-size: 0.9rem; }
 
   .map-container {
-    height: 400px; /* Adjust map height */
+    height: 300px; /* Reduced map height for mobile */
   }
 
   .stations-grid {
-    grid-template-columns: 1fr; /* Stack cards */
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .station-card {
-    flex-direction: column; /* Ensure column layout */
+    flex-direction: column;
+    padding: 15px;
   }
-
+  .station-image-wrapper {
+    height: 160px; /* Adjust image height */
+    margin-bottom: 10px;
+  }
   .station-content {
-    padding: 1rem;
+    padding: 0;
+  }
+  .station-name {
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+  }
+  .station-details p, .station-pricing p, .station-availability p {
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+  }
+  .station-meta span {
+    font-size: 0.75rem;
   }
 
   .station-cta {
-    flex-direction: column; /* Stack buttons */
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
   }
   .station-cta button {
     width: 100%;
+    padding: 10px;
+    font-size: 0.9rem;
   }
 
-  .footer { padding: 2rem 0 1rem 0; }
-  .footer-column { text-align: center; }
-  .social-links { justify-content: center; }
+  .footer {
+    padding: 30px 0 15px 0;
+  }
+  .footer-columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .footer-column {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .footer-column:last-child {
+    margin-bottom: 0;
+  }
+  .footer-column h4 {
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+  }
+  .footer-links li, .footer-contact p {
+    margin-bottom: 5px;
+  }
+  .footer-links a, .footer-contact p, .footer-contact a {
+    font-size: 0.85rem;
+  }
+  .social-links {
+    justify-content: center;
+    gap: 12px;
+  }
+  .social-links a svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .copyright {
+    font-size: 0.75rem;
+    margin-top: 20px;
+  }
 }

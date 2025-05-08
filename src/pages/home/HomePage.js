@@ -33,6 +33,11 @@ const HomePage = () => {
   // First initialize all hooks that don't depend on others
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
   
   // Make completely sure refs are created first
   const profileRef = useRef(null);
@@ -48,6 +53,7 @@ const HomePage = () => {
   const [imageFallbackLevel, setImageFallbackLevel] = useState({});
   const [selectedCity, setSelectedCity] = useState('pune');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // State for mobile menu
   const [locationFound, setLocationFound] = useState(false);
   const [viewState, setViewState] = useState({
     longitude: indianCities.pune.lng,
@@ -613,43 +619,6 @@ const HomePage = () => {
     return distance;
   };
 
-  // Calculate nearest stations directly without relying on findNearestStations
-  const getNearestStations = () => {
-    if (!locationFound || !allStations || !Array.isArray(allStations) || allStations.length === 0) {
-      console.log("Can't find nearest stations: missing location or stations data");
-      return [];
-    }
-
-    try {
-      // Calculate distances manually
-      const stationsWithDistance = allStations.map(station => {
-        if (!station || !station.latitude || !station.longitude) {
-          return null; // Skip invalid stations
-        }
-        
-        const distance = calculateDistance(
-          userLocation.lat, 
-          userLocation.lng, 
-          parseFloat(station.latitude), 
-          parseFloat(station.longitude)
-        );
-        
-        return {
-          ...station,
-          distance
-        };
-      }).filter(Boolean); // Remove nulls
-      
-      // Sort by distance and take first 3
-      return stationsWithDistance
-        .sort((a, b) => a.distance - b.distance)
-        .slice(0, 3);
-    } catch (error) {
-      console.error('Error calculating nearest stations:', error);
-      return [];
-    }
-  };
-
   return (
     <div className="home-page">
       <header className="home-header">
@@ -661,34 +630,27 @@ const HomePage = () => {
           >
             <span className="logo-text">EV Charging Network</span>
           </div>
-          <div className="nav-links">
-            <a 
-              href="#about" 
-              className="nav-item"
-              onClick={(e) => { 
-                e.preventDefault(); 
-                scrollToSection(aboutRef); 
-              }}
-            >
+          {/* Hamburger Menu Icon - visible on mobile */}
+          <button className={`hamburger-menu ${mobileMenuOpen ? 'open' : ''}`} onClick={toggleMobileMenu} aria-label="Toggle navigation menu" aria-expanded={mobileMenuOpen}>
+            <div></div>
+            <div></div>
+            <div></div>
+          </button>
+          <nav className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
+            <a href="#about" className="nav-item" onClick={() => { if(mobileMenuOpen) toggleMobileMenu(); scrollToSection(aboutRef); }}>
               About
             </a>
             <a 
               href="#stations" 
               className="nav-item"
-              onClick={(e) => { 
-                e.preventDefault(); 
-                scrollToSection(stationsRef); 
-              }}
+              onClick={(e) => { e.preventDefault(); if(mobileMenuOpen) toggleMobileMenu(); scrollToSection(stationsRef); }}
             >
               Stations
             </a>
             <a 
               href="#how-it-works" 
               className="nav-item"
-              onClick={(e) => { 
-                e.preventDefault(); 
-                scrollToSection(howItWorksRef); 
-              }}
+              onClick={(e) => { e.preventDefault(); if(mobileMenuOpen) toggleMobileMenu(); scrollToSection(howItWorksRef); }}
             >
               How it Works
             </a>
@@ -696,10 +658,7 @@ const HomePage = () => {
             {/* Conditional rendering based on authentication status */}
             {currentUser ? (
               <div className="profile-menu-container" ref={profileRef}>
-                <div 
-                  className="profile-button"
-                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                >
+                <div className="profile-button" onClick={() => setProfileMenuOpen(!profileMenuOpen)}>
                   <div className="profile-avatar">
                     {currentUser.photoURL ? (
                       <img 
@@ -716,7 +675,6 @@ const HomePage = () => {
                     {currentUser.displayName || currentUser.email || "User"}
                   </span>
                 </div>
-                
                 {profileMenuOpen && (
                   <div className="profile-dropdown">
                     <div className="profile-dropdown-header">
@@ -735,7 +693,7 @@ const HomePage = () => {
                       <button onClick={() => handleProfileNavigation('/dashboard')}>
                         Dashboard
                       </button>
-                      <button onClick={handleLogout} className="logout-button">
+                      <button onClick={() => { if(mobileMenuOpen) toggleMobileMenu(); handleLogout(); }} className="logout-button">
                         Logout
                       </button>
                     </div>
@@ -744,11 +702,11 @@ const HomePage = () => {
               </div>
             ) : (
               <div className="auth-buttons">
-                <Link to="/login" className="btn-login">Login</Link>
-                <Link to="/signup" className="btn-signup">Sign Up</Link>
+                <Link to="/login" className="btn-login" onClick={() => { if(mobileMenuOpen) toggleMobileMenu(); }}>Login</Link>
+                <Link to="/signup" className="btn-signup" onClick={() => { if(mobileMenuOpen) toggleMobileMenu(); }}>Sign Up</Link>
               </div>
             )}
-          </div>
+          </nav>
         </div>
       </header>
 
@@ -772,42 +730,6 @@ const HomePage = () => {
                 View Stations
               </button>
             </div>
-            
-            {/* Show nearest stations if user's location found */}
-            {locationFound && (
-              <div className="nearest-stations">
-                <h3>Nearest Charging Stations to You</h3>
-                <div className="nearest-stations-cards">
-                  {/* Use safe approach to render stations */}
-                  {(() => {
-                    const nearestStations = getNearestStations();
-                    if (!nearestStations || !Array.isArray(nearestStations) || nearestStations.length === 0) {
-                      return <p>No stations found near your location.</p>;
-                    }
-                    
-                    return nearestStations.map(station => (
-                      <div 
-                        key={station.id || `station-${Math.random()}`} 
-                        className="nearest-station-card"
-                        onClick={() => handleLocateOnMap(station)}
-                      >
-                        <h4>{station.name || 'Unknown Station'}</h4>
-                        <p>{typeof station.distance === 'number' ? station.distance.toFixed(1) : "Unknown"} km away</p>
-                        <button 
-                          className="btn-view" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewDetails(station);
-                          }}
-                        >
-                          View Details
-                        </button>
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </section>
@@ -836,347 +758,288 @@ const HomePage = () => {
         </div>
       </section>
 
-      <div className="container main-content">
-        {/* City Selector Section */}
-        <div className="city-selector">
-          <h3>Select a City</h3>
-          <div className="cities-grid">
-            {Object.entries(cityLocations).map(([city, coords]) => (
-              <div 
-                key={city}
-                className={`city-option ${selectedCity === city ? 'active' : ''}`}
-                onClick={() => handleCityChange(city)}
+      {/* Map Section */}
+      <section id="stations" ref={stationsRef} className="map-section">
+        <div className="container">
+          <h2>EV Charging Stations in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</h2>
+          <p className="section-intro">Below is a map of available charging stations. Click on any marker to see details.</p>
+          <div className="map-container" id="map-container">
+            {!loading && (
+              <Map
+                mapboxAccessToken={MAPBOX_TOKEN}
+                {...viewState}
+                onMove={evt => setViewState(evt.viewState)}
+                mapStyle="mapbox://styles/mapbox/streets-v11"
+                style={{ width: '100%', height: '100%' }}
               >
-                <div className="city-icon">
-                  {city === 'pune' && '🏙️'}
-                  {city === 'delhi' && '🏛️'}
-                  {city === 'mumbai' && '🌊'}
-                  {city === 'bangalore' && '💻'}
-                  {city === 'chennai' && '🌴'}
-                  {city === 'hyderabad' && '🏯'}
+                <NavigationControl position="top-right" />
+                
+                {/* Add markers for charging stations with better null checking */}
+                {ensureArray(currentCityStations).map(station => {
+                  // Get valid coordinates for this station
+                  const coords = getValidCoordinates(station);
+                  
+                  return (
+                    <Marker
+                      key={station.id || `marker-${Math.random()}`}
+                      longitude={coords.longitude}
+                      latitude={coords.latitude}
+                      anchor="bottom"
+                    >
+                      <div 
+                        className="map-marker" 
+                        style={{ 
+                          cursor: 'pointer',
+                          color: selectedStation && selectedStation.id === station.id ? '#ff6b6b' : '#4a90e2'
+                        }}
+                        onClick={(e) => {
+                          // Safely handle the event
+                          if (e) {
+                            // Check if originalEvent exists (mapbox event structure)
+                            if (e.originalEvent) {
+                              e.originalEvent.stopPropagation();
+                            } else {
+                              // Regular React event
+                              e.stopPropagation();
+                            }
+                          }
+                          handleMarkerClick(station);
+                        }}
+                      >
+                        📍
+                      </div>
+                    </Marker>
+                  );
+                })}
+                
+                {/* Add popup for selected station */}
+                {selectedStation && showPopup && (
+                  <Popup
+                    longitude={getValidCoordinates(selectedStation).longitude}
+                    latitude={getValidCoordinates(selectedStation).latitude}
+                    anchor="bottom"
+                    onClose={() => setShowPopup(false)}
+                    closeOnClick={false}
+                    className="station-popup"
+                    style={{ maxWidth: '300px' }}
+                  >
+                    <div className="popup-content">
+                      <h3>{selectedStation.name || 'EV Charging Station'}</h3>
+                      <div className="popup-rating">
+                        <span>★</span> {selectedStation.rating || '4.0'}
+                      </div>
+                      <p className="popup-address">{selectedStation.address || 'Location information not available'}</p>
+                      <div className="popup-details">
+                        <p><strong>Type:</strong> {selectedStation.type || 'Standard'}</p>
+                        <p><strong>Power:</strong> {selectedStation.power ? `${selectedStation.power} kW` : 'Variable'}</p>
+                        <p><strong>Price:</strong> {selectedStation.pricePerKwh ? `₹${selectedStation.pricePerKwh}/kWh` : 'Contact station'}</p>
+                        <p><strong>Hours:</strong> {selectedStation.hours || '24 hours'}</p>
+                      </div>
+                      <div className="popup-actions">
+                        <button 
+                          onClick={() => handleBookNow(selectedStation.id)} 
+                          className="popup-btn-book"
+                        >
+                          Book Now
+                        </button>
+                        <button 
+                          onClick={() => {
+                            handleViewDetails(selectedStation);
+                            setShowPopup(false);
+                          }} 
+                          className="popup-btn-details"
+                        >
+                          More Details
+                        </button>
+                      </div>
+                    </div>
+                  </Popup>
+                )}
+              </Map>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Stations List Section */}
+      <section className="stations-list-section">
+        <div className="container">
+          <h2>Charging Stations in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</h2>
+          <div className="stations-grid">
+            {currentCityStations?.map(station => (
+              <div key={station.id} id={`station-${station.id}`} className="station-card">
+                <div className="station-image">
+                  {/* Image with enhanced fallback strategy */}
+                  <img 
+                    src={
+                      imageFallbackLevel[station.id] === 0 ? station.image : 
+                      imageFallbackLevel[station.id] === 1 ? station.fallbackImage : 
+                      commonFallbackImage
+                    }
+                    alt={station.name}
+                    onError={() => handleImageError(station.id)}
+                    onLoad={() => handleImageLoad(station.id)}
+                    loading="lazy"
+                  />
+                  <div className="station-rating">
+                    <span className="star-icon">★</span>
+                    {station.rating}
+                  </div>
                 </div>
-                <div className="city-name">
-                  {city.charAt(0).toUpperCase() + city.slice(1)}
+                <div className="station-content">
+                  <h3>{station.name}</h3>
+                  <p className="address">{station.address}</p>
+                  <div className="station-details">
+                    <div className="detail">
+                      <span className="detail-label">Type:</span>
+                      <span className="detail-value">{station.type || 'Standard'}</span>
+                    </div>
+                    <div className="detail">
+                      <span className="detail-label">Power:</span>
+                      <span className="detail-value">{station.power ? `${station.power} kW` : 'Variable'}</span>
+                    </div>
+                    <div className="detail">
+                      <span className="detail-label">Price:</span>
+                      <span className="detail-value"> 
+                        {station.pricePerKwh ? `₹${station.pricePerKwh}/kWh` : 'Contact station'}
+                      </span>
+                    </div>
+                    <div className="detail">
+                      <span className="detail-label">Hours:</span>
+                      <span className="detail-value">{station.hours || '24 hours'}</span>
+                    </div>
+                  </div>
+                  <div className="station-amenities">
+                    <span className="detail-label">Amenities:</span>
+                    <div className="amenity-tags">
+                      {safeArray(station.amenities).length > 0 ? (
+                        safeArray(station.amenities).map((amenity, idx) => (
+                          <span key={idx} className="amenity-tag">{amenity}</span>
+                        ))
+                      ) : (
+                        <span>Not available</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="station-cta">
+                    <button 
+                      onClick={() => handleBookNow(station.id)} 
+                      className="btn-book"
+                    >
+                      Book Now
+                    </button>
+                    <button 
+                      onClick={() => handleLocateOnMap(station)} 
+                      className="btn-locate"
+                    >
+                      Locate on Map
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Debug Section - will only show in development */}
-        {renderDebugInfo()}
-
-        {/* Map Section */}
-        <section id="stations" ref={stationsRef} className="map-section">
-          <div className="container">
-            <h2>EV Charging Stations in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</h2>
-            <p className="section-intro">Below is a map of available charging stations. Click on any marker to see details.</p>
-            
-            {/* Map container with explicit styling */}
-            <div 
-              className="map-container" 
-              id="map-container"
-              style={{ width: '100%', height: '500px', position: 'relative' }}
+      {/* How It Works Section */}
+      <section id="how-it-works" ref={howItWorksRef} className="how-it-works">
+        <div className="container">
+          <h2>How It Works</h2>
+          <div className="steps">
+            <div className="step">
+              <div className="step-number">1</div>
+              <h3>Sign Up</h3>
+              <p>Create a free account in seconds and set up your EV vehicle details.</p>
+            </div>
+            <div className="step">
+              <div className="step-number">2</div>
+              <h3>Find Stations</h3>
+              <p>Discover charging stations near you with real-time availability.</p>
+            </div>
+            <div className="step">
+              <div className="step-number">3</div>
+              <h3>Book & Charge</h3>
+              <p>Reserve your slot and charge your vehicle hassle-free.</p>
+            </div>
+            <div className="step">
+              <div className="step-number">4</div>
+              <h3>Pay Seamlessly</h3>
+              <p>Pay securely through the app using multiple payment options.</p>
+            </div>
+          </div>
+          <div className="cta-container">
+            <button 
+              onClick={handleGetStarted} 
+              className="btn-large"
             >
-              {!loading && (
-                <>
-                  {!MAPBOX_TOKEN && (
-                    <h3 style={{textAlign: 'center', marginTop: '20px'}}>
-                      Mapbox token not found. Please add your token to the .env file.
-                    </h3>
-                  )}
-                  {MAPBOX_TOKEN && !loading && (
-                    <Map
-                      mapboxAccessToken={MAPBOX_TOKEN}
-                      {...viewState}
-                      onMove={evt => setViewState(evt.viewState)}
-                      style={{ width: '100%', height: '100%' }}
-                      mapStyle="mapbox://styles/mapbox/streets-v11"
-                    >
-                      <NavigationControl position="top-right" />
-                      
-                      {/* Add markers for charging stations with better null checking */}
-                      {ensureArray(currentCityStations).map(station => {
-                        // Get valid coordinates for this station
-                        const coords = getValidCoordinates(station);
-                        
-                        return (
-                          <Marker 
-                            key={station.id || `marker-${Math.random()}`}
-                            longitude={coords.longitude}
-                            latitude={coords.latitude}
-                            anchor="bottom"
-                            onClick={(e) => {
-                              e.originalEvent.stopPropagation();
-                              handleMarkerClick(station);
-                            }}
-                          >
-                            <div className="map-marker" style={{ 
-                              cursor: 'pointer',
-                              color: selectedStation && selectedStation.id === station.id ? '#ff6b6b' : '#4a90e2'
-                            }}>
-                              <div style={{ 
-                                fontSize: '24px', 
-                                filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' 
-                              }}>
-                                📍
-                              </div>
-                            </div>
-                          </Marker>
-                        );
-                      })}
-                      
-                      {/* Add popup for selected station */}
-                      {selectedStation && showPopup && (
-                        <Popup
-                          longitude={getValidCoordinates(selectedStation).longitude}
-                          latitude={getValidCoordinates(selectedStation).latitude}
-                          anchor="bottom"
-                          onClose={() => setShowPopup(false)}
-                          closeOnClick={false}
-                          className="station-popup"
-                          style={{ maxWidth: '300px' }}
-                        >
-                          <div className="popup-content">
-                            <h3>{selectedStation.name || 'EV Charging Station'}</h3>
-                            <div className="popup-rating">
-                              <span>★</span> {selectedStation.rating || '4.0'}
-                            </div>
-                            <p className="popup-address">{selectedStation.address || 'Location information not available'}</p>
-                            <div className="popup-details">
-                              <p><strong>Type:</strong> {selectedStation.type || 'Standard'}</p>
-                              <p><strong>Power:</strong> {selectedStation.power ? `${selectedStation.power} kW` : 'Variable'}</p>
-                              <p><strong>Price:</strong> {selectedStation.pricePerKwh ? `₹${selectedStation.pricePerKwh}/kWh` : 'Contact station'}</p>
-                              <p><strong>Hours:</strong> {selectedStation.hours || '24 hours'}</p>
-                            </div>
-                            <div className="popup-actions">
-                              <button 
-                                onClick={() => handleBookNow(selectedStation.id)} 
-                                className="popup-btn-book"
-                              >
-                                Book Now
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  setShowPopup(false);
-                                  const element = document.getElementById(`station-${selectedStation.id}`);
-                                  if (element) element.scrollIntoView({ behavior: 'smooth' });
-                                }} 
-                                className="popup-btn-details"
-                              >
-                                More Details
-                              </button>
-                            </div>
-                          </div>
-                        </Popup>
-                      )}
-                    </Map>
-                  )}
-                </>
-              )}
-            </div>
+              Get Started Today
+            </button>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Stations List Section */}
-        <section className="stations-list-section">
-          <div className="container">
-            <h2>Charging Stations in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</h2>
-            <div className="stations-grid">
-              {currentCityStations?.map(station => (
-                <div key={station.id} id={`station-${station.id}`} className="station-card">
-                  <div className="station-image">
-                    {/* Image with enhanced fallback strategy */}
-                    <img 
-                      src={
-                        imageFallbackLevel[station.id] === 0 ? station.image : 
-                        imageFallbackLevel[station.id] === 1 ? station.fallbackImage : 
-                        commonFallbackImage
-                      }
-                      alt={station.name}
-                      onError={() => handleImageError(station.id)}
-                      onLoad={() => handleImageLoad(station.id)}
-                      loading="lazy"
-                    />
-                    {!imagesLoaded[station.id] && (
-                      <div className="image-loader">
-                        <div className="spinner"></div>
-                      </div>
-                    )}
-                    <div className="station-rating">
-                      <span className="star-icon">★</span>
-                      <span>{station.rating}</span>
-                    </div>
-                  </div>
-                  <div className="station-content">
-                    <h3>{station.name}</h3>
-                    <p className="address">{station.address}</p>
-                    <div className="station-details">
-                      <div className="detail">
-                        <span className="detail-label">Charger Type:</span>
-                        <span className="detail-value">{station.type || 'Standard'}</span>
-                      </div>
-                      <div className="detail">
-                        <span className="detail-label">Power Output:</span>
-                        <span className="detail-value">{station.power ? `${station.power} kW` : 'Variable'}</span>
-                      </div>
-                      <div className="detail">
-                        <span className="detail-label">Price:</span>
-                        <span className="detail-value">
-                          {station.pricePerKwh ? `₹${station.pricePerKwh}/kWh` : 'Contact station'}
-                        </span>
-                      </div>
-                      <div className="detail">
-                        <span className="detail-label">Hours:</span>
-                        <span className="detail-value">{station.hours || '24 hours'}</span>
-                      </div>
-                    </div>
-                    <div className="connectors">
-                      <span className="detail-label">Connectors:</span>
-                      <div className="connector-tags">
-                        {station.plugType ? (
-                          <span className="connector-tag">{station.plugType}</span>
-                        ) : safeArray(station.connectorTypes).length > 0 ? (
-                          safeArray(station.connectorTypes).map((connector, idx) => (
-                            <span key={idx} className="connector-tag">{connector}</span>
-                          ))
-                        ) : (
-                          <span>Standard connector</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="station-amenities">
-                      <span className="detail-label">Amenities:</span>
-                      <div className="amenity-tags">
-                        {safeArray(station.amenities).length > 0 ? (
-                          safeArray(station.amenities).map((amenity, idx) => (
-                            <span key={idx} className="amenity-tag">{amenity}</span>
-                          ))
-                        ) : (
-                          <span>Not available</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="station-cta">
-                      <button 
-                        onClick={() => handleBookNow(station.id)} 
-                        className="btn-book"
-                      >
-                        Book Now
-                      </button>
-                      <button 
-                        onClick={() => handleLocateOnMap(station)} 
-                        className="btn-locate"
-                      >
-                        Locate on Map
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+      {/* Footer */}
+      <footer className="footer">
+        <div className="container">
+          <div className="footer-columns">
+            <div className="footer-column">
+              <h3>EV Charging Network</h3>
+              <p>India's premier EV charging network empowering electric mobility across the country.</p>
+            </div>
+            <div className="footer-column">
+              <h4>Quick Links</h4>
+              <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#stations">Charging Stations</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><Link to="/login">Login</Link></li>
+                <li><Link to="/signup">Sign Up</Link></li>
+              </ul>
+            </div>
+            <div className="footer-column">
+              <h4>Contact</h4>
+              <ul className="contact-info">
+                <li>Email: info@evchargingnetwork.in</li>
+                <li>Phone: +91 1234567890</li>
+                <li>Address: Pune, Maharashtra, India</li>
+              </ul>
+            </div>
+            <div className="footer-column">
+              <h4>Connect with Us</h4>
+              <div className="social-links">
+                <button 
+                  onClick={() => handleSocialLink('facebook')}
+                  className="social-link"
+                >
+                  Facebook
+                </button>
+                <button 
+                  onClick={() => handleSocialLink('twitter')}
+                  className="social-link"
+                >
+                  Twitter
+                </button>
+                <button 
+                  onClick={() => handleSocialLink('instagram')}
+                  className="social-link"
+                >
+                  Instagram
+                </button>
+                <button 
+                  onClick={() => handleSocialLink('linkedin')}
+                  className="social-link"
+                >
+                  LinkedIn
+                </button>
+              </div>
             </div>
           </div>
-        </section>
-
-        {/* How It Works Section */}
-        <section id="how-it-works" ref={howItWorksRef} className="how-it-works">
-          <div className="container">
-            <h2>How It Works</h2>
-            <div className="steps">
-              <div className="step">
-                <div className="step-number">1</div>
-                <h3>Sign Up</h3>
-                <p>Create a free account in seconds and set up your EV vehicle details.</p>
-              </div>
-              <div className="step">
-                <div className="step-number">2</div>
-                <h3>Find Stations</h3>
-                <p>Discover charging stations near you with real-time availability.</p>
-              </div>
-              <div className="step">
-                <div className="step-number">3</div>
-                <h3>Book & Charge</h3>
-                <p>Reserve your slot and charge your vehicle hassle-free.</p>
-              </div>
-              <div className="step">
-                <div className="step-number">4</div>
-                <h3>Pay Seamlessly</h3>
-                <p>Pay securely through the app using multiple payment options.</p>
-              </div>
-            </div>
-            <div className="cta-container">
-              <button 
-                onClick={handleGetStarted} 
-                className="btn-large"
-              >
-                Get Started Today
-              </button>
-            </div>
+          <div className="copyright">
+            <p>© 2023 EV Charging Network. All rights reserved.</p>
           </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="footer">
-          <div className="container">
-            <div className="footer-columns">
-              <div className="footer-column">
-                <h3>EV Charging Network</h3>
-                <p>India's premier EV charging network empowering electric mobility across the country.</p>
-              </div>
-              <div className="footer-column">
-                <h4>Quick Links</h4>
-                <ul>
-                  <li><a href="#about">About</a></li>
-                  <li><a href="#stations">Charging Stations</a></li>
-                  <li><a href="#how-it-works">How It Works</a></li>
-                  <li><Link to="/login">Login</Link></li>
-                  <li><Link to="/signup">Sign Up</Link></li>
-                </ul>
-              </div>
-              <div className="footer-column">
-                <h4>Contact</h4>
-                <ul className="contact-info">
-                  <li>Email: info@evchargingnetwork.in</li>
-                  <li>Phone: +91 1234567890</li>
-                  <li>Address: Pune, Maharashtra, India</li>
-                </ul>
-              </div>
-              <div className="footer-column">
-                <h4>Connect with Us</h4>
-                <div className="social-links">
-                  <button 
-                    onClick={() => handleSocialLink('facebook')}
-                    className="social-link"
-                  >
-                    Facebook
-                  </button>
-                  <button 
-                    onClick={() => handleSocialLink('twitter')}
-                    className="social-link"
-                  >
-                    Twitter
-                  </button>
-                  <button 
-                    onClick={() => handleSocialLink('instagram')}
-                    className="social-link"
-                  >
-                    Instagram
-                  </button>
-                  <button 
-                    onClick={() => handleSocialLink('linkedin')}
-                    className="social-link"
-                  >
-                    LinkedIn
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="copyright">
-              <p>© 2023 EV Charging Network. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </div>
   );
 };
