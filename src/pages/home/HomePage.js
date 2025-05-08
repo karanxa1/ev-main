@@ -482,35 +482,18 @@ const HomePage = () => {
     navigate('/signup');
   };
 
+  // Update handleProfileNavigation function to properly handle all paths
   const handleProfileNavigation = (path) => {
+    console.log(`Attempting to navigate to: ${path}`); // DEBUGGING LINE
     // Close the profile dropdown menu
     setProfileMenuOpen(false);
     
-    // Special handling for dashboard based on user type
+    // Also close mobile menu if open
+    if(mobileMenuOpen) toggleMobileMenu();
+    
     if (path === '/dashboard') {
-      // Check if user type exists in the currentUser object
-      const userType = currentUser?.userType || currentUser?.type || 
-                       localStorage.getItem('userType') || 'user';
-      
-      // Route to specific dashboard based on user type
-      switch (userType.toLowerCase()) {
-        case 'driver':
-          navigate('/driver-dashboard');
-          break;
-        case 'admin':
-          navigate('/admin-dashboard');
-          break;
-        case 'operator':
-          navigate('/operator-dashboard');
-          break;
-        case 'business':
-          navigate('/business-dashboard');
-          break;
-        default:
-          // Default to regular user dashboard
-          navigate('/user-dashboard');
-          break;
-      }
+      // Always navigate to /driver-dashboard as per request
+      navigate('/driver-dashboard');
     } else {
       // For non-dashboard routes, navigate normally
       navigate(path);
@@ -641,26 +624,92 @@ const HomePage = () => {
   // Effect to calculate and set nearest stations
   useEffect(() => {
     if (locationFound && userLocation && allStations.length > 0) {
+      // Create a key that represents the inputs to avoid unnecessary calculations
+      const locationKey = `${userLocation.lat},${userLocation.lng}`;
+      const stationsKey = allStations.length;
+      
+      // Use the functions directly inside the effect to avoid dependency issues
       const stationsWithDistances = allStations.map(station => {
-        const stationCoords = getValidCoordinates(station);
-        if (stationCoords.latitude === undefined || stationCoords.longitude === undefined) {
-          return { ...station, distance: Infinity }; // Put stations with no coords last
+        // Use the same logic from getValidCoordinates but inline
+        let stationCoords;
+        
+        // First check for direct number values (as shown in Firebase)
+        if (typeof station.latitude === 'number' && typeof station.longitude === 'number') {
+          // Numbers coming directly from Firebase
+          if (station.latitude !== 0 && station.longitude !== 0) {
+            stationCoords = {
+              latitude: station.latitude,
+              longitude: station.longitude
+            };
+          }
         }
-        const distance = calculateDistance(
-          userLocation.lat,
-          userLocation.lng,
-          stationCoords.latitude,
-          stationCoords.longitude
-        );
+        
+        // Check for string values that need parsing
+        if (!stationCoords && station.latitude && station.longitude) {
+          const lat = parseFloat(station.latitude);
+          const lng = parseFloat(station.longitude);
+          
+          if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+            stationCoords = {
+              latitude: lat,
+              longitude: lng
+            };
+          }
+        }
+        
+        // Use a fallback position if no valid coordinates found
+        if (!stationCoords) {
+          // Use simplified fallback logic
+          const cityCoords = cityLocations[selectedCity.toLowerCase()] || cityLocations.pune;
+          
+          // Create a simpler hash for position
+          const hash = typeof station.id === 'string' ? 
+            station.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) :
+            station.id || Math.floor(Math.random() * 1000);
+          
+          const angle = (hash % 360) * (Math.PI / 180);
+          const distance = 0.5 + (hash % 25) / 10;
+          
+          stationCoords = {
+            latitude: cityCoords.lat + Math.sin(angle) * distance * 0.009,
+            longitude: cityCoords.lng + Math.cos(angle) * distance * 0.009 / Math.cos(cityCoords.lat * Math.PI / 180)
+          };
+        }
+        
+        // Inline distance calculation (same as calculateDistance)
+        const lat1 = userLocation.lat;
+        const lon1 = userLocation.lng;
+        const lat2 = stationCoords.latitude;
+        const lon2 = stationCoords.longitude;
+        
+        const R = 6371; // Radius of the Earth in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c; // Distance in km
+        
         return { ...station, distance };
       }).filter(station => station.distance !== null && !isNaN(station.distance));
 
       stationsWithDistances.sort((a, b) => a.distance - b.distance);
-      setNearestStations(stationsWithDistances.slice(0, 5)); // Show top 5 nearest
+      const newNearestStations = stationsWithDistances.slice(0, 5); // Show top 5 nearest
+      
+      // Only update state if the nearest stations have actually changed
+      setNearestStations(current => {
+        if (current.length !== newNearestStations.length) return newNearestStations;
+        for (let i = 0; i < current.length; i++) {
+          if (current[i].id !== newNearestStations[i].id) return newNearestStations;
+        }
+        return current; // Return the current state if no changes
+      });
     } else {
       setNearestStations([]); // Clear if no location or no stations
     }
-  }, [userLocation, allStations, locationFound, calculateDistance, getValidCoordinates]); // Added calculateDistance and getValidCoordinates to deps
+  }, [userLocation.lat, userLocation.lng, allStations.length, locationFound, selectedCity]); // Use specific properties to avoid reference changes
 
   const handleSearchInputChange = (event) => {
     setSearchQuery(event.target.value);
@@ -793,16 +842,13 @@ const HomePage = () => {
                       <span className="profile-email">{currentUser.email}</span>
                     </div>
                     <div className="profile-dropdown-items">
-                      <button onClick={() => handleProfileNavigation('/profile')}>
-                        My Profile
-                      </button>
-                      <button onClick={() => handleProfileNavigation('/bookings')}>
+                      <button onClick={() => handleProfileNavigation('/bookings')} className="profile-dropdown-button">
                         My Bookings
                       </button>
-                      <button onClick={() => handleProfileNavigation('/dashboard')}>
+                      <button onClick={() => handleProfileNavigation('/dashboard')} className="profile-dropdown-button">
                         Dashboard
                       </button>
-                      <button onClick={() => { if(mobileMenuOpen) toggleMobileMenu(); handleLogout(); }} className="logout-button">
+                      <button onClick={() => handleLogout()} className="logout-button">
                         Logout
                       </button>
                     </div>
@@ -1231,8 +1277,8 @@ const HomePage = () => {
             <div className="footer-column">
               <h4>Contact</h4>
               <ul className="contact-info">
-                <li>Email: info@evchargingnetwork.in</li>
-                <li>Phone: +91 1234567890</li>
+                <li>Email: karanravirajput@gmail.com</li>
+                <li>Phone: +91 9309963483</li>
                 <li>Address: Pune, Maharashtra, India</li>
               </ul>
             </div>
