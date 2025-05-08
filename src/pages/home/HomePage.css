@@ -1140,8 +1140,9 @@ html {
     text-align: center;
     padding: 40px 20px;
     font-size: 1.1rem;
-    color: #666;
-    background-color: #f8f9fa;
+    color: #555; /* Slightly darker text */
+    background-color: #f1f3f5; /* Slightly different background */
+    border: 1px dashed #ced4da; /* Dashed border */
     border-radius: 8px;
     margin-top: 20px;
 }
@@ -1180,6 +1181,19 @@ html {
   .no-stations-message {
     font-size: 1rem;
     padding: 30px 15px;
+  }
+
+  /* Skeleton adjustments for mobile if needed */
+  .skeleton-image {
+     height: 160px; /* Match mobile image height */
+  }
+  
+  .station-card-skeleton .station-content {
+     padding: 15px; /* Match mobile padding */
+  }
+
+  .geolocation-error-message {
+    font-size: 0.9rem;
   }
 
   /* Other existing mobile styles */
@@ -2157,4 +2171,78 @@ section {
   }
 
   /* Other existing mobile styles */
+}
+
+/* Skeleton Loader Styles */
+.station-card-skeleton {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  opacity: 0.7;
+}
+
+.skeleton {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton-image {
+  height: 200px; /* Match real image height */
+  width: 100%;
+  margin-bottom: 15px; /* Mimic spacing */
+}
+
+.station-card-skeleton .station-content {
+  padding: 20px; /* Match real padding */
+}
+
+.skeleton-title {
+  height: 24px;
+  width: 60%;
+  margin-bottom: 10px;
+}
+
+.skeleton-text {
+  height: 16px;
+  width: 90%;
+  margin-bottom: 8px;
+}
+
+.skeleton-text.short {
+  width: 70%;
+}
+
+.skeleton-details {
+  height: 40px; /* Approximate height of details */
+  width: 100%;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.skeleton-cta {
+  height: 40px; /* Approximate height of buttons */
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Geolocation Error Message */
+.geolocation-error-section {
+  padding: 15px 0;
+  background-color: #fffbe6; /* Light yellow background */
+}
+
+.geolocation-error-message {
+  color: #8a6d3b; /* Dark yellow text */
+  text-align: center;
+  font-size: 0.95rem;
+  margin: 0;
 }

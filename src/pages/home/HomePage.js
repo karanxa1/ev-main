@@ -69,6 +69,7 @@ const HomePage = () => {
   const [nearestStations, setNearestStations] = useState([]); // State for nearest stations
   const [searchQuery, setSearchQuery] = useState(''); // State for search input
   const [isSearching, setIsSearching] = useState(false); // State to track search status
+  const [geolocationError, setGeolocationError] = useState(null); // State for geolocation errors
 
   // Common fallback image that's guaranteed to exist
   const commonFallbackImage = '/images/charging-stations/commonoimage.jpg';
@@ -617,12 +618,21 @@ const HomePage = () => {
         },
         (error) => {
           console.error('Error getting location:', error);
-          // Keep default Pune location
+          let message = 'Could not retrieve your location.';
+          if (error.code === error.PERMISSION_DENIED) {
+            message = 'Location permission denied. Cannot show nearest stations.';
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            message = 'Location information is unavailable.';
+          } else if (error.code === error.TIMEOUT) {
+            message = 'Location request timed out.';
+          }
+          setGeolocationError(message);
           setLocationFound(false);
           setLoading(false); // Also set loading to false on error to allow map to attempt render with default
         }
       );
     } else {
+      setGeolocationError('Geolocation is not supported by your browser.');
       // Geolocation not supported, set loading to false to allow render with defaults
       setLoading(false);
     }
@@ -703,6 +713,20 @@ const HomePage = () => {
 
     setLoading(false); // Hide loading indicators
   };
+
+  // Placeholder skeleton component for station cards
+  const StationCardSkeleton = () => (
+    <div className="station-card station-card-skeleton">
+      <div className="skeleton skeleton-image"></div>
+      <div className="station-content">
+        <div className="skeleton skeleton-title"></div>
+        <div className="skeleton skeleton-text"></div>
+        <div className="skeleton skeleton-text short"></div>
+        <div className="skeleton skeleton-details"></div>
+        <div className="skeleton skeleton-cta"></div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="home-page">
@@ -987,11 +1011,10 @@ const HomePage = () => {
           {/* Title changes based on search state */}
           <h2>{isSearching ? `Search Results for "${searchQuery}"` : `Charging Stations in ${selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}`}</h2>
           
-          {/* Stations Loading Placeholder */}
+          {/* Stations Loading Placeholder -> Replaced with Skeletons */}
           {loading && (
-            <div className="stations-loading-placeholder">
-              <div className="spinner"></div>
-              <p>Loading Stations...</p>
+            <div className="stations-grid stations-loading-skeletons">
+              {[...Array(6)].map((_, index) => <StationCardSkeleton key={index} />)} 
             </div>
           )}
 
@@ -1116,6 +1139,15 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Geolocation Error Message - Conditionally Rendered */}
+      {geolocationError && !locationFound && (
+         <section className="geolocation-error-section">
+            <div className="container">
+               <p className="geolocation-error-message">⚠️ {geolocationError}</p>
+            </div>
+         </section>
+      )}
 
       {/* Nearest Stations Section - Conditionally Rendered */}
       {locationFound && nearestStations.length > 0 && (
