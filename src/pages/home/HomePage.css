@@ -1011,6 +1011,53 @@ html {
   border-radius: 3px;
 }
 
+/* Styles for the new City Selector */
+.city-selector-container {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f8f8f8; /* Light background for the selector box */
+  border-radius: 8px;
+  text-align: center;
+}
+
+.city-selector-container h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+  color: var(--primary-color, #0C5F2C);
+}
+
+.cities-buttons-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.city-button {
+  padding: 10px 15px;
+  border: 1px solid var(--primary-color, #0C5F2C);
+  background-color: white;
+  color: var(--primary-color, #0C5F2C);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
+  font-weight: 500;
+}
+
+.city-button:hover {
+  background-color: var(--primary-light, #23AD55);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.city-button.active {
+  background-color: var(--primary-color, #0C5F2C);
+  color: white;
+  border-color: var(--primary-color, #0C5F2C);
+  font-weight: bold;
+}
+
 /* --- Base Styles & Variables --- */
 :root {
   --primary-color: #0C5F2C; /* Dark Green */
@@ -1921,4 +1968,66 @@ section {
     font-size: 0.75rem;
     margin-top: 20px;
   }
+}
+
+/* Nearest Stations Section */
+.nearest-stations-section {
+  padding: 60px 0;
+  background-color: #e8f5e9; /* Light green background */
+}
+
+.nearest-stations-section h2 {
+  text-align: center;
+  margin-bottom: 40px;
+  color: var(--primary-color, #0C5F2C);
+  font-size: 2rem;
+}
+
+/* Can reuse .stations-grid or add specific styles */
+.nearest-stations-grid {
+  /* Inherits from .stations-grid */
+}
+
+/* Styling for the station card in the nearest section if needed */
+.nearest-station-card {
+  /* Inherits from .station-card */
+  /* Add specific overrides if needed, e.g., border */
+  border: 1px solid var(--primary-light, #23AD55);
+}
+
+.nearest-station-card .distance-info {
+  font-size: 0.95em;
+  color: #007bff; /* Blue color for distance */
+  margin-bottom: 10px;
+  font-weight: 500;
+  background-color: rgba(0, 123, 255, 0.05);
+  padding: 5px 8px;
+  border-radius: 4px;
+  display: inline-block; /* Fit content */
+}
+
+.nearest-station-card .station-cta button {
+  font-size: 0.9em; /* Slightly smaller buttons */
+}
+
+/* Mobile adjustments for nearest stations section */
+@media (max-width: 768px) {
+  .nearest-stations-section {
+    padding: 40px 0; /* Consistent with other mobile sections */
+  }
+
+  .nearest-stations-section h2 {
+    font-size: 1.6rem; /* Mobile heading size */
+    margin-bottom: 30px;
+  }
+
+  .nearest-station-card .distance-info {
+    font-size: 0.9rem;
+  }
+
+  .nearest-stations-grid {
+     grid-template-columns: 1fr; /* Stack cards on mobile */
+  }
+
+  /* Other existing mobile styles */
 }

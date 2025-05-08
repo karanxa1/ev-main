@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Map, { NavigationControl, Marker, Popup } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -66,6 +66,7 @@ const HomePage = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [allStations, setAllStations] = useState([]);
   const [currentCityStations, setCurrentCityStations] = useState([]);
+  const [nearestStations, setNearestStations] = useState([]); // State for nearest stations
 
   // Common fallback image that's guaranteed to exist
   const commonFallbackImage = '/images/charging-stations/commonoimage.jpg';
@@ -79,9 +80,10 @@ const HomePage = () => {
     chennai: indianCities.chennai,
     hyderabad: indianCities.hyderabad
   };
-  
+
   // Function to get valid coordinates for stations - fixed for Firebase data structure
-  const getValidCoordinates = (station) => {
+  // Wrapped in useCallback and moved before usage in useEffect
+  const getValidCoordinates = useCallback((station) => {
     // First check for direct number values (as shown in Firebase)
     if (typeof station.latitude === 'number' && typeof station.longitude === 'number') {
       // Numbers coming directly from Firebase
@@ -163,7 +165,22 @@ const HomePage = () => {
       latitude: cityCoords.lat + (Math.sin(angle) * 0.009 * distance),
       longitude: cityCoords.lng + (Math.cos(angle) * 0.009 * distance / Math.cos(cityCoords.lat * Math.PI / 180))
     };
-  };
+  }, [selectedCity, cityLocations]); // Dependencies for getValidCoordinates
+
+  // Calculate distance between two points (Haversine formula)
+  // Wrapped in useCallback and moved before usage in useEffect
+  const calculateDistance = useCallback((lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance;
+  }, []); // Empty dependency array as it's a pure function
 
   // Fetch all stations when component loads
   useEffect(() => {
@@ -594,30 +611,44 @@ const HomePage = () => {
           
           // Update selected city based on user location
           handleCityChange(closestCity[0]);
+          setLoading(false); // Set loading to false after location found and processed
         },
         (error) => {
           console.error('Error getting location:', error);
           // Keep default Pune location
           setLocationFound(false);
+          setLoading(false); // Also set loading to false on error to allow map to attempt render with default
         }
       );
+    } else {
+      // Geolocation not supported, set loading to false to allow render with defaults
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
-  
-  // Calculate distance between two points (Haversine formula)
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the Earth in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance in km
-    return distance;
-  };
+
+  // Effect to calculate and set nearest stations
+  useEffect(() => {
+    if (locationFound && userLocation && allStations.length > 0) {
+      const stationsWithDistances = allStations.map(station => {
+        const stationCoords = getValidCoordinates(station);
+        if (stationCoords.latitude === undefined || stationCoords.longitude === undefined) {
+          return { ...station, distance: Infinity }; // Put stations with no coords last
+        }
+        const distance = calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          stationCoords.latitude,
+          stationCoords.longitude
+        );
+        return { ...station, distance };
+      }).filter(station => station.distance !== null && !isNaN(station.distance));
+
+      stationsWithDistances.sort((a, b) => a.distance - b.distance);
+      setNearestStations(stationsWithDistances.slice(0, 5)); // Show top 5 nearest
+    } else {
+      setNearestStations([]); // Clear if no location or no stations
+    }
+  }, [userLocation, allStations, locationFound, calculateDistance, getValidCoordinates]); // Added calculateDistance and getValidCoordinates to deps
 
   return (
     <div className="home-page">
@@ -761,6 +792,22 @@ const HomePage = () => {
       {/* Map Section */}
       <section id="stations" ref={stationsRef} className="map-section">
         <div className="container">
+          {/* City Selector UI */}
+          <div className="city-selector-container">
+            <h3>Select a City:</h3>
+            <div className="cities-buttons-grid">
+              {Object.keys(cityLocations).map((cityName) => (
+                <button
+                  key={cityName}
+                  className={`city-button ${selectedCity.toLowerCase() === cityName.toLowerCase() ? 'active' : ''}`}
+                  onClick={() => handleCityChange(cityName)}
+                >
+                  {cityName.charAt(0).toUpperCase() + cityName.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <h2>EV Charging Stations in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</h2>
           <p className="section-intro">Below is a map of available charging stations. Click on any marker to see details.</p>
           <div className="map-container" id="map-container">
@@ -793,15 +840,12 @@ const HomePage = () => {
                           color: selectedStation && selectedStation.id === station.id ? '#ff6b6b' : '#4a90e2'
                         }}
                         onClick={(e) => {
-                          // Safely handle the event
-                          if (e) {
-                            // Check if originalEvent exists (mapbox event structure)
-                            if (e.originalEvent) {
-                              e.originalEvent.stopPropagation();
-                            } else {
-                              // Regular React event
-                              e.stopPropagation();
-                            }
+                          // Even more robustly stop propagation
+                          if (e && typeof e.stopPropagation === 'function') {
+                            e.stopPropagation();
+                          }
+                          if (e && e.originalEvent && typeof e.originalEvent.stopPropagation === 'function') {
+                            e.originalEvent.stopPropagation();
                           }
                           handleMarkerClick(station);
                         }}
@@ -978,6 +1022,67 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Nearest Stations Section - Conditionally Rendered */}
+      {locationFound && nearestStations.length > 0 && (
+        <section className="nearest-stations-section">
+          <div className="container">
+            <h2>Stations Near You</h2>
+            <div className="stations-grid nearest-stations-grid"> 
+              {nearestStations.map(station => (
+                <div key={`nearest-${station.id}`} className="station-card nearest-station-card">
+                  <div className="station-image">
+                    <img 
+                      src={
+                        imageFallbackLevel[station.id] === 0 && station.image ? station.image :
+                        imageFallbackLevel[station.id] === 1 && station.fallbackImage ? station.fallbackImage :
+                        commonFallbackImage
+                      }
+                      alt={station.name || 'Charging Station'}
+                      onError={() => handleImageError(station.id)}
+                      onLoad={() => handleImageLoad(station.id)}
+                      loading="lazy"
+                    />
+                    {station.rating && (
+                      <div className="station-rating">
+                        <span className="star-icon">★</span>
+                        {station.rating}
+                      </div>
+                    )}
+                  </div>
+                  <div className="station-content">
+                    <h3>{station.name || 'EV Station'}</h3>
+                    <p className="address">{station.address || 'Address not available'}</p>
+                    {station.distance !== undefined && (
+                      <p className="distance-info">
+                        <strong>Distance:</strong> {station.distance.toFixed(1)} km away
+                      </p>
+                    )}
+                    <div className="station-details">
+                      <div className="detail">
+                        <span className="detail-label">Type:</span>
+                        <span className="detail-value">{station.type || 'Standard'}</span>
+                      </div>
+                      <div className="detail">
+                        <span className="detail-label">Power:</span>
+                        <span className="detail-value">{station.power ? `${station.power} kW` : 'N/A'}</span>
+                      </div>
+                    </div>
+                    <div className="station-cta">
+                      <button onClick={() => handleBookNow(station.id)} className="btn-book">
+                        Book Now
+                      </button>
+                      <button onClick={() => handleLocateOnMap(station)} className="btn-locate">
+                        Details & Map
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="footer">
