@@ -1,0 +1,20 @@
+/* Styles for StationCard component */
+.station-card {
+  /* ... existing styles ... */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.station-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Ensure skeleton doesn't also try to animate if it shares .station-card */
+.station-card-skeleton {
+  opacity: 1; /* Skeletons should be immediately visible */
+  transform: none;
+}
+
+/* You might need to adjust existing .station-card styles if they conflict */ 

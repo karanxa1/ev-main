@@ -1,0 +1,120 @@
+.cost-estimator-section {
+  padding: 60px 0;
+  background-color: #f4f7f6; /* A slightly different light background */
+}
+
+.cost-estimator-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 40px;
+}
+
+.cost-estimator-card {
+  background-color: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  gap: 40px; /* Space between form and results */
+}
+
+.estimator-form {
+  flex: 1;
+}
+
+.estimator-results {
+  flex: 1;
+  border-left: 1px solid #e0e0e0;
+  padding-left: 40px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.form-group select,
+.form-group input[type="number"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.form-group select:focus,
+.form-group input[type="number"]:focus {
+  border-color: var(--primary-color, #0C5F2C);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.estimator-results h4 {
+  font-size: 1.5rem;
+  color: var(--primary-color, #0C5F2C);
+  margin-top: 0;
+  margin-bottom: 25px;
+  border-bottom: 2px solid var(--primary-color, #0C5F2C);
+  padding-bottom: 10px;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px dashed #eee;
+}
+
+.result-item:last-of-type {
+  border-bottom: none;
+}
+
+.result-item span {
+  font-size: 1rem;
+  color: #444;
+}
+
+.result-item strong {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.estimator-note {
+  font-size: 0.85rem;
+  color: #777;
+  margin-top: 25px;
+  line-height: 1.5;
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* Responsive adjustments for Cost Estimator */
+@media (max-width: 768px) {
+  .cost-estimator-card {
+    flex-direction: column;
+    gap: 30px;
+    padding: 25px;
+  }
+
+  .estimator-results {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 30px;
+  }
+} 

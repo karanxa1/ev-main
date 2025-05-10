@@ -1,0 +1,30 @@
+/* Styles for StationsListSection component */
+.stations-list-section {
+  padding: 40px 0;
+  background-color: #f9f9f9; /* Or a contrasting background */
+}
+
+.stations-list-section h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.stations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.stations-loading-skeletons {
+  /* Styles for skeleton grid, if different from loaded grid */
+}
+
+.no-stations-message {
+  text-align: center;
+  font-size: 1.1em;
+  color: #555;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 4px;
+  border: 1px solid #eee;
+} 

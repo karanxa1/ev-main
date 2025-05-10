@@ -1,0 +1,111 @@
+/* Styles for MapSection component */
+.map-section {
+  /* Styles previously in HomePage.css specific to the map section can be moved here */
+}
+
+.map-container {
+  height: 500px; /* Or whatever height it had */
+  position: relative; /* For loading placeholder */
+}
+
+.map-loading-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background-color: #f0f0f0;
+}
+
+.city-selector-container {
+  margin-bottom: 20px;
+}
+
+.cities-buttons-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.city-button {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.city-button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.map-marker {
+  font-size: 20px; /* Base size */
+  /* transition for size change could be added if desired */
+}
+
+.station-popup .popup-content {
+  font-family: sans-serif;
+  padding: 15px;
+  line-height: 1.5;
+}
+
+.station-popup h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1.15em;
+  color: #0C5F2C;
+}
+
+.station-popup .popup-rating {
+  font-size: 0.9em;
+  color: #f5a623;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.station-popup .popup-rating span:first-child {
+  margin-right: 4px;
+  font-size: 1.1em;
+}
+
+.station-popup .popup-address {
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.station-popup .popup-details {
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.station-popup .popup-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.station-popup .popup-actions button {
+  padding: 6px 10px;
+  font-size: 0.85em;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.station-popup .popup-btn-book {
+  background-color: #28a745; /* green */
+  color: white;
+  border: none;
+}
+
+.station-popup .popup-btn-details {
+  background-color: #007bff; /* blue */
+  color: white;
+  border: none;
+} 

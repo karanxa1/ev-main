@@ -237,11 +237,12 @@ html {
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .feature:hover {
   transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .feature-icon {
@@ -623,18 +624,36 @@ html {
 .social-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
+  align-items: center;
 }
 
 .social-link {
+  background: none;
+  border: 1px solid #bbb;
   color: #bbb;
   text-decoration: none;
-  margin-right: 15px;
-  transition: color 0.2s;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
 }
 
 .social-link:hover {
   color: white;
+  border-color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.social-link span[role="img"] {
+  display: inline-block;
 }
 
 .copyright {
@@ -765,63 +784,85 @@ html {
 
 @media (max-width: 768px) {
   .nav-links {
-    display: none;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: #ffffff;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
+    z-index: 1000;
+    border-top: 1px solid #eee;
+    opacity: 0;
+    transform: translateY(-20px);
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, visibility 0s 0.3s;
+  }
+  
+  .nav-links.open {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    transition-delay: 0s;
   }
   
   .logo-text {
-    font-size: 1.1rem; /* Further reduced logo text size */
+    font-size: 1.1rem;
     margin-right: auto;
   }
   
   .hero-banner {
-    padding: 20px 0; /* Further reduced vertical padding */
+    padding: 20px 0;
     margin-top: 40px;
   }
   .hero-content h1 {
-    font-size: 1.5rem; /* Drastically reduced font size */
-    margin-bottom: 10px; /* Reduced margin */
+    font-size: 1.5rem;
+    margin-bottom: 10px;
   }
   .hero-content p {
-    font-size: 0.85rem; /* Reduced font size */
-    margin-bottom: 15px; /* Reduced margin */
+    font-size: 0.85rem;
+    margin-bottom: 15px;
   }
   .hero-cta {
     flex-direction: column;
-    gap: 10px; /* Reduced gap between buttons */
+    gap: 10px;
     align-items: center;
   }
   .hero-cta .btn-primary, .hero-cta .btn-secondary {
     width: 85%;
     max-width: 280px;
-    padding: 10px 15px; /* Reduced button padding */
-    font-size: 0.9rem;  /* Reduced button font size */
+    padding: 10px 15px;
+    font-size: 0.9rem;
     margin: 0;
   }
   .home-header {
-    padding: 10px 0; /* Reduced vertical padding for mobile */
+    padding: 10px 0;
   }
   .hero-banner {
-    padding: 25px 0; /* Further reduced vertical padding */
-    margin-top: 40px; /* Should be correct from previous header adjustment */
+    padding: 25px 0;
+    margin-top: 40px;
   }
   .hero-content h1 {
-    font-size: 1.8rem; /* Adjusted font size */
-    margin-bottom: 12px; /* Reduced margin */
+    font-size: 1.8rem;
+    margin-bottom: 12px;
   }
   .hero-content p {
-    font-size: 0.9rem; /* Adjusted font size */
-    margin-bottom: 20px; /* Reduced margin */
+    font-size: 0.9rem;
+    margin-bottom: 20px;
   }
 
   .about-section,
   .map-section,
-  .stations-list-section, /* Added */
-  .how-it-works,           /* Added with correct class */
-  .explore-more,          /* Added */
-  .how-it-works-section, /* This was in the original file, keeping it for now but .how-it-works is likely primary for HomePage.js */
-  .testimonials-section, /* Keeping from original file */
-  .faq-section {          /* Keeping from original file */
-    padding: 40px 0; /* Consistent reduced padding */
+  .stations-list-section,
+  .how-it-works,
+  .explore-more,
+  .how-it-works-section,
+  .testimonials-section,
+  .faq-section {
+    padding: 40px 0;
   }
 
   .features-grid, .steps {
@@ -840,7 +881,6 @@ html {
   .city-option { font-size: 1.2rem; margin-bottom: 3px;}
   .city-name { font-size: 0.75rem; }
 
-  /* Added style for city titles on mobile */
   .city-title {
     font-size: 1.6rem;
     margin-top: 30px;
@@ -848,7 +888,7 @@ html {
   }
 
   .map-container {
-    height: 300px; /* Reduced map height for mobile */
+    height: 300px;
   }
 
   .stations-grid {
@@ -861,7 +901,7 @@ html {
     padding: 15px;
   }
   .station-image-wrapper {
-    height: 160px; /* Adjust image height */
+    height: 160px;
     margin-bottom: 10px;
   }
   .station-content {
@@ -926,6 +966,23 @@ html {
   .copyright {
     font-size: 0.75rem;
     margin-top: 20px;
+  }
+
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 999; /* Below nav-links (1000) but above page content */
+    /* No transition here, it will appear/disappear with conditional rendering */
+  }
+  
+  .nav-links { /* This is for the mobile dropdown */
+    /* ... existing styles for .nav-links ensuring opacity/transform/visibility transitions ... */
+    /* Ensure z-index is higher than overlay */
+    z-index: 1000; 
   }
 }
 
@@ -1016,7 +1073,7 @@ html {
 .city-selector-container {
   margin-bottom: 30px;
   padding: 20px;
-  background-color: #f8f8f8; /* Light background for the selector box */
+  background-color: #f8f8f8;
   border-radius: 8px;
   text-align: center;
 }
@@ -1062,44 +1119,96 @@ html {
 /* Search Bar Styles */
 .search-bar-container {
   display: flex;
-  gap: 10px;
-  margin: 30px auto; /* Center and add vertical spacing */
-  max-width: 600px; /* Limit width */
-  width: 90%; /* Responsive width */
-  background-color: white;
-  padding: 8px;
-  border-radius: 50px; /* Rounded ends */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  align-items: center;
+  background-color: #fff;
+  border-radius: 50px; /* More rounded for modern look */
+  padding: 8px 8px 8px 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  max-width: 600px;
+  margin: 30px auto 0; /* Added top margin */
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; /* For focus effect */
+  position: relative; /* For suggestions positioning */
+}
+
+.search-bar-container:focus-within {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(var(--primary-color-rgb), 0.2), 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
 }
 
 .search-input {
   flex-grow: 1;
   border: none;
   outline: none;
-  padding: 10px 15px;
-  font-size: 1rem;
+  font-size: 1rem; /* Slightly larger font */
+  padding: 10px 0;
   background-color: transparent;
-  color: #333;
-}
-
-.search-input::placeholder {
-  color: #999;
 }
 
 .search-button {
-  background-color: var(--primary-color, #0C5F2C);
+  background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 50px; /* Match container */
+  border-radius: 40px; /* Match container rounding */
   padding: 10px 25px;
   font-size: 1rem;
-  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s ease;
+  margin-left: 8px; /* Space from input */
 }
 
 .search-button:hover {
-  background-color: var(--primary-dark, #094222);
+  background-color: var(--secondary-color);
+}
+
+/* Search Suggestions Styles */
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 5px); /* Position below the search bar */
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-top: none; /* Remove top border as it connects to search bar */
+  border-radius: 0 0 8px 8px; /* Rounded bottom corners */
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  z-index: 1000; /* Ensure it's above other content */
+  max-height: 300px; /* Limit height and allow scrolling */
+  overflow-y: auto;
+}
+
+.search-suggestions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-suggestions li {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s ease;
+}
+
+.search-suggestions li:last-child {
+  border-bottom: none;
+}
+
+.search-suggestions li:hover {
+  background-color: #f5f5f5;
+}
+
+.search-suggestions li strong {
+  font-weight: 600; /* Highlight matched part if we implement that later */
+}
+
+.search-suggestions .suggestion-type {
+  font-size: 0.8em;
+  color: #777;
+  margin-left: 8px;
+  background-color: #eee;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 /* Map Loading Placeholder */
@@ -1113,16 +1222,16 @@ html {
   text-align: center;
   color: #666;
   background-color: #f8f9fa;
-  border-radius: 12px; /* Match map/section rounding */
-  min-height: 200px; /* Give it some space */
+  border-radius: 12px;
+  min-height: 200px;
 }
 
 .map-loading-placeholder {
-  height: 500px; /* Match map height */
+  height: 500px;
 }
 
 .stations-loading-placeholder {
-  margin-top: 20px; /* Space below title */
+  margin-top: 20px;
 }
 
 .map-loading-placeholder .spinner,
@@ -1140,9 +1249,9 @@ html {
     text-align: center;
     padding: 40px 20px;
     font-size: 1.1rem;
-    color: #555; /* Slightly darker text */
-    background-color: #f1f3f5; /* Slightly different background */
-    border: 1px dashed #ced4da; /* Dashed border */
+    color: #555;
+    background-color: #f1f3f5;
+    border: 1px dashed #ced4da;
     border-radius: 8px;
     margin-top: 20px;
 }
@@ -1170,7 +1279,7 @@ html {
   }
 
   .map-loading-placeholder {
-     height: 300px; /* Match mobile map height */
+     height: 300px;
      padding: 20px;
   }
 
@@ -1183,27 +1292,24 @@ html {
     padding: 30px 15px;
   }
 
-  /* Skeleton adjustments for mobile if needed */
   .skeleton-image {
-     height: 160px; /* Match mobile image height */
+     height: 160px;
   }
   
   .station-card-skeleton .station-content {
-     padding: 15px; /* Match mobile padding */
+     padding: 15px;
   }
 
   .geolocation-error-message {
     font-size: 0.9rem;
   }
-
-  /* Other existing mobile styles */
 }
 
 /* --- Base Styles & Variables --- */
 :root {
-  --primary-color: #0C5F2C; /* Dark Green */
-  --secondary-color: #4CAF50; /* Lighter Green */
-  --accent-color: #FFC107; /* Yellow/Gold */
+  --primary-color: #0C5F2C;
+  --secondary-color: #4CAF50;
+  --accent-color: #FFC107;
   --text-color: #333;
   --light-gray: #f4f4f4;
   --medium-gray: #ccc;
@@ -1294,7 +1400,7 @@ button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-l
   color: var(--text-color);
 }
 .btn-signup:hover {
-  background-color: #ffca2c; /* Slightly lighter yellow */
+  background-color: #ffca2c;
   transform: translateY(-2px);
 }
 
@@ -1389,6 +1495,18 @@ button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-l
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-right: 5px;
+}
+
+.profile-chevron {
+  font-size: 10px;
+  color: #333;
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.profile-chevron.open {
+  transform: rotate(180deg);
 }
 
 .profile-dropdown {
@@ -1529,7 +1647,7 @@ section {
 .feature-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
-  color: var(--secondary-color); /* Fixed typo: removed space */
+  color: var(--secondary-color);
 }
 
 /* --- City Selector --- */
@@ -1569,7 +1687,7 @@ section {
   color: var(--white);
 }
 .city-option.active .city-icon {
-  filter: brightness(0) invert(1); /* Make emoji white */
+  filter: brightness(0) invert(1);
 }
 
 .city-icon {
@@ -1594,7 +1712,7 @@ section {
   border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: var(--box-shadow);
-  height: 500px; /* Ensure container has height */
+  height: 500px;
 }
 
 .station-infowindow {
@@ -1652,8 +1770,8 @@ section {
 .station-image {
   position: relative;
   width: 100%;
-  padding-top: 60%; /* Aspect ratio for image container */
-  background-color: var(--light-gray); /* Placeholder bg */
+  padding-top: 60%;
+  background-color: var(--light-gray);
 }
 
 .station-image img {
@@ -1662,7 +1780,7 @@ section {
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Cover the container */
+  object-fit: cover;
 }
 
 .image-loader {
@@ -1711,7 +1829,7 @@ section {
 
 .station-content {
   padding: 1.5rem;
-  flex-grow: 1; /* Allow content to fill space */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
 }
@@ -1773,12 +1891,12 @@ section {
 }
 
 .station-cta {
-  margin-top: auto; /* Push buttons to the bottom */
+  margin-top: auto;
   display: flex;
   gap: 10px;
 }
 .station-cta button {
-  flex: 1; /* Make buttons share space */
+  flex: 1;
 }
 
 /* --- How It Works --- */
@@ -1856,15 +1974,37 @@ section {
 
 .social-links {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
 }
 
 .social-link {
-  color: var(--medium-gray);
-  font-size: 0.9rem;
+  background: none;
+  border: 1px solid #bbb;
+  color: #bbb;
+  text-decoration: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
 }
+
 .social-link:hover {
-  color: var(--white);
+  color: white;
+  border-color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.social-link span[role="img"] {
+  display: inline-block;
 }
 
 .copyright {
@@ -1895,7 +2035,7 @@ section {
 /* Small screens (Mobile) */
 @media (max-width: 768px) {
   .container {
-    padding: 0 15px; /* Adjust container padding for smaller screens */
+    padding: 0 15px;
   }
 
   h1 { font-size: 1.8rem; }
@@ -1903,39 +2043,46 @@ section {
   h3 { font-size: 1.1rem; }
 
   .header-container {
-    position: relative; /* Needed for absolute positioning of nav-links */
-    padding: 0 10px; /* Reduce padding in header */
-    align-items: center; /* Ensure vertical alignment */
+    position: relative;
+    padding: 0 10px;
+    align-items: center;
   }
 
   .logo-text {
-    font-size: 1.1rem; /* Further reduced logo text size */
+    font-size: 1.1rem;
     margin-right: auto;
   }
 
   .hamburger-menu {
-    display: flex; /* Show hamburger icon */
-    order: 3; /* Place hamburger after nav links (which are hidden) and auth buttons if auth buttons are kept visible */
-    margin-left: 10px; /* Space from auth buttons if they are visible */
+    display: flex;
+    order: 3;
+    margin-left: 10px;
   }
 
   .nav-links {
-    display: none; /* Hidden by default, JS toggles to 'flex' with 'open' class */
+    display: flex;
     flex-direction: column;
     position: absolute;
-    top: calc(100% + 5px); /* Position below the header, adjust if header height varies */
+    top: calc(100% + 5px);
     left: 0;
     right: 0;
     width: 100%;
-    background-color: #ffffff; /* Solid background */
+    background-color: #ffffff;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
     padding: 1rem 0;
-    z-index: 1000; /* Ensure it's above other content */
+    z-index: 1000;
     border-top: 1px solid #eee;
+    opacity: 0;
+    transform: translateY(-20px);
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, visibility 0s 0.3s;
   }
 
   .nav-links.open {
-    display: flex; /* Show menu when 'open' class is added by JS */
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    transition-delay: 0s;
   }
 
   .nav-item {
@@ -1957,11 +2104,9 @@ section {
   }
 
   .auth-buttons {
-    /* Option: Keep auth buttons in header, or move them into the nav-links.open menu */
-    /* For this example, keeping them in header, ensure they don't overlap */
-    display: flex; /* Ensure they are displayed */
-    margin-left: 0; /* Reset margin if hamburger is on the far right */
-    order: 2; /* Place before hamburger if logo is order 1 */
+    display: flex;
+    margin-left: 0;
+    order: 2;
     gap: 8px;
   }
   .btn-login, .btn-signup {
@@ -1970,40 +2115,39 @@ section {
   }
 
   .hero-banner {
-    padding: 20px 0; /* Further reduced vertical padding */
+    padding: 20px 0;
     margin-top: 40px;
   }
   .hero-content h1 {
-    font-size: 1.5rem; /* Drastically reduced font size */
-    margin-bottom: 10px; /* Reduced margin */
+    font-size: 1.5rem;
+    margin-bottom: 10px;
   }
   .hero-content p {
-    font-size: 0.85rem; /* Reduced font size */
-    margin-bottom: 15px; /* Reduced margin */
+    font-size: 0.85rem;
+    margin-bottom: 15px;
   }
   .hero-cta {
     flex-direction: column;
-    gap: 10px; /* Reduced gap between buttons */
+    gap: 10px;
     align-items: center;
   }
   .hero-cta .btn-primary, .hero-cta .btn-secondary {
     width: 85%;
     max-width: 280px;
-    padding: 10px 15px; /* Reduced button padding */
-    font-size: 0.9rem;  /* Reduced button font size */
+    padding: 10px 15px;
+    font-size: 0.9rem;
     margin: 0;
   }
 
-  /* Updated rule for consistent section padding on mobile */
   .about-section,
   .map-section,
   .stations-list-section,
   .how-it-works,
   .explore-more,
-  .how-it-works-section, 
+  .how-it-works-section,
   .testimonials-section,
   .faq-section {
-    padding: 40px 0; /* Consistent reduced padding */
+    padding: 40px 0;
   }
 
   .features-grid, .steps {
@@ -2022,7 +2166,6 @@ section {
   .city-option { font-size: 1.2rem; margin-bottom: 3px;}
   .city-name { font-size: 0.75rem; }
 
-  /* Added style for city titles on mobile */
   .city-title {
     font-size: 1.6rem;
     margin-top: 30px;
@@ -2030,7 +2173,7 @@ section {
   }
 
   .map-container {
-    height: 300px; /* Reduced map height for mobile */
+    height: 300px;
   }
 
   .stations-grid {
@@ -2043,7 +2186,7 @@ section {
     padding: 15px;
   }
   .station-image-wrapper {
-    height: 160px; /* Adjust image height */
+    height: 160px;
     margin-bottom: 10px;
   }
   .station-content {
@@ -2114,51 +2257,48 @@ section {
 /* Nearest Stations Section */
 .nearest-stations-section {
   padding: 60px 0;
-  background-color: #e8f5e9; /* Light green background */
+  background-color: #f9f9f9; /* Light background for contrast */
 }
 
 .nearest-stations-section h2 {
   text-align: center;
+  font-size: 2.5rem;
+  color: #333;
   margin-bottom: 40px;
-  color: var(--primary-color, #0C5F2C);
-  font-size: 2rem;
 }
 
-/* Can reuse .stations-grid or add specific styles */
-.nearest-stations-grid {
-  /* Inherits from .stations-grid */
+.nearest-stations-grid { /* Uses the same .stations-grid styles by default */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
 }
 
-/* Styling for the station card in the nearest section if needed */
 .nearest-station-card {
-  /* Inherits from .station-card */
-  /* Add specific overrides if needed, e.g., border */
   border: 1px solid var(--primary-light, #23AD55);
 }
 
 .nearest-station-card .distance-info {
   font-size: 0.95em;
-  color: #007bff; /* Blue color for distance */
+  color: #007bff;
   margin-bottom: 10px;
   font-weight: 500;
   background-color: rgba(0, 123, 255, 0.05);
   padding: 5px 8px;
   border-radius: 4px;
-  display: inline-block; /* Fit content */
+  display: inline-block;
 }
 
 .nearest-station-card .station-cta button {
-  font-size: 0.9em; /* Slightly smaller buttons */
+  font-size: 0.9em;
 }
 
-/* Mobile adjustments for nearest stations section */
 @media (max-width: 768px) {
   .nearest-stations-section {
-    padding: 40px 0; /* Consistent with other mobile sections */
+    padding: 40px 0;
   }
 
   .nearest-stations-section h2 {
-    font-size: 1.6rem; /* Mobile heading size */
+    font-size: 1.6rem;
     margin-bottom: 30px;
   }
 
@@ -2167,10 +2307,8 @@ section {
   }
 
   .nearest-stations-grid {
-     grid-template-columns: 1fr; /* Stack cards on mobile */
+     grid-template-columns: 1fr;
   }
-
-  /* Other existing mobile styles */
 }
 
 /* Skeleton Loader Styles */
@@ -2196,13 +2334,13 @@ section {
 }
 
 .skeleton-image {
-  height: 200px; /* Match real image height */
+  height: 200px;
   width: 100%;
-  margin-bottom: 15px; /* Mimic spacing */
+  margin-bottom: 15px;
 }
 
 .station-card-skeleton .station-content {
-  padding: 20px; /* Match real padding */
+  padding: 20px;
 }
 
 .skeleton-title {
@@ -2222,27 +2360,139 @@ section {
 }
 
 .skeleton-details {
-  height: 40px; /* Approximate height of details */
+  height: 40px;
   width: 100%;
   margin-top: 15px;
   margin-bottom: 15px;
 }
 
 .skeleton-cta {
-  height: 40px; /* Approximate height of buttons */
+  height: 40px;
   width: 100%;
   margin-top: 10px;
 }
 
 /* Geolocation Error Message */
 .geolocation-error-section {
-  padding: 15px 0;
-  background-color: #fffbe6; /* Light yellow background */
+  padding: 20px 0;
+  background-color: #fff3cd; /* Light yellow for warning */
+  border-top: 1px solid #ffeeba;
+  border-bottom: 1px solid #ffeeba;
+}
+.geolocation-error-message {
+  color: #856404; /* Dark yellow text */
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
-.geolocation-error-message {
-  color: #8a6d3b; /* Dark yellow text */
+/* EV Tips Section Styles */
+.ev-tips-section {
+  padding: 60px 0;
+  background-color: #eef7ff; /* A distinct light blue background */
   text-align: center;
-  font-size: 0.95rem;
-  margin: 0;
+}
+
+.ev-tips-section h2 {
+  font-size: 2.5rem;
+  color: #2c3e50; /* Darker blue for title */
+  margin-bottom: 40px;
+}
+
+.tip-card {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  max-width: 700px;
+  margin: 0 auto;
+  border-left: 5px solid #3498db; /* Accent border */
+}
+
+.tip-text {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #34495e; /* Slightly softer text color */
+  margin-bottom: 25px;
+}
+
+.btn-next-tip {
+  background-color: #3498db;
+  color: white;
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-next-tip:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+/* General Animation Styles */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; visibility: visible; }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; visibility: visible; }
+}
+
+/* Utility for elements that should start hidden for animation */
+.initially-hidden {
+  opacity: 0;
+  visibility: hidden; /* Important for preventing interaction before visible */
+}
+
+.is-visible .animate-slide-up {
+  animation: slideInUp 0.7s ease-out forwards;
+}
+
+.is-visible .animate-fade-in {
+  animation: fadeIn 0.7s ease-out forwards;
+}
+
+/* Stagger Animation for Children */
+/* Children within .stagger-children should have the .initially-hidden class */
+/* and .stagger-child-X (e.g., .stagger-child-1, .stagger-child-2) */
+
+.is-visible .stagger-children .stagger-child-1 {
+  animation: slideInUp 0.7s ease-out 0.1s forwards;
+}
+.is-visible .stagger-children .stagger-child-2 {
+  animation: slideInUp 0.7s ease-out 0.2s forwards;
+}
+.is-visible .stagger-children .stagger-child-3 {
+  animation: slideInUp 0.7s ease-out 0.3s forwards;
+}
+.is-visible .stagger-children .stagger-child-4 {
+  animation: slideInUp 0.7s ease-out 0.4s forwards;
+}
+.is-visible .stagger-children .stagger-child-5 {
+  /* In case we have up to 5 staggered items in a section */
+  animation: slideInUp 0.7s ease-out 0.5s forwards;
+}
+
+/* Cost Estimator Section Styles (wrapper in HomePage.css) */
+.cost-estimator-section {
+  padding: 60px 0;
+  background-color: #f8f9fa; /* A neutral light background */
+}
+
+.cost-estimator-section .container {
+  /* Standard container behavior, max-width and centering, is assumed from global styles */
+}
+
+.cost-estimator-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 40px;
+  font-weight: 600;
 }
