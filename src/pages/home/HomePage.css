@@ -147,11 +147,15 @@ html {
 
 /* Hero Banner */
 .hero-banner {
-  background: linear-gradient(135deg, #0C5F2C 0%, #23AD55 100%);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' fill='transparent'/%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E"),
+                    linear-gradient(135deg, #0C5F2C 0%, #23AD55 100%);
+  background-size: auto, cover; /* SVG tiles at its native size, gradient covers */
+  background-repeat: repeat, no-repeat; /* SVG repeats, gradient does not */
   color: white;
   padding: 160px 0 80px;
   text-align: center;
   opacity: 0.9;
+  position: relative; /* Good for potential pseudo-elements if ever needed */
 }
 
 .hero-content {
@@ -783,32 +787,37 @@ html {
 }
 
 @media (max-width: 768px) {
+  .hamburger-menu {
+    display: flex; /* Make it visible */
+    /* Other styles like z-index, position might be needed if it's not appearing on top */
+  }
+
   .nav-links {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: calc(100% + 5px);
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 0;
     left: 0;
-    right: 0;
-    width: 100%;
-    background-color: #ffffff;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    padding: 1rem 0;
-    z-index: 1000;
-    border-top: 1px solid #eee;
-    opacity: 0;
-    transform: translateY(-20px);
-    visibility: hidden;
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, visibility 0s 0.3s;
+    width: 280px; /* Adjust as needed */
+    height: 100vh;
+    background-color: white; /* Ensure it has a background */
+    box-shadow: 2px 0 5px rgba(0,0,0,0.2); /* Add shadow for visibility */
+    flex-direction: column;
+    align-items: flex-start; /* Or center, stretch, etc. */
+    padding: 70px 20px 20px; /* Add top padding to clear the fixed header */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000; /* Ensure it's above content but potentially below an overlay or hamburger */
+    /* list-style: none; remove bullets if they are ul/li */
+    /* margin: 0; */
   }
-  
+
   .nav-links.open {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-    transition-delay: 0s;
+    display: flex !important; /* Force display to flex */
+    transform: translateX(0) !important; /* Force slide in */
+    /* visibility: visible !important; /* Adding for good measure */
+    /* opacity: 1 !important; */
   }
-  
+
   .logo-text {
     font-size: 1.1rem;
     margin-right: auto;
@@ -1592,10 +1601,15 @@ button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-l
 
 /* --- Hero Section --- */
 .hero-banner {
-  background: linear-gradient(135deg, #0C5F2C 0%, #23AD55 100%);
-  color: var(--white);
-  padding: 6rem 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' fill='transparent'/%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E"),
+                    linear-gradient(135deg, #0C5F2C 0%, #23AD55 100%);
+  background-size: auto, cover; /* SVG tiles at its native size, gradient covers */
+  background-repeat: repeat, no-repeat; /* SVG repeats, gradient does not */
+  color: white;
+  padding: 160px 0 80px;
   text-align: center;
+  opacity: 0.9;
+  position: relative; /* Good for potential pseudo-elements if ever needed */
 }
 
 .hero-content h1 {
@@ -2060,29 +2074,29 @@ section {
   }
 
   .nav-links {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: calc(100% + 5px);
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 0;
     left: 0;
-    right: 0;
-    width: 100%;
-    background-color: #ffffff;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    padding: 1rem 0;
-    z-index: 1000;
-    border-top: 1px solid #eee;
-    opacity: 0;
-    transform: translateY(-20px);
-    visibility: hidden;
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, visibility 0s 0.3s;
+    width: 280px; /* Adjust as needed */
+    height: 100vh;
+    background-color: white; /* Ensure it has a background */
+    box-shadow: 2px 0 5px rgba(0,0,0,0.2); /* Add shadow for visibility */
+    flex-direction: column;
+    align-items: flex-start; /* Or center, stretch, etc. */
+    padding: 70px 20px 20px; /* Add top padding to clear the fixed header */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000; /* Ensure it's above content but potentially below an overlay or hamburger */
+    /* list-style: none; remove bullets if they are ul/li */
+    /* margin: 0; */
   }
 
   .nav-links.open {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-    transition-delay: 0s;
+    display: flex !important; /* Force display to flex */
+    transform: translateX(0) !important; /* Force slide in */
+    /* visibility: visible !important; /* Adding for good measure */
+    /* opacity: 1 !important; */
   }
 
   .nav-item {
@@ -2527,4 +2541,23 @@ section {
   width: 28px;
   height: 28px;
   fill: white;
+}
+
+/* Notification Badge for AI Assistant FAB */
+.ai-assistant-fab .notification-badge {
+  position: absolute;
+  top: -5px; /* Adjust to position correctly */
+  right: -5px; /* Adjust to position correctly */
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  width: 20px; /* Adjust size as needed */
+  height: 20px; /* Adjust size as needed */
+  font-size: 12px; /* Adjust font size as needed */
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white; /* Optional: adds a border like in the example */
+  box-shadow: 0 0 5px rgba(0,0,0,0.3); /* Optional: adds a slight shadow */
 }

@@ -88,6 +88,8 @@ const HomePage = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef(null); // Ref for search input
   const [isChatOpen, setIsChatOpen] = useState(false); // State for AI Chat window
+  const [hasUnreadAiMessages, setHasUnreadAiMessages] = useState(false); // State for AI new message badge
+  const [initialGeolocationAttempted, setInitialGeolocationAttempted] = useState(false); // New state
 
   // Common fallback image that's guaranteed to exist
   const commonFallbackImage = '/images/charging-stations/commonoimage.jpg';
@@ -180,52 +182,98 @@ const HomePage = () => {
   }, [selectedCity, cityLocations]);
 
   const handleCityChange = useCallback(async (city) => {
-    const cityLower = city.toLowerCase();
-    setSelectedCity(city);
-    const targetCityCoords = cityLocations[cityLower] || 
-                      cityLocations[Object.keys(cityLocations).find(key => 
-                        key.toLowerCase() === cityLower || 
-                        cityLower.includes(key) ||
-                        key.includes(cityLower)
-                      )];
-    if (!targetCityCoords) {
-      setUserLocation(cityLocations.pune);
-    } else {
-      setUserLocation(targetCityCoords);
-    }
-    setSelectedStation(null);
     try {
+      if (!city) {
+        console.error('[HomePage] handleCityChange called with empty city');
+        return;
+      }
+      
+      console.log('[HomePage] handleCityChange called with city:', city);
+      
+      // Normalize city name to lowercase for consistency
+      const cityLower = String(city).toLowerCase();
+      // Set selected city first to update UI immediately
+      setSelectedCity(cityLower);
+      
+      // Find city coordinates - with safeguards
+      let targetCityCoords = cityLocations[cityLower];
+      
+      // Fallback for cities not directly in cityLocations
+      if (!targetCityCoords) {
+        const matchedCityKey = Object.keys(cityLocations).find(key => 
+          key.toLowerCase() === cityLower || 
+          cityLower.includes(key.toLowerCase()) ||
+          key.toLowerCase().includes(cityLower)
+        );
+        
+        if (matchedCityKey) {
+          targetCityCoords = cityLocations[matchedCityKey];
+        }
+      }
+      
+      // Set user location based on city coordinates
+      if (!targetCityCoords) {
+        console.log('[HomePage] No target coords found, falling back to pune');
+        setUserLocation(cityLocations.pune);
+      } else {
+        setUserLocation(targetCityCoords);
+        
+        // Update map view to focus on selected city
+        setViewState({
+          longitude: targetCityCoords.lng,
+          latitude: targetCityCoords.lat,
+          zoom: 12, 
+          bearing: 0, 
+          pitch: 0, 
+          transitionDuration: 1000
+        });
+      }
+      
+      // Reset selected station when changing city
+      setSelectedStation(null);
+      
+      // Load stations for the selected city
       setLoading(true);
-      const cityStations = await getStationsByCity(city);
+      console.log('[HomePage] Fetching stations for city:', cityLower);
+      
+      // Fetch stations for the city
+      const cityStations = await getStationsByCity(cityLower);
+      console.log('[HomePage] Stations fetched:', cityStations.length);
+      
       if (cityStations.length === 0) {
-        const allStns = await getAllStations(); // getAllStations is stable
+        // No stations found for the city - get nearest stations instead
+        const allStns = await getAllStations();
         const coordsForFallback = targetCityCoords || cityLocations.pune;
+        
         const stationsWithDistance = allStns.map(station => {
-          const stationCoords = getValidCoordinates(station); // getValidCoordinates is memoized
+          const stationCoords = getValidCoordinates(station);
           const distance = calculateDistance(
             coordsForFallback.lat, coordsForFallback.lng,
             stationCoords.latitude, stationCoords.longitude
           );
           return { ...station, distance };
         });
-        const nearbyStations = stationsWithDistance.sort((a, b) => a.distance - b.distance).slice(0, 10);
+        
+        const nearbyStations = stationsWithDistance
+          .sort((a, b) => a.distance - b.distance)
+          .slice(0, 10);
+          
         setCurrentCityStations(nearbyStations);
       } else {
         setCurrentCityStations(cityStations);
       }
-      if (targetCityCoords) {
-        setViewState({
-          longitude: targetCityCoords.lng,
-          latitude: targetCityCoords.lat,
-          zoom: 12, bearing: 0, pitch: 0, transitionDuration: 1000
-        });
-      }
     } catch (error) {
-      console.error(`❌ Error loading stations for ${city}:`, error);
+      console.error(`❌ Error in handleCityChange for ${city}:`, error);
     } finally {
       setLoading(false);
     }
-  }, [cityLocations, calculateDistance, getValidCoordinates /*, other setters like setSelectedCity, etc. are stable */]);
+  }, [cityLocations, calculateDistance, getValidCoordinates]);
+  
+  // Add this debugging effect to verify handleCityChange works on mount
+  useEffect(() => {
+    console.log('[HomePage] handleCityChange reference is valid:', typeof handleCityChange === 'function');
+    console.log('[HomePage] Initial selectedCity:', selectedCity);
+  }, [handleCityChange, selectedCity]);
 
   const handleImageError = (stationId) => {
     // Track fallback level: 0=primary, 1=station fallback, 2=common fallback
@@ -396,61 +444,100 @@ const HomePage = () => {
 
   // Geolocation effect
   useEffect(() => {
-    console.log('[HomePage Mobile Debug] Attempting geolocation...');
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userCoords = { lat: position.coords.latitude, lng: position.coords.longitude };
-          console.log('[HomePage Mobile Debug] Geolocation success. Coords:', userCoords);
-          setUserLocation(userCoords);
-          setLocationFound(true);
-          setViewState({
-            longitude: userCoords.lng, latitude: userCoords.lat,
-            zoom: 12, bearing: 0, pitch: 0
-          });
-          const cities = Object.entries(cityLocations);
-          let closestCityEntry = cities[0];
-          let minDistance = calculateDistance(
-            userCoords.lat, userCoords.lng,
-            closestCityEntry[1].lat, closestCityEntry[1].lng
-          );
-          cities.forEach(([cityName, coords]) => {
-            const dist = calculateDistance(userCoords.lat, userCoords.lng, coords.lat, coords.lng);
-            if (dist < minDistance) {
-              minDistance = dist;
-              closestCityEntry = [cityName, coords];
+    // Only attempt geolocation if it hasn't been attempted yet
+    if (!initialGeolocationAttempted) {
+      console.log('[HomePage Geolocation] Attempting initial geolocation...');
+      setInitialGeolocationAttempted(true); // Mark that we've tried
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userCoords = { lat: position.coords.latitude, lng: position.coords.longitude };
+            console.log('[HomePage Geolocation] Success. Coords:', userCoords);
+            setUserLocation(userCoords);
+            setLocationFound(true);
+            setViewState(prev => ({
+              ...prev,
+              longitude: userCoords.lng,
+              latitude: userCoords.lat,
+              zoom: 12
+            }));
+
+            // Determine closest city and set it, ONLY if no city was pre-selected or forced
+            // This part is crucial: we still want to find the closest city
+            // but the call to handleCityChange might be the issue if it's too aggressive.
+            const cities = Object.entries(cityLocations);
+            if (cities.length > 0) {
+              let closestCityEntry = cities[0];
+              let minDistance = calculateDistance(
+                userCoords.lat, userCoords.lng,
+                closestCityEntry[1].lat, closestCityEntry[1].lng
+              );
+              cities.forEach(([cityName, coords]) => {
+                const dist = calculateDistance(userCoords.lat, userCoords.lng, coords.lat, coords.lng);
+                if (dist < minDistance) {
+                  minDistance = dist;
+                  closestCityEntry = [cityName, coords];
+                }
+              });
+              console.log('[HomePage Geolocation] Closest city determined:', closestCityEntry[0]);
+              // Important: Check if the selectedCity is still the default 'pune' before overriding
+              // Or, better yet, this effect should probably *not* call handleCityChange if a manual selection is in progress.
+              // For now, let's defer to handleCityChange but be mindful.
+              // If selectedCity is still 'pune' (initial default), then update.
+              if (selectedCity === 'pune') { // Only change if it's still the default
+                 console.log('[HomePage Geolocation] Setting city to closest:', closestCityEntry[0]);
+                 handleCityChange(closestCityEntry[0]);
+              } else {
+                 console.log('[HomePage Geolocation] A city is already selected, not changing to closest automatically.');
+              }
             }
-          });
-          console.log('[HomePage Mobile Debug] Closest city determined:', closestCityEntry[0]);
-          handleCityChange(closestCityEntry[0]);
-        },
-        (error) => {
-          console.error('[HomePage Mobile Debug] Error getting location:', error);
-          let message = 'Could not retrieve your location.';
-          if (error.code === error.PERMISSION_DENIED) {
-            message = 'Location permission denied. Cannot show nearest stations.';
-          } else if (error.code === error.POSITION_UNAVAILABLE) {
-            message = 'Location information is unavailable.';
-          } else if (error.code === error.TIMEOUT) {
-            message = 'Location request timed out.';
+            setLoading(false); // Stop loading after geolocation success and potential city change
+          },
+          (error) => {
+            console.error('[HomePage Geolocation] Error getting location:', error);
+            let message = 'Could not retrieve your location.';
+            if (error.code === error.PERMISSION_DENIED) {
+              message = 'Location permission denied. Cannot show nearest stations.';
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+              message = 'Location information is unavailable.';
+            } else if (error.code === error.TIMEOUT) {
+              message = 'Location request timed out.';
+            }
+            setGeolocationError(message);
+            setLocationFound(false);
+            // Fallback to a default city ONLY if no city has been selected yet or if it's still 'pune'
+            if (selectedCity === 'pune') { // Only default to Pune if no other city was selected
+              console.log('[HomePage Geolocation] Failed, falling back to default city Pune.');
+              handleCityChange('pune');
+            } else {
+              console.log('[HomePage Geolocation] Failed, but a city is already selected, not changing to Pune.');
+            }
+            setLoading(false);
           }
-          setGeolocationError(message);
-          console.log('[HomePage Mobile Debug] Geolocation error state set:', message);
-          setLocationFound(false);
-          // Fallback to a default city if geolocation fails
-          console.log('[HomePage Mobile Debug] Geolocation failed, falling back to default city Pune.');
-          handleCityChange('pune'); 
-          setLoading(false);
+        );
+      } else {
+        setGeolocationError('Geolocation is not supported by your browser.');
+        // Fallback to a default city ONLY if no city has been selected yet or if it's still 'pune'
+        if (selectedCity === 'pune') {  // Only default to Pune if no other city was selected
+            console.log('[HomePage Geolocation] Not supported, falling back to default city Pune.');
+            handleCityChange('pune');
+        } else {
+            console.log('[HomePage Geolocation] Not supported, but a city is already selected, not changing to Pune.');
         }
-      );
+        setLoading(false);
+      }
     } else {
-      setGeolocationError('Geolocation is not supported by your browser.');
-      console.log('[HomePage Mobile Debug] Geolocation not supported, falling back to default city Pune.');
-      handleCityChange('pune'); 
-      setLoading(false);
+      console.log('[HomePage Geolocation] Initial geolocation already attempted, skipping.');
+      // If geolocation was already attempted and failed, and we are still on 'pune', ensure loading is false.
+      // This can happen if the user manually selected Pune after a failed geolocation.
+      if (selectedCity === 'pune' && !locationFound) {
+          setLoading(false);
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [calculateDistance, cityLocations, handleCityChange]); // Dependencies adjusted for initial load logic
+  }, [initialGeolocationAttempted, calculateDistance, cityLocations, handleCityChange, selectedCity]); // Added selectedCity to dependencies
+  // Make sure handleCityChange is stable (already wrapped in useCallback)
 
   // Effect to calculate and set nearest stations
   useEffect(() => {
@@ -616,9 +703,20 @@ const HomePage = () => {
     setIsChatOpen(prevIsChatOpen => {
       const newIsChatOpen = !prevIsChatOpen;
       console.log('[HomePage] new isChatOpen will be:', newIsChatOpen);
+      // If opening the chat, mark messages as read
+      if (newIsChatOpen) {
+        setHasUnreadAiMessages(false);
+      }
       return newIsChatOpen;
     });
   };
+
+  // Callback for AiAssistantChat to signal a new message when chat is closed
+  const handleNewAiMessage = useCallback(() => {
+    if (!isChatOpen) {
+      setHasUnreadAiMessages(true);
+    }
+  }, [isChatOpen]);
 
   console.log('[HomePage] Rendering. isChatOpen:', isChatOpen); // Log on every render
 
@@ -629,6 +727,12 @@ const HomePage = () => {
   }
   console.log('[HomePage Mobile Debug] Geolocation error state:', geolocationError);
   console.log('[HomePage Mobile Debug] Location found state:', locationFound);
+  
+  // Debug citys city selectors  
+  console.log('[HomePage Debug] indianCities value:', indianCities);
+  console.log('[HomePage Debug] cityLocations value:', cityLocations);
+  console.log('[HomePage Debug] selectedCity value:', selectedCity);
+  console.log('[HomePage Debug] handleCityChange reference:', !!handleCityChange);
 
   return (
     <div className="home-page">
@@ -855,13 +959,13 @@ const HomePage = () => {
           onMarkerClick={handleMarkerClick}
           onClosePopup={() => setShowPopup(false)}
           onBookNowPopup={handleBookNow}
-          onViewDetailsPopup={(station) => {
-            handleViewDetails(station);
-                            setShowPopup(false);
-                          }} 
+          onViewDetailsPopup={handleViewDetails}
           cityLocations={cityLocations}
           selectedCity={selectedCity}
-          onCityChange={handleCityChange}
+          onCityChange={(city) => {
+            console.log("[HomePage] MapSection triggered city change for:", city);
+            handleCityChange(city);
+          }}
         />
       </Suspense>
           
@@ -1053,11 +1157,12 @@ const HomePage = () => {
           <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
           <path d="M0 0h24v24H0z" fill="none"/>
         </svg>
+        {hasUnreadAiMessages && <span className="notification-badge">1</span>}
       </button>
 
       {/* AI Assistant Chat Window */}
       {/* The AiAssistantChat component itself will manage its open/close animation based on isOpen */}
-      <AiAssistantChat isOpen={isChatOpen} onClose={toggleChat} />
+      <AiAssistantChat isOpen={isChatOpen} onClose={toggleChat} onNewMessage={handleNewAiMessage} />
 
     </div>
   );

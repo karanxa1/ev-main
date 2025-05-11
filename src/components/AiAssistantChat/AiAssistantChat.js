@@ -50,7 +50,7 @@ const parseMessageForButtons = (text) => {
   return result;
 };
 
-const AiAssistantChat = ({ isOpen, onClose }) => {
+const AiAssistantChat = ({ isOpen, onClose, onNewMessage }) => {
   const navigate = useNavigate(); // Initialize navigate
   const [animationClass, setAnimationClass] = useState('');
   const [currentMessage, setCurrentMessage] = useState('');
@@ -139,11 +139,17 @@ const AiAssistantChat = ({ isOpen, onClose }) => {
 
       const aiMessage = { id: (Date.now() + 1).toString(), text: aiResponseText || "Sorry, I didn't get a response.", sender: 'ai' };
       setMessages(prevMessages => [...prevMessages, aiMessage]);
+      if (onNewMessage) {
+        onNewMessage();
+      }
     } catch (error) {
       console.error("Error processing Cohere response in component:", error);
       const errorMessageText = error.message || "Sorry, I encountered an error. Please try again.";
       const errorMessage = { id: (Date.now() + 1).toString(), text: errorMessageText, sender: 'ai' };
       setMessages(prevMessages => [...prevMessages, errorMessage]);
+      if (onNewMessage) {
+        onNewMessage();
+      }
     } finally {
       setIsAiThinking(false);
     }
