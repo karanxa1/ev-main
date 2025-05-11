@@ -111,6 +111,18 @@
   color: #333;
   align-self: flex-start;
   border-bottom-left-radius: 4px; /* Bubble tail effect */
+  position: relative; /* For pseudo-elements if needed */
+  padding-left: 35px; /* Make space for an icon */
+}
+
+/* Optional: Add a small AI icon to AI messages */
+.ai-chat-body .message.ai-message::before {
+  content: '✨'; /* Sparkle emoji or an SVG icon */
+  position: absolute;
+  left: 12px;
+  top: 10px; /* Adjust vertical alignment */
+  font-size: 1.1em;
+  color: var(--primary-color, #0C5F2C);
 }
 
 .ai-chat-body .message.user-message {
@@ -118,6 +130,48 @@
   color: white;
   align-self: flex-end;
   border-bottom-right-radius: 4px; /* Bubble tail effect */
+}
+
+/* Styling for the navigation buttons within chat messages */
+.chat-nav-button {
+  background-color: var(--secondary-color, #23AD55); /* Use a theme color */
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 15px; /* More rounded */
+  cursor: pointer;
+  margin-top: 8px;
+  margin-right: 8px;
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chat-nav-button:hover {
+  background-color: var(--primary-color, #0C5F2C); /* Darker on hover */
+  transform: translateY(-1px);
+}
+
+.chat-nav-button:active {
+  transform: translateY(0px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Container for multiple buttons, if needed (optional, if AI generates many) */
+.chat-nav-buttons-container {
+  display: flex;
+  flex-wrap: wrap; /* Allow buttons to wrap to next line */
+  gap: 8px; /* Spacing between buttons */
+  margin-top: 8px;
+}
+
+/* Ensure message text and buttons are well-spaced */
+.ai-chat-body .message span, /* For text parts */
+.ai-chat-body .message button.chat-nav-button {
+  display: inline-block; /* Allows margin/padding to work as expected if mixed */
+  vertical-align: middle; /* Align text and button if on same conceptual line */
 }
 
 .ai-chat-footer {
