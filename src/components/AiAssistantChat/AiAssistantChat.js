@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './AiAssistantChat.css';
 // import { generateChatResponse as getGeminiResponse } from '../../services/geminiService'; // Old Gemini import
-import { getOpenAiChatResponse } from '../../services/openAiService'; // New OpenAI import
+// import { getOpenAiChatResponse } from '../../services/openAiService'; // Old OpenAI import
+import { getCohereChatResponse } from '../../services/cohereService'; // New Cohere import
+import { websiteInfo } from '../../utils/websiteContent.js'; // Import website content
 
 // Placeholder for a Send Icon SVG
 const SendIcon = () => (
@@ -17,7 +20,38 @@ const TypingIndicator = () => (
   </div>
 );
 
+// Function to parse message text and extract button data
+const parseMessageForButtons = (text) => {
+  console.log('[parseMessageForButtons] INPUT TEXT:', JSON.stringify(text)); // Log 1: Input to parser
+  const buttonRegex = /\[BUTTON:([^\]]+?):([^\]]+?):(anchor|route)\]/g;
+  let match;
+  const parts = [];
+  let lastIndex = 0;
+
+  while ((match = buttonRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
+    }
+    parts.push({
+      type: 'button',
+      label: match[1],
+      targetValue: match[2],
+      targetType: match[3],
+    });
+    lastIndex = buttonRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ type: 'text', content: text.substring(lastIndex) });
+  }
+  
+  const result = parts.length > 0 ? parts : [{ type: 'text', content: text }];
+  console.log('[parseMessageForButtons] PARSED PARTS:', JSON.stringify(result)); // Log 2: Output of parser
+  return result;
+};
+
 const AiAssistantChat = ({ isOpen, onClose }) => {
+  const navigate = useNavigate(); // Initialize navigate
   const [animationClass, setAnimationClass] = useState('');
   const [currentMessage, setCurrentMessage] = useState('');
   const [messages, setMessages] = useState([
@@ -66,43 +100,49 @@ const AiAssistantChat = ({ isOpen, onClose }) => {
     setCurrentMessage(event.target.value);
   };
 
+  const handleNavigationButtonClick = (targetValue, targetType) => {
+    onClose(); // Close chat window before navigating
+    if (targetType === 'route') {
+      navigate(targetValue);
+    } else if (targetType === 'anchor') {
+      // Ensure targetValue for anchors includes '#'
+      const anchorId = targetValue.startsWith('#') ? targetValue.substring(1) : targetValue;
+      const element = document.getElementById(anchorId);
+      if (element) {
+        // Delay slightly to allow chat window to close
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      } else {
+        console.warn(`Anchor element with ID '${anchorId}' not found.`);
+        // Fallback: navigate to home and let user scroll if ID is wrong/missing
+        if (targetValue.startsWith('#')) navigate('/'); 
+      }
+    }
+  };
+
   const handleSendMessage = async () => {
     if (currentMessage.trim() === '') return;
-
     const userText = currentMessage.trim();
-    const newUserMessage = {
-      id: Date.now().toString(),
-      text: userText,
-      sender: 'user'
-    };
-
-    // Keep previous messages, add new user message
+    const newUserMessage = { id: Date.now().toString(), text: userText, sender: 'user' };
     const updatedMessages = [...messages, newUserMessage];
     setMessages(updatedMessages);
     setCurrentMessage('');
     setIsAiThinking(true);
 
     try {
-      // Prepare chat history for the API - OpenAI format expects just the text.
-      // The openAiService will reformat it to {role, content}
-      const historyForApi = updatedMessages.filter(msg => msg.id !== 'init'); // Exclude initial system message from history sent to API for this call
+      const historyForApi = updatedMessages.filter(msg => msg.id !== 'init');
+      const aiResponseText = await getCohereChatResponse(historyForApi, userText, websiteInfo.documents);
       
-      // Use the new OpenAI service function
-      const aiResponseText = await getOpenAiChatResponse(historyForApi, userText);
-      
-      const aiMessage = {
-        id: (Date.now() + 1).toString(),
-        text: aiResponseText || "Sorry, I didn't get a response.", // Fallback for empty response
-        sender: 'ai'
-      };
+      // Log 3: The EXACT text from Cohere
+      console.log('[handleSendMessage] RAW AI RESPONSE FROM COHERE:', JSON.stringify(aiResponseText)); 
+
+      const aiMessage = { id: (Date.now() + 1).toString(), text: aiResponseText || "Sorry, I didn't get a response.", sender: 'ai' };
       setMessages(prevMessages => [...prevMessages, aiMessage]);
     } catch (error) {
-      console.error("Error processing OpenAI response in component:", error);
-      const errorMessage = {
-        id: (Date.now() + 1).toString(),
-        text: error.message || "Sorry, I encountered an error. Please try again.",
-        sender: 'ai'
-      };
+      console.error("Error processing Cohere response in component:", error);
+      const errorMessageText = error.message || "Sorry, I encountered an error. Please try again.";
+      const errorMessage = { id: (Date.now() + 1).toString(), text: errorMessageText, sender: 'ai' };
       setMessages(prevMessages => [...prevMessages, errorMessage]);
     } finally {
       setIsAiThinking(false);
@@ -134,11 +174,38 @@ const AiAssistantChat = ({ isOpen, onClose }) => {
         </button>
       </div>
       <div className="ai-chat-body" ref={chatBodyRef}>
-        {messages.map(msg => (
-          <div key={msg.id} className={`message ${msg.sender === 'user' ? 'user-message' : 'ai-message'}`}>
-            <p>{msg.text}</p> {/* Wrap text in <p> for consistent styling if needed */}
-          </div>
-        ))}
+        {messages.map(msg => {
+          // Log 4: Text being passed to the parser for THIS specific message
+          console.log('[Message Rendering] Text for this message:', JSON.stringify(msg.text));
+          
+          const messageParts = parseMessageForButtons(msg.text);
+          
+          // Log 5: What parts are being used to render THIS specific message
+          console.log('[Message Rendering] Parts for this message:', JSON.stringify(messageParts));
+
+          return (
+            <div key={msg.id} className={`message ${msg.sender === 'user' ? 'user-message' : 'ai-message'}`}>
+              {messageParts.map((part, index) => {
+                if (part.type === 'text') {
+                  return <span key={index}>{part.content.split('\\n').map((line, i) => <React.Fragment key={i}>{line}{i < part.content.split('\\n').length - 1 && <br />}</React.Fragment>)}</span>;
+                }
+                if (part.type === 'button') {
+                  console.log('[Message Rendering] Rendering a BUTTON for:', JSON.stringify(part)); // Log 6: Confirmation of button rendering attempt
+                  return (
+                    <button 
+                      key={index} 
+                      className="chat-nav-button" 
+                      onClick={() => handleNavigationButtonClick(part.targetValue, part.targetType)}
+                    >
+                      {part.label}
+                    </button>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          );
+        })}
         {isAiThinking && <TypingIndicator />} {/* Show typing indicator */}
       </div>
       <div className="ai-chat-footer">

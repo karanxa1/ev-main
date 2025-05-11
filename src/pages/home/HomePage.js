@@ -667,6 +667,13 @@ const HomePage = () => {
             >
               How it Works
             </a>
+            <a
+              href="#cost-estimator"
+              className="nav-item"
+              onClick={(e) => { e.preventDefault(); if(mobileMenuOpen) toggleMobileMenu(); scrollToSection(costEstimatorSectionRef[0]); }}
+            >
+              Cost Estimator
+            </a>
             
             {/* Conditional rendering based on authentication status */}
             {currentUser ? (
