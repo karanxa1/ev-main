@@ -11,6 +11,7 @@ import StationsListSection from '../../components/StationsListSection/StationsLi
 import useParallax from '../../hooks/useParallax';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import CostEstimator from '../../components/CostEstimator/CostEstimator';
+import AiAssistantChat from '../../components/AiAssistantChat/AiAssistantChat';
 import './HomePage.css';
 
 // Lazy load MapSection
@@ -86,6 +87,7 @@ const HomePage = () => {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef(null); // Ref for search input
+  const [isChatOpen, setIsChatOpen] = useState(false); // State for AI Chat window
 
   // Common fallback image that's guaranteed to exist
   const commonFallbackImage = '/images/charging-stations/commonoimage.jpg';
@@ -394,19 +396,21 @@ const HomePage = () => {
 
   // Geolocation effect
   useEffect(() => {
+    console.log('[HomePage Mobile Debug] Attempting geolocation...');
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const userCoords = { lat: position.coords.latitude, lng: position.coords.longitude };
+          console.log('[HomePage Mobile Debug] Geolocation success. Coords:', userCoords);
           setUserLocation(userCoords);
           setLocationFound(true);
           setViewState({
             longitude: userCoords.lng, latitude: userCoords.lat,
             zoom: 12, bearing: 0, pitch: 0
           });
-          const cities = Object.entries(cityLocations); // cityLocations is memoized
+          const cities = Object.entries(cityLocations);
           let closestCityEntry = cities[0];
-          let minDistance = calculateDistance( // calculateDistance is memoized
+          let minDistance = calculateDistance(
             userCoords.lat, userCoords.lng,
             closestCityEntry[1].lat, closestCityEntry[1].lng
           );
@@ -417,11 +421,11 @@ const HomePage = () => {
               closestCityEntry = [cityName, coords];
             }
           });
-          handleCityChange(closestCityEntry[0]); // handleCityChange is memoized
-          // setLoading(false); // setLoading is stable, handleCityChange will set it.
+          console.log('[HomePage Mobile Debug] Closest city determined:', closestCityEntry[0]);
+          handleCityChange(closestCityEntry[0]);
         },
         (error) => {
-          console.error('Error getting location:', error);
+          console.error('[HomePage Mobile Debug] Error getting location:', error);
           let message = 'Could not retrieve your location.';
           if (error.code === error.PERMISSION_DENIED) {
             message = 'Location permission denied. Cannot show nearest stations.';
@@ -431,15 +435,22 @@ const HomePage = () => {
             message = 'Location request timed out.';
           }
           setGeolocationError(message);
+          console.log('[HomePage Mobile Debug] Geolocation error state set:', message);
           setLocationFound(false);
+          // Fallback to a default city if geolocation fails
+          console.log('[HomePage Mobile Debug] Geolocation failed, falling back to default city Pune.');
+          handleCityChange('pune'); 
           setLoading(false);
         }
       );
     } else {
       setGeolocationError('Geolocation is not supported by your browser.');
+      console.log('[HomePage Mobile Debug] Geolocation not supported, falling back to default city Pune.');
+      handleCityChange('pune'); 
       setLoading(false);
     }
-  }, [calculateDistance, cityLocations, handleCityChange]); // Added dependencies
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calculateDistance, cityLocations, handleCityChange]); // Dependencies adjusted for initial load logic
 
   // Effect to calculate and set nearest stations
   useEffect(() => {
@@ -554,7 +565,7 @@ const HomePage = () => {
     if (searchInputRef.current) {
       searchInputRef.current.blur(); // Remove focus from input
     }
-
+    
     if (!query) {
       // If search is cleared, reset to selected city view
       setIsSearching(false);
@@ -598,6 +609,26 @@ const HomePage = () => {
 
     setLoading(false); // Hide loading indicators
   };
+
+  // Toggle AI Chat Window
+  const toggleChat = () => {
+    console.log('[HomePage] toggleChat called. Current isChatOpen:', isChatOpen);
+    setIsChatOpen(prevIsChatOpen => {
+      const newIsChatOpen = !prevIsChatOpen;
+      console.log('[HomePage] new isChatOpen will be:', newIsChatOpen);
+      return newIsChatOpen;
+    });
+  };
+
+  console.log('[HomePage] Rendering. isChatOpen:', isChatOpen); // Log on every render
+
+  // Log currentCityStations length on every render
+  console.log(`[HomePage Mobile Debug] Rendering. Number of currentCityStations: ${currentCityStations.length}`);
+  if (currentCityStations.length > 0) {
+    console.log('[HomePage Mobile Debug] First station in currentCityStations:', currentCityStations[0]);
+  }
+  console.log('[HomePage Mobile Debug] Geolocation error state:', geolocationError);
+  console.log('[HomePage Mobile Debug] Location found state:', locationFound);
 
   return (
     <div className="home-page">
@@ -809,21 +840,21 @@ const HomePage = () => {
           loading={loading}
           mapboxToken={MAPBOX_TOKEN} 
           viewState={viewState}
-          onViewStateChange={setViewState} // Pass setViewState directly
+          onViewStateChange={setViewState}
           currentCityStations={currentCityStations}
           getValidCoordinates={getValidCoordinates}
           selectedStation={selectedStation}
           showPopup={showPopup}
-          onMarkerClick={handleMarkerClick} // Pass handleMarkerClick
-          onClosePopup={() => setShowPopup(false)} // Pass handler for closing popup
-          onBookNowPopup={handleBookNow} // Pass handleBookNow for popup
-          onViewDetailsPopup={(station) => { // Pass handler for view details from popup
+          onMarkerClick={handleMarkerClick}
+          onClosePopup={() => setShowPopup(false)}
+          onBookNowPopup={handleBookNow}
+          onViewDetailsPopup={(station) => {
             handleViewDetails(station);
-            setShowPopup(false); // Also close popup when viewing details
-          }}
+                            setShowPopup(false);
+                          }} 
           cityLocations={cityLocations}
           selectedCity={selectedCity}
-          onCityChange={handleCityChange} // Pass handleCityChange
+          onCityChange={handleCityChange}
         />
       </Suspense>
           
@@ -917,8 +948,8 @@ const HomePage = () => {
                   animationIndex={index}
                 />
               ))}
-            </div>
-          </div>
+                      </div>
+                  </div>
         </section>
       )}
 
@@ -931,11 +962,11 @@ const HomePage = () => {
               <p className="tip-text">{currentEvTip}</p>
               <button onClick={showNextTip} className="btn-next-tip">
                 Show Another Tip
-              </button>
-            </div>
+                      </button>
+                    </div>
           )}
-        </div>
-      </section>
+          </div>
+        </section>
 
       {/* Footer */}
       <footer ref={footerRef[0]} className={`footer ${footerRef[1] ? 'is-visible animate-fade-in' : 'initially-hidden'}`}>
@@ -1006,6 +1037,21 @@ const HomePage = () => {
           </div>
         </div>
       </footer>
+
+      {/* AI Assistant Floating Action Button */}
+      <button onClick={toggleChat} className="ai-assistant-fab" aria-label="Toggle AI Assistant Chat">
+        {/* Placeholder for an icon (e.g., SVG or a Unicode character) */}
+        {/* Using a simple SVG for a chat bubble icon */}
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+          <path d="M0 0h24v24H0z" fill="none"/>
+        </svg>
+      </button>
+
+      {/* AI Assistant Chat Window */}
+      {/* The AiAssistantChat component itself will manage its open/close animation based on isOpen */}
+      <AiAssistantChat isOpen={isChatOpen} onClose={toggleChat} />
+
     </div>
   );
 };

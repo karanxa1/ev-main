@@ -2496,3 +2496,35 @@ section {
   margin-bottom: 40px;
   font-weight: 600;
 }
+
+/* Floating AI Assistant Button */
+.ai-assistant-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background-color: var(--primary-color, #0C5F2C);
+  color: white;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px; /* For icon */
+  cursor: pointer;
+  z-index: 1040; /* Below chat window (1050) but above other content */
+  transition: transform 0.2s ease-out, background-color 0.2s ease-out;
+}
+
+.ai-assistant-fab:hover {
+  background-color: var(--secondary-color, #23AD55);
+  transform: scale(1.1);
+}
+
+.ai-assistant-fab svg {
+  width: 28px;
+  height: 28px;
+  fill: white;
+}
