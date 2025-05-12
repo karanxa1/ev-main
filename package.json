@@ -45,6 +45,7 @@
     "firebase": "^11.6.1",
     "mapbox-gl": "^2.15.0",
     "motion": "^12.9.2",
+    "nodemailer": "^7.0.3",
     "openai": "^4.98.0",
     "react-icons": "^5.5.0",
     "react-map-gl": "^7.1.6",
