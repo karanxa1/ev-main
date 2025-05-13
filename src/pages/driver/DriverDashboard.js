@@ -591,7 +591,8 @@ const DriverDashboard = () => {
                         zoomControl: true,
                         mapTypeControl: false, // Simplified UI for mobile
                         streetViewControl: false, // Simplified UI for mobile
-                        fullscreenControl: true
+                        fullscreenControl: true,
+                        gestureHandling: 'cooperative'
                       }}
                       onLoad={handleMapLoad}
                     >

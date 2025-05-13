@@ -176,6 +176,7 @@ const DriverDashboard: React.FC = () => {
             mapContainerStyle={{ height: '100%', width: '100%' }}
             center={{ lat: 40.7128, lng: -74.0060 }}
             zoom={12}
+            options={{ gestureHandling: 'cooperative' }}
           >
             {chargers.map(charger => (
               <Marker

@@ -32,6 +32,8 @@ const MapSection = forwardRef(({
   // State to track if we should render the map
   const [shouldRenderMap, setShouldRenderMap] = useState(false);
   const mapContainerRef = useRef(null); // Ref for the map container div
+  const mapRef = useRef(null); // Ref for the map instance
+  const [scrollZoomEnabled, setScrollZoomEnabled] = useState(false); // Track if scroll zoom is enabled
   
   // Wait until after mount to render the map
   useEffect(() => {
@@ -183,12 +185,19 @@ const MapSection = forwardRef(({
           
           {!loading && shouldRenderMap && mapboxToken && (
             <Map
+              ref={mapRef}
               mapboxAccessToken={mapboxToken}
               initialViewState={viewState}
               onMove={evt => onViewStateChange(evt.viewState)}
               mapStyle="mapbox://styles/mapbox/streets-v11"
               container={MAPBOX_CONTAINER_ID} 
               style={{ width: '100%', height: '100%' }}
+              scrollZoom={scrollZoomEnabled}
+              onClick={() => {
+                if (!scrollZoomEnabled) {
+                  setScrollZoomEnabled(true);
+                }
+              }}
             >
               <NavigationControl position="top-right" />
               {renderMarkers()}

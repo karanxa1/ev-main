@@ -10,6 +10,7 @@ const MapboxDrivers = ({ drivers }) => {
     latitude: 37.8,
     zoom: 10
   });
+  const [scrollZoomEnabled, setScrollZoomEnabled] = useState(false);
 
   useEffect(() => {
     // Center map on the first driver if available
@@ -29,6 +30,12 @@ const MapboxDrivers = ({ drivers }) => {
         onMove={evt => setViewState(evt.viewState)}
         mapStyle="mapbox://styles/mapbox/streets-v11"
         mapboxAccessToken={MAPBOX_TOKEN}
+        scrollZoom={scrollZoomEnabled}
+        onClick={() => {
+          if (!scrollZoomEnabled) {
+            setScrollZoomEnabled(true);
+          }
+        }}
       >
         <NavigationControl position="top-right" />
         

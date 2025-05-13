@@ -265,6 +265,7 @@ const HostDashboard: React.FC = () => {
                   center={selectedLocation || mapCenter}
                   zoom={12}
                   onClick={handleMapClick}
+                  options={{ gestureHandling: 'cooperative' }}
                 >
                   {selectedLocation && (
                     <Marker position={selectedLocation} />

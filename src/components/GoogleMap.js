@@ -47,6 +47,9 @@ const GoogleMap = ({ center = defaultCenter, zoom = defaultZoom }) => {
             mapContainerStyle={{ height: '100%', width: '100%' }}
             center={center}
             zoom={zoom}
+            options={{
+              gestureHandling: 'cooperative'
+            }}
           >
             <Marker position={center} />
           </GoogleMapComponent>
