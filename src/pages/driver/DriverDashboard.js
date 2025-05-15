@@ -27,7 +27,8 @@ const getJitteredCoordinates = (lat, lng, stationId) => {
 };
 
 const DriverDashboard = () => {
-  const { state } = useLocation();
+  const reactRouterLocation = useLocation(); // Renamed to avoid conflict if global `location` was intended elsewhere, and to be clear.
+  const { state } = reactRouterLocation; // Continue using state if needed from the location object
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [rawStations, setRawStations] = useState([]); // Store raw stations from API
@@ -36,6 +37,7 @@ const DriverDashboard = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [selectedStationPopup, setSelectedStationPopup] = useState(null);
   const [activeBottomNav, setActiveBottomNav] = useState('Map');
+  const [viewMode, setViewMode] = useState('map'); // ADDED_LINE: 'map' or 'list' view
   
   // User vehicle state
   const [userVehicle, setUserVehicle] = useState(state?.vehicle || null);
@@ -185,6 +187,13 @@ const DriverDashboard = () => {
     console.log(`${navItem} clicked`);
     if (navItem === 'Profile') {
       navigate('/profile');
+    } else if (navItem === 'Trips') {
+      navigate('/trips');
+    } else if (navItem === 'Map') {
+      // Use the location object from the useLocation hook
+      if (reactRouterLocation.pathname !== '/driver') {
+        navigate('/driver');
+      }
     }
   };
 
@@ -195,6 +204,10 @@ const DriverDashboard = () => {
   const handleSelectVehicle = () => {
     console.log('handleSelectVehicle called. Navigating to /change-vehicle...'); // Updated diagnostic log
     navigate('/change-vehicle'); // Changed navigation path
+  };
+
+  const handleToggleViewMode = () => {
+    setViewMode(prevMode => prevMode === 'map' ? 'list' : 'map');
   };
 
   return (
@@ -230,7 +243,7 @@ const DriverDashboard = () => {
           </div>
         </section>
 
-        {MAPBOX_TOKEN ? (
+        {viewMode === 'map' && MAPBOX_TOKEN && (
           <Map
             ref={mapRef}
             mapboxAccessToken={MAPBOX_TOKEN}
@@ -241,79 +254,92 @@ const DriverDashboard = () => {
           >
             <NavigationControl position="bottom-right" style={{ marginBottom: '80px' }} />
 
+            {/* Markers for stations */}
+            {filteredStations.map(station => (
+              <Marker
+                key={station.id} // Ensure unique key for each marker
+                longitude={station.longitude}
+                latitude={station.latitude}
+                onClick={() => handleMarkerClick(station)}
+              >
+                <div 
+                  className={`map-marker ${station.isCompatible ? 'compatible' : ''} ${userVehicle ? '' : 'no-vehicle'}`}
+                  title={station.name}
+                />
+              </Marker>
+            ))}
+            
+            {/* User Location Marker */}
             {userLocation && (
-              <Marker longitude={userLocation.longitude} latitude={userLocation.latitude} anchor="center">
-                <div className="user-location-marker"></div>
+              <Marker longitude={userLocation.longitude} latitude={userLocation.latitude}>
+                <div className="user-location-dot"></div>
               </Marker>
             )}
 
-            {/* Use the filtered stations for rendering markers */}
-            {filteredStations.map(station => {
-              // Coordinates are already validated and potentially jittered by useMemo
-              if (station.latitude && station.longitude) { // Basic check again, though useMemo should handle invalids
-                return (
-                  <Marker key={station.id} longitude={station.longitude} latitude={station.latitude} anchor="bottom" onClick={(e) => { e.originalEvent.stopPropagation(); handleMarkerClick(station); }}>
-                    <div className={`station-marker 
-                      ${station.availability ? 'available' : 'occupied'}
-                      ${userVehicle && station.isCompatible ? 'compatible' : ''}
-                    `}>
-                      {userVehicle && station.isCompatible && <FaCheck className="compatibility-icon" />}
-                      ⚡
-                    </div>
-                  </Marker>
-                );
-              }
-              return null;
-            })}
-
             {selectedStationPopup && (
-              <Popup 
-                longitude={parseFloat(selectedStationPopup.originalLng !== undefined ? selectedStationPopup.originalLng : selectedStationPopup.longitude)} 
-                latitude={parseFloat(selectedStationPopup.originalLat !== undefined ? selectedStationPopup.originalLat : selectedStationPopup.latitude)} 
-                onClose={() => setSelectedStationPopup(null)} 
-                closeOnClick={false} 
-                anchor="top" 
-                offset={25}
+              <Popup
+                longitude={selectedStationPopup.originalLng !== undefined ? selectedStationPopup.originalLng : selectedStationPopup.longitude}
+                latitude={selectedStationPopup.originalLat !== undefined ? selectedStationPopup.originalLat : selectedStationPopup.latitude}
+                onClose={() => setSelectedStationPopup(null)}
+                closeButton={true}
+                closeOnClick={false}
+                anchor="bottom"
+                className="station-popup"
               >
-                <div className="station-popup">
-                  <h4>{selectedStationPopup.name || 'N/A'}</h4>
-                  <p>{selectedStationPopup.address || 'Address not available'}</p>
-                  <p>Status: {selectedStationPopup.hasOwnProperty('availability') ? (selectedStationPopup.availability ? 'Available' : 'Occupied') : 'Status unknown'}</p>
-                  {userVehicle && selectedStationPopup.isCompatible && (
-                    <p className="compatibility-notice">✓ Compatible with your vehicle</p>
+                <div>
+                  <h3>{selectedStationPopup.name}</h3>
+                  <p>{selectedStationPopup.address}</p>
+                  {selectedStationPopup.isCompatible !== undefined && (
+                    <p className={selectedStationPopup.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
+                      {selectedStationPopup.isCompatible ? 'Compatible with your vehicle' : 'May not be compatible'}
+                    </p>
                   )}
-                  {userVehicle && !selectedStationPopup.isCompatible && (
-                    <p className="incompatibility-notice">✗ Not compatible with your vehicle</p>
-                  )}
-                  {selectedStationPopup.chargerTypes && (
-                    <p>Charger Types: {selectedStationPopup.chargerTypes.join(', ')}</p>
-                  )}
+                  {/* Add more details or a button to navigate/get directions */}
                 </div>
               </Popup>
             )}
-            <div className="map-action-button recenter-button" onClick={flyToUserLocation}>
-                <FaCrosshairs size={20} />
-            </div>
-            <div className="map-action-button list-toggle-button">
-                <FaListAlt size={20} /> 
-            </div>
           </Map>
-        ) : (
-          <p className="map-token-error">Mapbox token is not configured. Map cannot be displayed.</p>
         )}
-        
-        {loading && <div className="loading-overlay">Loading stations...</div>}
-        {error && <div className="error-message">{error}</div>}
-        
-        {!userVehicle && !loading && (
-          <div className="vehicle-missing-notice">
-            No vehicle selected. Showing all charging stations. Select a vehicle to see compatible stations.
+        {viewMode === 'map' && !MAPBOX_TOKEN && (
+           <div className="map-loading-placeholder">Map cannot be displayed. Mapbox token is missing.</div>
+        )}
+
+        {viewMode === 'list' && (
+          <div className="stations-list-container"> {/* Placeholder for list view */}
+            <h2>Stations List</h2>
+            {loading && <p>Loading stations...</p>}
+            {error && <p className="error-message">{error}</p>}
+            {!loading && !error && filteredStations.length === 0 && <p>No stations found.</p>}
+            {!loading && !error && filteredStations.length > 0 && (
+              <ul>
+                {filteredStations.map(station => (
+                  <li key={station.id} className="station-list-item">
+                    <h3>{station.name}</h3>
+                    <p>{station.address}</p>
+                    {station.isCompatible !== undefined && (
+                      <p className={station.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
+                        {station.isCompatible ? 'Compatible' : 'Possibly Incompatible'}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
+
+        <div className="map-actions-overlay">
+          <div className="map-action-button recenter-button" onClick={flyToUserLocation}>
+            <FaCrosshairs />
+          </div>
+          <div className="map-action-button list-toggle-button" onClick={handleToggleViewMode}> {/* MODIFIED_LINE */}
+            {viewMode === 'map' ? <FaListAlt /> : <FaMapMarkedAlt />} {/* Toggle icon based on viewMode */}
+          </div>
+        </div>
       </main>
 
       <nav className="bottom-navigation">
-        {[
+        {[ 
           { name: 'Map', icon: <FaMapMarkedAlt size={22} /> },
           { name: 'Trips', icon: <FaRoute size={22} /> },
           { name: 'Profile', icon: <FaUserCircle size={22} /> },
@@ -325,7 +351,6 @@ const DriverDashboard = () => {
           >
             {item.icon}
             <span>{item.name}</span>
-            {item.new && <span className="new-badge">New</span>}
           </button>
         ))}
       </nav>

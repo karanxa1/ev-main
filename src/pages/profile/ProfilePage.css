@@ -1,220 +1,269 @@
-.profile-container {
-  padding: 20px;
-  max-width: 800px;
-  margin: 40px auto;
+/* General page styling */
+.profile-page-container {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   color: #333;
-}
-
-.profile-nav {
+  max-width: 480px; /* Mobile-like width */
+  margin: 0 auto; /* Center the container */
+  padding: 0; /* Remove padding if header/footer span full width */
+  background-color: #f4f6f8; /* Light gray background for the page */
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  flex-direction: column;
 }
 
-.back-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: transparent;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 8px 15px;
-  font-size: 14px;
-  color: #555;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.back-button:hover {
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-.page-shortcuts {
-  display: flex;
-  gap: 10px;
-}
-
-.shortcut-button {
+/* Header styling */
+.profile-page-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background-color: #f5f5f5;
+  padding: 15px 20px;
+  background-color: #fff; /* White background for header */
+  border-bottom: 1px solid #e0e0e0; /* Light border */
+  position: sticky; /* Make header sticky */
+  top: 0;
+  z-index: 1000;
+}
+
+.back-button-bio {
+  background: none;
   border: none;
-  border-radius: 6px;
-  padding: 8px 15px;
-  font-size: 14px;
-  color: #555;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.shortcut-button:hover {
-  background-color: #e5e5e5;
+  font-size: 24px; /* Larger icon */
   color: #333;
+  cursor: pointer;
+  padding: 5px;
+  margin-right: 15px;
 }
 
-.profile-container h1 {
-  color: #007bff;
+.profile-page-header h1 {
+  font-size: 1.2rem; /* Adjust as per image */
+  font-weight: 600;
+  color: #333;
+  margin: 0; /* Remove default margin */
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 2rem;
+  flex-grow: 1; /* Allow title to take space and center */
+  /* If the back button makes it off-center, adjust margins or use absolute positioning for back button */
 }
 
-.profile-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  padding: 20px;
-}
-
-.profile-header {
+/* Avatar section styling */
+.profile-avatar-section {
   text-align: center;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  padding: 30px 20px;
+  background-color: #fff; /* White background for this section */
 }
 
-.profile-avatar {
-  width: 100px;
+.profile-avatar-lg {
+  width: 100px; /* As per image */
   height: 100px;
   border-radius: 50%;
   overflow: hidden;
   margin: 0 auto 15px;
-  background-color: #007bff;
+  background-color: #ff8da1; /* Pink background from image */
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 3px solid #fff; /* White border as in some avatar styles */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.profile-avatar img {
+.profile-avatar-lg img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.avatar-initials {
+.avatar-initials-lg {
   color: white;
   font-weight: bold;
   font-size: 40px;
 }
 
-.profile-header h2 {
-  margin: 0 0 10px;
+.profile-avatar-section h2 {
+  margin: 0 0 5px;
   color: #333;
-  font-size: 1.8rem;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 
-.profile-email {
+.profile-email-display {
   color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+/* Form styling */
+.profile-form {
+  padding: 20px;
+  background-color: #fff; /* White background for form area */
+  flex-grow: 1; /* Allow form to take remaining space */
+}
+
+.form-field {
+  margin-bottom: 20px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.form-field input[type="text"],
+.form-field input[type="tel"],
+.form-field input[type="email"], /* Though email is not shown as editable in form */
+.form-field select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   font-size: 1rem;
+  color: #333;
+  box-sizing: border-box;
+  background-color: #f9f9f9; /* Light background for inputs */
 }
 
-.profile-details {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.form-field input[type="text"]:focus,
+.form-field input[type="tel"]:focus,
+.form-field input[type="email"]:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: #6d5ff6; /* Accent color border on focus */
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(109, 95, 246, 0.2);
 }
 
-.profile-field {
+/* Phone input specific styling */
+.phone-input-container {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.profile-field label {
-  flex: 0 0 100px;
-  font-weight: 600;
-  color: #007bff;
-}
-
-.profile-field span {
-  flex: 1;
-  color: #555;
-}
-
-.profile-field input {
-  flex: 1;
-  padding: 8px 12px;
+  width: 100%;
+  padding: 12px 15px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: #f9f9f9;
+}
+
+.phone-input-container input[type="tel"] {
+  flex-grow: 1;
+  border: none;
+  padding: 0;
+  background-color: transparent;
   font-size: 1rem;
-  color: #333;
 }
 
-.profile-field input:focus {
+.phone-input-container input[type="tel"]:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+  box-shadow: none;
 }
 
-.profile-actions {
+.phone-input-container:focus-within {
+  border-color: #6d5ff6;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(109, 95, 246, 0.2);
+}
+
+/* Date input specific styling */
+.date-input-container {
   display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
+  align-items: center;
+  position: relative; /* For icon positioning */
+  width: 100%;
+  padding-right: 15px; /* Space for the icon */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: #f9f9f9;
 }
 
-.btn-edit, .btn-save {
-  background-color: #007bff;
+.date-input-container input[type="text"] {
+  flex-grow: 1;
+  border: none;
+  padding: 12px 0 12px 15px; /* Adjusted padding */
+  background-color: transparent;
+  font-size: 1rem;
+}
+
+.date-input-container input[type="text"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.date-input-container:focus-within {
+  border-color: #6d5ff6;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(109, 95, 246, 0.2);
+}
+
+.calendar-icon {
+  color: #666;
+  font-size: 1.2rem;
+  /* Position it inside the input container if needed */
+}
+
+/* Select (dropdown) styling */
+.form-field select {
+  appearance: none; /* Remove default arrow */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns%3D"http%3A//www.w3.org/2000/svg"%20width%3D"292.4"%20height%3D"292.4"%20viewBox%3D"0%200%20292.4%20292.4"%3E%3Cpath%20fill%3D"%23666666"%20d%3D"M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.4-5.4-12.8z"/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 12px;
+}
+
+/* Button styling */
+.profile-actions-bio {
+  margin-top: 30px;
+  padding: 0 20px 20px; /* Add padding to bottom if form ends here */
+  background-color: #fff;
+}
+
+.btn-update-profile {
+  background-color: #4a3aff; /* Deep blue from image */
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 15px 20px;
+  border-radius: 8px;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  display: block;
 }
 
-.btn-cancel {
-  background-color: #f0f0f0;
-  color: #333;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.btn-update-profile:hover {
+  background-color: #3a2ce0; /* Slightly darker blue on hover */
 }
 
-.btn-edit:hover, .btn-save:hover {
-  background-color: #0069d9;
-  transform: translateY(-2px);
+.btn-update-profile:disabled {
+  background-color: #a098f0;
+  cursor: not-allowed;
 }
 
-.btn-cancel:hover {
-  background-color: #e0e0e0;
-  transform: translateY(-2px);
+.error-message {
+  color: red;
+  text-align: center;
+  margin-top: 15px;
+  font-size: 0.9rem;
 }
 
-@media (max-width: 768px) {
-  .profile-container {
-    margin: 20px auto;
-    padding: 15px;
-  }
-
-  .profile-container h1 {
-    font-size: 1.8rem;
-  }
-
-  .profile-nav {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .page-shortcuts {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .profile-field {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .profile-field label {
-    margin-bottom: 5px;
-  }
+/* Remove old styles or ensure they don't conflict */
+.profile-container, 
+.profile-nav, 
+.back-button, 
+.page-shortcuts, 
+.shortcut-button, 
+.profile-card, 
+.profile-header, /* old header */
+.profile-avatar, /* old avatar */
+.avatar-initials, /* old initials */
+.profile-email, /* old email class */
+.profile-details, 
+.profile-field, /* old field structure */
+.profile-actions, /* old actions */
+.btn-edit, .btn-save, .btn-cancel {
+  /* If these classes are completely replaced, you might not need to do anything.
+     If they are still somehow present or if new HTML uses old class names by mistake,
+     you might need to hide them or reset their styles. */
+  /* For example: display: none; or more specific overrides. */
+  /* Given the JS rewrite, these are likely not needed unless there are remnants or future conflicts */
 } 

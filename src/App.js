@@ -11,6 +11,7 @@ import HomePage from './pages/home/HomePage'; // Public landing page
 import SelectVehiclePage from './pages/vehicle-selection/SelectVehiclePage'; // Vehicle selection page
 import ChangeVehiclePage from './pages/change-vehicle/ChangeVehiclePage'; // Added import for ChangeVehiclePage
 import ProfilePage from './pages/profile/ProfilePage'; // Profile page component
+import TripsPage from './pages/trips/TripsPage'; // Import for TripsPage
 import './App.css'; // Main application styles
 
 /**
@@ -64,6 +65,16 @@ function App() {
               element={
                 <PrivateRoute>
                   <ChangeVehiclePage />
+                </PrivateRoute>
+              }
+            />
+
+            {/* Protected route for Trips page */}
+            <Route
+              path="/trips"
+              element={
+                <PrivateRoute>
+                  <TripsPage />
                 </PrivateRoute>
               }
             />
