@@ -193,8 +193,8 @@ const DriverDashboard = () => {
   };
 
   const handleSelectVehicle = () => {
-    console.log('handleSelectVehicle called. Navigating to /vehicle-selection...'); // Diagnostic log
-    navigate('/vehicle-selection');
+    console.log('handleSelectVehicle called. Navigating to /change-vehicle...'); // Updated diagnostic log
+    navigate('/change-vehicle'); // Changed navigation path
   };
 
   return (

@@ -140,37 +140,32 @@ export function AuthProvider({ children }) {
 
   // Effect for auth state changes
   useEffect(() => {
-    // Get saved user first
-    const savedUser = localStorage.getItem('authUser');
-    if (savedUser && !currentUser) {
-      setCurrentUser(JSON.parse(savedUser));
-    }
+    setLoading(true); // Explicitly set loading to true when the effect runs
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);
+        // Optionally, update localStorage here if needed, but Firebase handles its own persistence.
+        // localStorage.setItem('authUser', JSON.stringify({
+        //   uid: user.uid,
+        //   email: user.email,
+        //   displayName: user.displayName || null,
+        //   photoURL: user.photoURL || null
+        // }));
+      } else {
+        setCurrentUser(null);
+        // localStorage.removeItem('authUser');
+      }
+      setLoading(false); // Set loading to false once the auth state is determined
+    }, (error) => {
+      // Handle potential errors from onAuthStateChanged itself, though rare
+      console.error("Error in onAuthStateChanged listener:", error);
+      setCurrentUser(null); // Ensure user is null on error
+      // localStorage.removeItem('authUser');
+      setLoading(false); // Still need to stop loading
+    });
 
-    // Set up auth state listener with error handling
-    let unsubscribe = () => {};
-    try {
-      unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          setCurrentUser(user);
-          localStorage.setItem('authUser', JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || null,
-            photoURL: user.photoURL || null
-          }));
-        } else {
-          setCurrentUser(null);
-          localStorage.removeItem('authUser');
-        }
-        setLoading(false);
-      });
-    } catch (error) {
-      console.error("Auth state subscription error:", error);
-      setLoading(false);
-    }
-
-    return unsubscribe;
-  }, [currentUser]);
+    return unsubscribe; // Cleanup subscription on unmount
+  }, []); // Empty dependency array: runs only on mount and unmount
 
   // Provide value
   const value = {

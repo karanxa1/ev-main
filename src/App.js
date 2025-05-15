@@ -9,6 +9,7 @@ import DriverDashboard from './pages/driver/DriverDashboard'; // Dashboard for E
 import PrivateRoute from './components/auth/PrivateRoute'; // Component to protect routes
 import HomePage from './pages/home/HomePage'; // Public landing page
 import SelectVehiclePage from './pages/vehicle-selection/SelectVehiclePage'; // Vehicle selection page
+import ChangeVehiclePage from './pages/change-vehicle/ChangeVehiclePage'; // Added import for ChangeVehiclePage
 import ProfilePage from './pages/profile/ProfilePage'; // Profile page component
 import './App.css'; // Main application styles
 
@@ -53,6 +54,16 @@ function App() {
               element={
                 <PrivateRoute>
                   <SelectVehiclePage />
+                </PrivateRoute>
+              }
+            />
+
+            {/* Protected route for changing a vehicle, accessible only to authenticated users */}
+            <Route
+              path="/change-vehicle"
+              element={
+                <PrivateRoute>
+                  <ChangeVehiclePage />
                 </PrivateRoute>
               }
             />
