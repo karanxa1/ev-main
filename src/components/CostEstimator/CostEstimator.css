@@ -23,34 +23,46 @@
 
 .estimator-form {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
 .estimator-results {
   flex: 1;
   border-left: 1px solid #e0e0e0;
   padding-left: 40px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed #ddd;
 }
 
 .form-group {
+  display: flex;
+  flex-direction: column;
   margin-bottom: 20px;
 }
 
 .form-group label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #555;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
 }
 
 .form-group select,
 .form-group input[type="number"] {
-  width: 100%;
-  padding: 12px 15px;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  font-size: 1rem;
-  box-sizing: border-box;
-  transition: border-color 0.2s ease;
+  font-size: 1em;
+  background-color: white;
+}
+
+.form-group select:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
 }
 
 .form-group select:focus,
@@ -61,46 +73,77 @@
 }
 
 .estimator-results h4 {
-  font-size: 1.5rem;
-  color: var(--primary-color, #0C5F2C);
   margin-top: 0;
-  margin-bottom: 25px;
-  border-bottom: 2px solid var(--primary-color, #0C5F2C);
-  padding-bottom: 10px;
+  margin-bottom: 15px;
+  color: #333;
 }
 
 .result-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px dashed #eee;
-}
-
-.result-item:last-of-type {
-  border-bottom: none;
+  padding: 8px 0;
+  font-size: 0.95em;
 }
 
 .result-item span {
-  font-size: 1rem;
-  color: #444;
+  color: #555;
 }
 
 .result-item strong {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #222;
+  color: #007bff; /* Example accent for results */
 }
 
 .estimator-note {
-  font-size: 0.85rem;
-  color: #777;
-  margin-top: 25px;
+  margin-top: 15px;
+  font-size: 0.85em;
+  color: #666;
   line-height: 1.5;
-  background-color: #f9f9f9;
+  background-color: #f8f9fa;
   padding: 10px;
   border-radius: 4px;
-  text-align: center;
+}
+
+/* New styles for vehicle type toggle */
+.form-group.vehicle-type-toggle {
+  margin-bottom: 5px; /* Less margin as it's part of the primary selection flow */
+}
+
+.vehicle-type-toggle label {
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.toggle-buttons {
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden; /* To make buttons look like a single unit */
+  border: 1px solid #ccc; /* Border around the toggle group */
+}
+
+.toggle-buttons button {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border: none;
+  background-color: #f8f9fa;
+  color: #555;
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.toggle-buttons button:not(:last-child) {
+  border-right: 1px solid #ccc; /* Separator line */
+}
+
+.toggle-buttons button.active {
+  background-color: #007bff; /* Example active color - match your theme */
+  color: white;
+  font-weight: 500;
+}
+
+.toggle-buttons button:hover:not(.active) {
+  background-color: #e9ecef;
 }
 
 /* Responsive adjustments for Cost Estimator */

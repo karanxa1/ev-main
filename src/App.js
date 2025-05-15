@@ -8,6 +8,8 @@ import HostDashboard from './components/host/HostDashboard'; // Dashboard for ch
 import DriverDashboard from './pages/driver/DriverDashboard'; // Dashboard for EV drivers
 import PrivateRoute from './components/auth/PrivateRoute'; // Component to protect routes
 import HomePage from './pages/home/HomePage'; // Public landing page
+import SelectVehiclePage from './pages/vehicle-selection/SelectVehiclePage'; // Vehicle selection page
+import ProfilePage from './pages/profile/ProfilePage'; // Profile page component
 import './App.css'; // Main application styles
 
 /**
@@ -45,6 +47,16 @@ function App() {
             {/* Public route for the Signup page, accessible to unauthenticated users */}
             <Route path="/signup" element={<Signup />} /> {/* Route for the Signup page */}
 
+            {/* Protected route for selecting a vehicle, accessible only to authenticated users */}
+            <Route
+              path="/select-vehicle"
+              element={
+                <PrivateRoute>
+                  <SelectVehiclePage />
+                </PrivateRoute>
+              }
+            />
+
             {/* Protected route for the Host Dashboard, accessible only to authenticated users */}
             {/* The PrivateRoute component ensures that only authenticated users can access this route */}
             <Route 
@@ -65,6 +77,16 @@ function App() {
                 <PrivateRoute>
                   {/* Renders the DriverDashboard component if the user is authenticated */}
                   <DriverDashboard />
+                </PrivateRoute>
+              } 
+            />
+
+            {/* Protected route for the Profile page, accessible only to authenticated users */}
+            <Route 
+              path="/profile" 
+              element={
+                <PrivateRoute>
+                  <ProfilePage />
                 </PrivateRoute>
               } 
             />

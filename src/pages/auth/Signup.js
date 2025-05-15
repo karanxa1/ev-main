@@ -34,11 +34,11 @@ const Signup = () => {
   }, [setAuthError]);
 
   // Redirect if already logged in
-  useEffect(() => {
+  /* useEffect(() => {
     if (currentUser) {
       navigate(accountType === 'driver' ? '/driver' : '/host');
     }
-  }, [currentUser, navigate, accountType]);
+  }, [currentUser, navigate, accountType]); */
 
   /**
    * Validate the form data
@@ -112,7 +112,7 @@ const Signup = () => {
       await signup(email, password);
       
       // Navigate based on account type
-      navigate(accountType === 'driver' ? '/driver' : '/host', { replace: true });
+      navigate('/select-vehicle', { replace: true });
     } catch (error) {
       handleError(error);
     } finally {
@@ -127,7 +127,7 @@ const Signup = () => {
     setLoading(true);
     try {
       await signInWithGoogle();
-      navigate(accountType === 'driver' ? '/driver' : '/host', { replace: true });
+      navigate('/select-vehicle', { replace: true });
     } catch (error) {
       handleError(error);
     } finally {

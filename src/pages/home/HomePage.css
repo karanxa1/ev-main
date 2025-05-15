@@ -1458,7 +1458,7 @@ button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-l
 /* Profile Menu Styles */
 .profile-menu-container {
   position: relative;
-  margin-left: 15px;
+  margin-left: 30px; /* Increased margin for better spacing */
 }
 
 .profile-button {
@@ -1475,12 +1475,12 @@ button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-l
 }
 
 .profile-avatar {
-  width: 32px;
-  height: 32px;
+  width: 20px !important;
+  height: 20px !important;
   border-radius: 50%;
   overflow: hidden;
   margin-right: 8px;
-  background-color: #0C5F2C;
+  background-color: red !important; /* Diagnostic change */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1495,7 +1495,7 @@ button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-l
 .avatar-initials {
   color: white;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 10px !important; /* Diagnostic change */
 }
 
 .profile-name {
@@ -1504,7 +1504,7 @@ button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-l
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-right: 5px;
+  margin-right: 3px; /* Reduced margin for tighter alignment with chevron */
 }
 
 .profile-chevron {
@@ -1594,8 +1594,21 @@ button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-l
   }
   
   .profile-dropdown {
-    width: 200px;
-    right: -70px;
+    width: 180px;
+    right: -110px; /* Adjusted to shift dropdown further rightwards */
+    z-index: 1010;
+    box-sizing: border-box;
+  }
+
+  .profile-dropdown-items button {
+    padding: 8px 8px 8px 10px; /* top right bottom left; Adjusted left padding */
+    font-size: 13px;
+    display: block; /* Ensure full width usage */
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    text-indent: 0; /* Ensure no unwanted text indent */
+    /* background: none; border: none; cursor: pointer; are from base */
   }
 }
 

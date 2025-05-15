@@ -15,18 +15,21 @@ const PrivateRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
   const location = useLocation();
 
-  // If still loading auth state, show nothing or a loading indicator
+  console.log('[PrivateRoute] Checking route:', location.pathname);
+  console.log('[PrivateRoute] Auth loading:', loading);
+  console.log('[PrivateRoute] currentUser:', currentUser);
+
   if (loading) {
-    return <div className="loading-spinner">Loading...</div>;
+    console.log('[PrivateRoute] Auth state is loading, showing loading indicator for', location.pathname);
+    return <div className="loading-spinner">Loading...</div>; // Or a more sophisticated loading component
   }
 
-  // If no user is authenticated, redirect to login page with the return location
   if (!currentUser) {
-    // Save the current location they were trying to access for redirecting after login
+    console.log('[PrivateRoute] No currentUser, redirecting from', location.pathname, 'to /login');
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
-  // If user is authenticated, render the protected route component
+  console.log('[PrivateRoute] currentUser found, rendering children for', location.pathname);
   return children;
 };
 

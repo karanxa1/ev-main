@@ -1,0 +1,185 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #ffffff; /* Page background changed to white as per image */
+  color: #333;
+}
+
+.select-vehicle-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Use min-height to ensure it takes full screen but can grow */
+  background-color: #fff;
+}
+
+.svp-header {
+  padding: 20px 15px 15px;
+  text-align: center;
+  /* border-bottom: 1px solid #eee; Removed border, image doesn't show one */
+}
+
+.svp-header h2 {
+  margin: 0;
+  font-size: 1.25em; /* Slightly adjusted from image */
+  font-weight: 600; /* Bolder text as per image */
+  color: #000; /* Black text for header */
+}
+
+.svp-brand-tabs {
+  display: flex;
+  overflow-x: auto;
+  padding: 0px 15px 10px; /* Adjusted padding */
+  /* border-bottom: 1px solid #eee; */ /* Removed border */
+  background-color: #fff;
+  white-space: nowrap;
+}
+
+.svp-brand-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.svp-tab-button {
+  background: none;
+  border: none;
+  padding: 10px 12px; /* Adjusted padding */
+  margin-right: 15px; /* Spacing between tabs */
+  font-size: 1em;
+  color: #888; /* Grey for inactive tabs */
+  cursor: pointer;
+  border-bottom: 3px solid transparent; /* Thicker transparent border for alignment */
+  transition: color 0.2s, border-bottom-color 0.2s;
+}
+
+.svp-tab-button.active {
+  color: #000; /* Black for active tab text */
+  border-bottom-color: #ff6600; /* Orange accent for active tab underline */
+  font-weight: 600;
+}
+
+.svp-search-container {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px; /* Adjusted padding */
+  margin: 15px 20px; /* Margin around search bar */
+  background-color: #f0f0f0; /* Light grey background for search bar */
+  border-radius: 8px; /* Rounded corners for search bar */
+  /* border-bottom: 1px solid #eee; */ /* Removed border */
+}
+
+.svp-search-icon {
+  color: #888; /* Grey for search icon */
+  margin-right: 10px;
+  font-size: 1.1em;
+}
+
+.svp-search-input {
+  flex-grow: 1;
+  border: none;
+  outline: none;
+  padding: 8px 0; /* Adjusted padding */
+  font-size: 1em;
+  background-color: transparent;
+  color: #333;
+}
+
+.svp-search-input::placeholder {
+  color: #aaa; /* Lighter placeholder text */
+}
+
+.svp-vehicle-grid {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Always 2 columns as per image */
+  gap: 20px; /* Gap between cards */
+  padding: 0 20px 20px; /* Adjusted padding, no top padding if search has margin */
+  overflow-y: auto;
+  background-color: #fff; /* White background for grid area */
+}
+
+.svp-vehicle-card {
+  background-color: #fff;
+  border-radius: 10px; /* Rounded corners */
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #f0f0f0; /* Lighter border */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Softer shadow */
+}
+
+.svp-vehicle-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.svp-vehicle-card.selected {
+  border-color: #ff6600; /* Orange accent for selected card */
+  box-shadow: 0 0 0 2px #ff6600, 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.svp-vehicle-image {
+  width: 100%;
+  max-height: 100px; /* Max height for the image */
+  height: auto;
+  aspect-ratio: 16/10; /* Or adjust as needed, image shows wider than taller */
+  object-fit: contain;
+  margin-bottom: 12px; /* Space between image and name */
+}
+
+.svp-vehicle-name {
+  font-size: 0.9em; /* Slightly smaller text */
+  font-weight: 600; /* Bolder name */
+  color: #333;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.svp-no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 30px;
+  color: #777;
+  font-size: 1em;
+}
+
+.svp-footer {
+  padding: 15px 20px 20px; /* Adjusted padding */
+  background-color: #fff;
+  /* border-top: 1px solid #eee; */ /* Removed border, using shadow for separation */
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05); /* Softer shadow for footer */
+  position: sticky; /* Make footer sticky */
+  bottom: 0;
+}
+
+.svp-add-vehicle-button {
+  width: 100%;
+  background-color: #ff6600; /* Orange accent button */
+  color: white;
+  border: none;
+  padding: 16px; /* Slightly larger padding */
+  font-size: 1.05em;
+  font-weight: 600; /* Bolder text */
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.svp-add-vehicle-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.svp-add-vehicle-button:not(:disabled):hover {
+  background-color: #e65c00; /* Darker orange on hover */
+}
+
+.svp-error-message {
+  background-color: #ffe0e0;
+  color: #d32f2f;
+  padding: 10px 15px;
+  margin: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  text-align: center;
+  border-left: 3px solid #d32f2f;
+} 

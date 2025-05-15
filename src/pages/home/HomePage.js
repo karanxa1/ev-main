@@ -312,7 +312,11 @@ const HomePage = () => {
 
   // Other handlers
   const handleJoinNow = () => {
-    navigate('/signup');
+    if (currentUser) {
+      navigate('/driver'); // Corrected: Navigate to /driver for the driver page
+    } else {
+      navigate('/signup');
+    }
   };
 
   const handleViewStations = () => {

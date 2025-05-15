@@ -6,6 +6,9 @@
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 /* Header styles - simplified for mobile */
@@ -370,7 +373,14 @@
 
 /* Map view */
 .map-view-container {
-  height: 100%;
+  flex-basis: 65%;
+  background-color: #e0e0e0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2em;
+  color: #777;
+  border-right: 1px solid #ddd;
   position: relative;
 }
 
@@ -1019,4 +1029,500 @@
     text-align: left;
     border-radius: 10px;
   }
+}
+
+.dashboard-header {
+  background-color: #f0f0f0;
+  padding: 15px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.dashboard-nav a {
+  margin-left: 15px;
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.dashboard-nav a:hover {
+  color: #007bff;
+}
+
+.search-and-filters {
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid #ddd;
+  z-index: 10;
+  position: relative;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  box-sizing: border-box;
+}
+
+.filters {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.filters p {
+  margin: 0;
+  padding: 8px 12px;
+  background-color: #f0f0f0;
+  border-radius: 20px;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.main-content-area {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.map-view-container .mapboxgl-map {
+  width: 100%;
+  height: 100%;
+}
+
+.user-location-marker {
+  width: 28px;
+  height: 28px;
+  background-color: #007bff;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px #007bff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.user-location-marker::after {
+  content: "\f1b9"; /* Font Awesome car icon */
+  font-family: "Font Awesome 5 Free", FontAwesome;
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.station-marker {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.station-marker.available {
+  background-color: #28a745;
+}
+
+.station-marker.occupied {
+  background-color: #dc3545;
+}
+
+.station-marker.unknown {
+  background-color: #6c757d;
+}
+
+.mapboxgl-popup-content {
+  font-family: sans-serif;
+  padding: 10px !important;
+  border-radius: 6px !important;
+}
+
+.station-popup h4 {
+  margin: 0 0 5px 0;
+  font-size: 1em;
+  color: #333;
+}
+
+.station-popup p {
+  margin: 3px 0;
+  font-size: 0.85em;
+  color: #555;
+}
+
+.station-item {
+  cursor: pointer;
+}
+
+.station-item:hover {
+  background-color: #e9ecef;
+}
+
+/* Base styles - mobile-first approach */
+.driver-dashboard-mobile {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+  background-color: #f7f9fc; /* Light grey background for areas outside map */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* Prevent scrollbars on the main container */
+}
+
+.map-view-full-container {
+  flex-grow: 1; /* Takes up all space above bottom nav */
+  position: relative; /* Crucial for positioning elements on top */
+  background-color: #e0e0e0; /* Fallback if map doesn't load */
+}
+
+/* Search and Filters Overlaid on Map */
+.search-and-filters-on-map {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 10; /* Above map, below popups if any */
+  background-color: transparent; /* Let map show through if needed, or set color */
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.search-bar-on-map {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  padding: 8px 12px;
+  border-radius: 25px; /* Fully rounded */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  margin-bottom: 8px;
+}
+
+.search-bar-on-map .search-icon-on-map {
+  margin-right: 8px;
+  color: #777;
+}
+
+.search-bar-on-map input {
+  flex-grow: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background-color: transparent;
+}
+
+.search-bar-on-map .filter-icon-on-map {
+  margin-left: 8px;
+  color: #333; /* Icon color for filter */
+  cursor: pointer;
+}
+
+.filters-on-map {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto; /* Allow horizontal scrolling if many filters */
+  padding-bottom: 5px; /* For scrollbar visibility if needed */
+}
+
+.filter-chip {
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.filter-chip.active {
+  background-color: #e0e0e0; /* Example active state - use brand color */
+  border-color: #ccc;
+  color: #333;
+  font-weight: 500;
+}
+
+
+/* Map Action Buttons (Recenter, List Toggle) */
+.map-action-button {
+  position: absolute;
+  z-index: 10;
+  background-color: white;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
+  color: #333;
+}
+
+.recenter-button {
+  bottom: 90px; /* Above bottom nav + a bit of space */
+  left: 15px;
+}
+
+.list-toggle-button {
+  bottom: 90px; /* Above bottom nav + a bit of space */
+  right: 15px;
+}
+
+/* User and Station Markers (styles from previous step, ensure they work) */
+.user-location-marker {
+  width: 28px;
+  height: 28px;
+  background-color: #007bff;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px #007bff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.user-location-marker::after {
+  content: "\f1b9"; /* Font Awesome car icon */
+  font-family: "Font Awesome 5 Free", FontAwesome;
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.station-marker {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.station-marker.available {
+  background-color: #28a745;
+}
+
+.station-marker.occupied {
+  background-color: #dc3545;
+}
+
+.station-marker.unknown {
+  background-color: #6c757d;
+}
+
+.mapboxgl-popup-content {
+  padding: 10px !important;
+  border-radius: 6px !important;
+}
+
+.station-popup h4 {
+  margin: 0 0 5px 0;
+  font-size: 1em;
+  color: #333;
+}
+
+.station-popup p {
+  margin: 3px 0;
+  font-size: 0.85em;
+  color: #555;
+}
+
+.map-token-error {
+    text-align: center; padding: 20px; color: red;
+}
+
+/* Bottom Navigation */
+.bottom-navigation {
+  display: flex;
+  justify-content: space-around;
+  align-items: center; /* Vertically align items if their heights differ */
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  padding: 5px 0; /* Reduced padding */
+  position: fixed; /* Fixed at the bottom */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000; /* Above map controls like zoom */
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+}
+
+.bottom-nav-item {
+  background: none;
+  border: none;
+  color: #888; /* Default icon and text color */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Center content if icon/text height varies */
+  flex-grow: 1; /* Each item takes equal width */
+  padding: 5px 0; /* Padding inside the button */
+  font-size: 10px; /* Text size */
+  cursor: pointer;
+  text-align: center;
+  position: relative; /* For the 'New' badge */
+}
+
+.bottom-nav-item.active {
+  color: #007bff; /* Active color - match brand */
+}
+
+.bottom-nav-item svg {
+  margin-bottom: 3px; /* Space between icon and text */
+}
+
+.new-badge {
+  position: absolute;
+  top: 0px;
+  right: 5px; /* Adjust as needed for text length */
+  background-color: red;
+  color: white;
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+/* Remove old styles that are no longer relevant or conflict */
+.driver-dashboard, .dashboard-header, .dashboard-nav, 
+.search-and-filters, .main-content-area, .map-view-container:not(.map-view-full-container), 
+.list-view-container, .station-details-placeholder, .station-item:hover {
+    /* These selectors from the old layout might need removal or careful review if they exist */
+    /* For this step, I'm assuming they are superseded by new styles or implicitly removed by JSX changes */
+    /* Explicitly overriding some potentially conflicting flex properties from old layout if needed: */
+    display: none; /* Hide old layout elements if they weren't removed from JSX */
+}
+
+/* Keep the map container itself visible */
+.map-view-full-container {
+    display: block !important; /* Ensure this primary container is visible */
+}
+
+.driver-dashboard-mobile .mapboxgl-ctrl-bottom-right {
+    margin-bottom: 75px !important; /* Ensure Mapbox controls are above bottom nav */
+}
+
+/* Station marker compatibility styling */
+.station-marker.compatible {
+  background-color: #00c853;
+  border: 2px solid #00a74a;
+  position: relative;
+  overflow: visible;
+  z-index: 2;
+}
+
+.compatibility-icon {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #fff;
+  border-radius: 50%;
+  padding: 2px;
+  font-size: 10px;
+  color: #00c853;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Popup compatibility styling */
+.compatibility-notice {
+  color: #00c853;
+  font-weight: 600;
+  margin-top: 8px;
+  background-color: rgba(0, 200, 83, 0.1);
+  padding: 5px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.incompatibility-notice {
+  color: #f44336;
+  font-weight: 600;
+  margin-top: 8px;
+  background-color: rgba(244, 67, 54, 0.1);
+  padding: 5px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+/* Filter button disabled state */
+.filter-chip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading and error indicators */
+.loading-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.error-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(244, 67, 54, 0.8);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.vehicle-missing-notice {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  max-width: 80%;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 9;
+  animation: fade-in 0.3s ease-in-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
