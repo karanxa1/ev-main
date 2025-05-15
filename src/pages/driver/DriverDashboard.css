@@ -1860,3 +1860,203 @@
 
 /* Responsive adjustments could be made here if needed for card sizes on very small screens */
 
+/* Styles for List View */
+.stations-list-view-container {
+  padding: 10px;
+  overflow-y: auto;
+  height: 100%; /* Fill the main-view-area */
+  background-color: #f4f6f8; /* Light background for the list page */
+}
+
+.station-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Space between cards */
+}
+
+.station-list-card-item {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease-in-out;
+  position: relative; /* For absolute positioning of tags like Public/Captive */
+}
+
+.station-list-card-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.list-card-left {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center; /* Vertically center icon if its height varies */
+}
+
+.list-station-brand-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background-color: #e0e0e0; /* Placeholder icon background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #555;
+  /* Add specific styles for known brands if you have images/SVG later
+  img { width: 100%; height: 100%; object-fit: contain; }
+  */
+}
+
+.list-card-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden; /* For text ellipsis */
+}
+
+.list-station-name {
+  font-size: 1rem; /* Approx from image */
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 3px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-station-address {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin: 0 0 6px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-station-availability {
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.list-station-availability.available {
+  color: #27ae60; /* Green */
+}
+.list-station-availability.unavailable {
+  color: #c0392b; /* Red */
+}
+
+.list-station-availability .icon {
+  margin-left: 5px;
+  font-size: 0.9em;
+}
+
+.list-card-right {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  min-width: 80px; /* Ensure space for elements */
+}
+
+.list-station-access {
+  position: absolute; /* Position relative to card-item */
+  top: 8px;
+  right: 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 3px 7px;
+  border-radius: 4px;
+  text-transform: capitalize;
+}
+
+.list-station-access.public {
+  background-color: rgba(46, 204, 113, 0.15); /* Light green background */
+  color: #27ae60; /* Darker green text */
+}
+
+.list-station-access.captive {
+  background-color: rgba(231, 76, 60, 0.1); /* Light red background */
+  color: #c0392b; /* Darker red text */
+  /* Add other access types if needed */
+}
+
+.list-station-rating {
+  margin-top: 20px; /* Pushed down by the absolute access tag */
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #34495e;
+  background-color: #ecf0f1;
+  padding: 3px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.list-station-rating .star {
+  color: #f39c12; /* Gold star */
+  margin-left: 3px;
+  font-size: 0.9em;
+}
+
+.list-station-new-tag {
+  background-color: #3498db; /* Blue for new */
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px; /* Space from rating */
+  display: inline-block;
+}
+
+.list-station-distance {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin-top: 4px; /* Space from rating/new tag */
+}
+
+.list-station-chargers {
+  display: flex;
+  gap: 5px;
+  margin-top: auto; /* Push to bottom of this column if space allows */
+  padding-top: 5px; /* Ensure some space if pushed to bottom */
+}
+
+.list-station-chargers .type-badge {
+  background-color: #bdc3c7;
+  color: #2c3e50;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* Remove or adapt old .stations-list-container and .station-list-item if they are general */
+.stations-list-container, .station-list-item {
+  /* display: none; */ /* If old styles were very specific and conflict */
+}
+
+.list-loading-message, .list-error-message, .list-empty-message {
+  text-align: center;
+  padding: 30px;
+  color: #777;
+  font-size: 1rem;
+}
+
+/* Add some margin to the bottom of the list if it's scrollable against fixed bottom nav */
+.stations-list-view-container {
+  padding-bottom: 70px; /* Ensure last card is not hidden by bottom nav */
+}
+
+
+/* ... rest of existing styles ... */
+

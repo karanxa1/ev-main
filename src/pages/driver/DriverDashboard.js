@@ -63,9 +63,9 @@ const DriverDashboard = () => {
   const [showCompatibleOnly, setShowCompatibleOnly] = useState(false);
 
   const [viewport, setViewport] = useState({
-    longitude: DEFAULT_FALLBACK_COORDS.longitude,
-    latitude: DEFAULT_FALLBACK_COORDS.latitude,
-    zoom: 11,
+    longitude: 78.9629, // MODIFIED_LINE: India's approximate longitude
+    latitude: 20.5937,  // MODIFIED_LINE: India's approximate latitude
+    zoom: 4.5,            // MODIFIED_LINE: Zoom level for an overview of India
     bearing: 0,
     pitch: 0
   });
@@ -90,12 +90,12 @@ const DriverDashboard = () => {
     fetchUserVehicle();
   }, [currentUser, userVehicle]);
 
-  // Process stations to ensure valid coordinates and mark compatibility
+  // Process stations to ensure valid coordinates, mark compatibility, and add distance if userLocation is available
   const stations = useMemo(() => {
     const stationCoordinatesCount = {};
     
-    // First, process all stations for coordinates
-    const processedStations = rawStations.map(station => {
+    // First, process all stations for coordinates and distance
+    let processedStations = rawStations.map(station => {
       let lat = parseFloat(station.latitude);
       let lng = parseFloat(station.longitude);
 
@@ -107,48 +107,60 @@ const DriverDashboard = () => {
       const coordKey = `${lat.toFixed(5)}_${lng.toFixed(5)}`;
       stationCoordinatesCount[coordKey] = (stationCoordinatesCount[coordKey] || 0) + 1;
       
+      let stationWithCoords = { ...station, latitude: lat, longitude: lng };
+
       // Apply jitter if more than one station is at the exact same (rounded) spot
       if (stationCoordinatesCount[coordKey] > 1) {
         const jittered = getJitteredCoordinates(lat, lng, station.id);
-        return { 
-          ...station, 
-          latitude: jittered.latitude, 
-          longitude: jittered.longitude, 
-          originalLat: lat, 
-          originalLng: lng 
+        stationWithCoords = {
+          ...station,
+          latitude: jittered.latitude,
+          longitude: jittered.longitude,
+          originalLat: lat,
+          originalLng: lng
         };
       }
-      return { ...station, latitude: lat, longitude: lng }; 
+
+      // Calculate distance if userLocation is available
+      if (userLocation) {
+        const sLat = stationWithCoords.originalLat !== undefined ? stationWithCoords.originalLat : stationWithCoords.latitude;
+        const sLng = stationWithCoords.originalLng !== undefined ? stationWithCoords.originalLng : stationWithCoords.longitude;
+        const distance = getDistance(userLocation.latitude, userLocation.longitude, sLat, sLng);
+        stationWithCoords.distance = distance; // Add distance to the station object
+      }
+      return stationWithCoords;
     });
     
     // Now, add compatibility information if user has a vehicle
     if (userVehicle && userVehicle.compatibleChargerTypes) {
       return processedStations.map(station => {
-        // Check if station has charger types and if any match the vehicle's compatible types
         const isCompatible = station.chargerTypes && 
           station.chargerTypes.some(type => 
             userVehicle.compatibleChargerTypes.includes(type)
           );
-        
         return { ...station, isCompatible };
       });
     }
     
     return processedStations;
-  }, [rawStations, userVehicle]);
+  }, [rawStations, userVehicle, userLocation]); // Added userLocation to dependencies
 
   // Filtered stations based on compatibility preference
   const filteredStations = useMemo(() => {
     // When no vehicle is selected, always show all stations
     if (!userVehicle) {
+      console.log('DriverDashboard: filteredStations (no vehicle):', stations); // ADDED_LOG
       return stations;
     }
     
     // Only filter by compatibility if user has a vehicle and wants compatible stations only
     if (showCompatibleOnly) {
-      return stations.filter(station => station.isCompatible);
+      const compatibleStations = stations.filter(station => station.isCompatible);
+      console.log('DriverDashboard: filteredStations (compatible only):', compatibleStations); // ADDED_LOG
+      return compatibleStations;
     }
     
+    console.log('DriverDashboard: filteredStations (all with vehicle):', stations); // ADDED_LOG
     return stations;
   }, [stations, showCompatibleOnly, userVehicle]);
 
@@ -194,6 +206,7 @@ const DriverDashboard = () => {
         setLoading(true);
         const stationData = await getAllStations();
         setRawStations(stationData); // Set raw stations
+        console.log('DriverDashboard: Raw stations fetched:', stationData); // ADDED_LOG
         setError(null);
       } catch (err) {
         console.error("Error fetching stations:", err);
@@ -299,10 +312,11 @@ const DriverDashboard = () => {
                   latitude={station.latitude}
                   onClick={() => handleMarkerClick(station)}
                 >
+                  {/* Apply station-marker base class and conditional classes for status/compatibility */}
                   <div 
-                    className={`map-marker ${station.isCompatible ? 'compatible' : ''} ${userVehicle ? '' : 'no-vehicle'}`}
+                    className={`station-marker ${station.status === 'Available' ? 'available' : (station.status === 'Occupied' ? 'occupied' : 'unknown')} ${station.isCompatible ? 'compatible' : ''} ${userVehicle ? '' : 'no-vehicle'}`}
                     title={station.name}
-                  />
+                  >⚡</div> 
                 </Marker>
               ))}
               
@@ -342,26 +356,51 @@ const DriverDashboard = () => {
           )}
 
           {viewMode === 'list' && (
-            <div className="stations-list-container">
-              <h2>Stations List</h2>
-              {loading && <p>Loading stations...</p>}
-              {error && <p className="error-message">{error}</p>}
-              {!loading && !error && filteredStations.length === 0 && <p>No stations found.</p>}
+            <div className="stations-list-view-container">
+              {/* Search and filter chips can be re-integrated here if needed for list view specifically */}
+              {/* For now, showing a simple list based on filteredStations from map view */}
+              {loading && <p className="list-loading-message">Loading stations...</p>}
+              {error && <p className="list-error-message">{error}</p>}
+              {!loading && !error && filteredStations.length === 0 && <p className="list-empty-message">No stations found.</p>}
               {!loading && !error && filteredStations.length > 0 && (
-                <ul>
+                <div className="station-cards-list">
                   {filteredStations.map(station => (
-                    <li key={station.id} className="station-list-item" onClick={() => handleMarkerClick(station)}>
-                      <h3>{station.name}</h3>
-                      <p>{station.address}</p>
-                      {station.isCompatible !== undefined && (
-                        <p className={station.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
-                          {station.isCompatible ? 'Compatible' : 'Possibly Incompatible'}
+                    <div key={station.id} className="station-list-card-item" onClick={() => handleMarkerClick(station)}>
+                      <div className="list-card-left">
+                        {/* Placeholder for Brand Icon */}
+                        <div className="list-station-brand-icon">
+                          {station.name ? station.name.charAt(0) : 'S'} 
+                        </div>
+                      </div>
+                      <div className="list-card-main">
+                        <h3 className="list-station-name">{station.name}</h3>
+                        <p className="list-station-address">{station.address ? station.address.split(',')[0] : 'Address details'}</p>
+                        <p className={`list-station-availability ${station.status === 'Available' ? 'available' : 'unavailable'}`}>
+                          {station.status || 'Status N/A'} {/* Placeholder for status */}
+                          {station.status === 'Available' && <FaCheck className="icon" />}
+                          {station.status === 'Unavailable' && <span className="icon">✕</span>}
                         </p>
-                      )}
-                      {/* Optionally show distance if calculated for list view too */}
-                    </li>
+                      </div>
+                      <div className="list-card-right">
+                        <span className={`list-station-access ${station.accessType?.toLowerCase()}`}>{station.accessType || 'Public'}</span>
+                        {/* Placeholder for Rating */}
+                        <div className="list-station-rating">
+                          <span>{station.rating || '4.3'}</span> <span className="star">★</span>
+                        </div>
+                        {/* Conditional "New" Tag placeholder */}
+                        {station.isNew && <span className="list-station-new-tag">New</span>}
+                        {station.distance !== undefined && (
+                          <p className="list-station-distance">{station.distance.toFixed(1)} kms</p>
+                        )}
+                        <div className="list-station-chargers">
+                          {station.chargerTypes && station.chargerTypes.slice(0,2).map(type => (
+                            <span key={type} className="type-badge">{type}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           )}
