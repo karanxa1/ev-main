@@ -1526,3 +1526,337 @@
   from { opacity: 0; transform: translate(-50%, 10px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
+
+/* Styles for the main view area to contain map or list */
+.main-view-area {
+  flex-grow: 1; /* Takes up available space */
+  position: relative; /* For positioning overlays like map-actions-overlay */
+  height: calc(100% - 120px); /* Adjust 120px based on header/search bar height */
+  /* If search-and-filters-on-map is outside this, adjust height accordingly */
+}
+
+.map-view-full-container .main-view-area > .mapboxgl-map {
+  height: 100% !important; /* Ensure map takes full height of this area */
+}
+
+.stations-list-container {
+  padding: 15px;
+  overflow-y: auto;
+  height: 100%; /* Fill the main-view-area */
+}
+
+.station-list-item {
+  background-color: #fff;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.station-list-item h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.station-list-item p {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.station-list-item .compatible-text {
+  color: green;
+  font-weight: bold;
+}
+
+.station-list-item .not-compatible-text {
+  color: orange;
+}
+
+
+/* Nearby Stations Bar */
+.nearby-stations-bar {
+  position: absolute; /* Position over the map or at the bottom of main-view-area */
+  bottom: 10px; /* Adjust as needed, consider map-actions-overlay */
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px); /* Responsive width */
+  max-width: 600px; /* Max width for the bar */
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  z-index: 10; /* Above map, below map-actions-overlay if it needs to be higher */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.nearby-stations-bar h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 600;
+}
+
+.nearby-buttons-container {
+  display: flex;
+  justify-content: center; /* Center buttons if they don't fill space */
+  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+  gap: 8px;
+  width: 100%;
+}
+
+.nearby-station-button {
+  background-color: #4A90E2; /* A distinct blue */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 20px; /* Pill shape */
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.nearby-station-button:hover {
+  background-color: #357ABD;
+}
+
+.nearby-station-button .distance-badge {
+  background-color: rgba(0,0,0,0.15);
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+/* Adjust map-actions-overlay if nearby-stations-bar is too close or overlaps */
+.map-actions-overlay {
+  /* Example: potentially move it up if nearby-stations-bar is tall */
+  /* bottom: 70px; /* Adjust based on nearby-stations-bar height + desired spacing */
+  /* Or ensure nearby-stations-bar is placed considering this overlay */
+}
+
+/* Ensure the map itself takes up the correct space if these overlays are absolutely positioned */
+.driver-dashboard-mobile .mapboxgl-map {
+  /* height: 100%; if main-view-area controls height and overlays are within it */
+}
+
+/* Responsive adjustments for nearby stations bar if needed */
+@media (max-width: 600px) {
+  .nearby-stations-bar {
+    width: calc(100% - 20px); /* More width on smaller screens */
+    bottom: 5px;
+  }
+  .nearby-station-button {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+}
+
+/* ... other existing styles ... */
+.bottom-navigation {
+  /* ... */
+}
+
+/* Nearby Stations Carousel / Horizontal Card List */
+.nearby-stations-carousel-container {
+  position: absolute;
+  bottom: 65px; /* MODIFIED_LINE: Adjusted to be above bottom navigation (prev: 10px) */
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 0 10px; /* Padding on the sides of the carousel */
+  display: flex;
+  justify-content: center; /* Center the scrollable area if it's not full width */
+}
+
+.nearby-station-cards-scrollable {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px; /* Space between cards */
+  padding: 10px 5px; /* Padding inside the scrollable area, top/bottom and sides for scrollbar */
+  width: 100%; /* Take full width of parent */
+  /* Hide scrollbar visually if desired, while keeping functionality */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.nearby-station-cards-scrollable::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+  height: 6px;
+}
+
+/* Individual Station Card Styling */
+.nearby-station-card {
+  background-color: white;
+  border-radius: 12px;
+  min-width: 280px; /* Minimum width of a card, adjust as needed */
+  max-width: 300px; /* Maximum width of a card */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  overflow: hidden; /* Ensure content respects border-radius */
+}
+
+.nearby-station-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.card-content-wrapper {
+  display: flex;
+  padding: 12px;
+  gap: 10px;
+}
+
+.card-left {
+  flex-shrink: 0;
+}
+
+.station-brand-icon-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px; /* Or 50% for circular */
+  background-color: #e0e0e0; /* Placeholder background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #555;
+  /* Example: Shell-like color if you want to hardcode for specific names */
+  /* .shell-station & { background-color: #FFD700; color: #D92A1D; } */
+}
+
+.card-main-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden; /* For text ellipsis if needed */
+}
+
+.card-main-details h3 {
+  font-size: 1rem; /* Adjust as per image */
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.station-address-line {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0 0 6px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.station-availability {
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.station-availability.status-available {
+  color: #2e7d32; /* Green for available */
+}
+
+.station-availability.status-unavailable {
+  color: #c62828; /* Red for unavailable */
+}
+
+.available-check-icon {
+  margin-left: 5px;
+  font-size: 0.9em;
+}
+
+.card-right-details {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Align to the right */
+  justify-content: space-between; /* Space out rating/distance and charger types */
+  text-align: right;
+}
+
+.station-rating-placeholder {
+  background-color: #f0f0f0; /* Placeholder, or green as in image */
+  color: #333; /* Placeholder */
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex; /* Use flex to align items inside */
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.station-rating-placeholder.actual-rating {
+    background-color: #4CAF50; /* Green like in the image */
+    color: white;
+}
+
+.station-rating-placeholder .star-icon {
+  margin-left: 3px;
+  color: #fbc02d; /* Gold star, or white if on green background */
+}
+
+.station-distance {
+  font-size: 0.8rem;
+  color: #777;
+  margin-bottom: 6px;
+}
+
+.station-charger-types {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.charger-type-badge {
+  background-color: #e8eaf6; /* Light blue/grey */
+  color: #3f51b5; /* Darker blue text */
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* Remove or adapt old .nearby-stations-bar styles if they conflict */
+.nearby-stations-bar, 
+.nearby-buttons-container, 
+.nearby-station-button {
+  /* display: none; /* If completely replaced */
+  /* Or ensure class names are distinct */
+}
+
+/* Adjust map-actions-overlay positioning if the new carousel is taller */
+.map-actions-overlay {
+  /* Example: If carousel height is ~100px and you want 10px space:
+  bottom: 120px; /* (carousel height + desired gap + nav button height consideration) */
+}
+
+/* Adjust map controls like zoom buttons if they overlap */
+.driver-dashboard-mobile .mapboxgl-ctrl-bottom-right {
+    /* Ensure it's above the new carousel if positioned at bottom */
+    /* margin-bottom: 130px !important; /* Example, depends on carousel height */
+}
+
+
+/* Responsive adjustments could be made here if needed for card sizes on very small screens */
+

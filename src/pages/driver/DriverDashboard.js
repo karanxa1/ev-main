@@ -26,6 +26,24 @@ const getJitteredCoordinates = (lat, lng, stationId) => {
   return { latitude: lat + latOffset, longitude: lng + lngOffset };
 };
 
+// ADDED_FUNCTION: Haversine distance calculation
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c; // Distance in km
+  return d;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
+}
+
 const DriverDashboard = () => {
   const reactRouterLocation = useLocation(); // Renamed to avoid conflict if global `location` was intended elsewhere, and to be clear.
   const { state } = reactRouterLocation; // Continue using state if needed from the location object
@@ -38,6 +56,7 @@ const DriverDashboard = () => {
   const [selectedStationPopup, setSelectedStationPopup] = useState(null);
   const [activeBottomNav, setActiveBottomNav] = useState('Map');
   const [viewMode, setViewMode] = useState('map'); // ADDED_LINE: 'map' or 'list' view
+  const [nearbyStations, setNearbyStations] = useState([]); // ADDED_LINE: For closest station suggestions
   
   // User vehicle state
   const [userVehicle, setUserVehicle] = useState(state?.vehicle || null);
@@ -132,6 +151,22 @@ const DriverDashboard = () => {
     
     return stations;
   }, [stations, showCompatibleOnly, userVehicle]);
+
+  // MOVED_EFFECT_BELOW: Calculate and update nearby stations (moved from above stations and filteredStations)
+  useEffect(() => {
+    if (userLocation && filteredStations.length > 0) {
+      const stationsWithDistance = filteredStations.map(station => {
+        const sLat = station.originalLat !== undefined ? station.originalLat : station.latitude;
+        const sLng = station.originalLng !== undefined ? station.originalLng : station.longitude;
+        const distance = getDistance(userLocation.latitude, userLocation.longitude, sLat, sLng);
+        return { ...station, distance };
+      }).sort((a, b) => a.distance - b.distance);
+
+      setNearbyStations(stationsWithDistance.slice(0, 3)); // Get top 3 closest
+    } else {
+      setNearbyStations([]); // Clear nearby stations if no user location or no filtered stations
+    }
+  }, [userLocation, filteredStations]);
 
   const flyToUserLocation = () => {
     if (userLocation && mapRef.current) {
@@ -243,88 +278,142 @@ const DriverDashboard = () => {
           </div>
         </section>
 
-        {viewMode === 'map' && MAPBOX_TOKEN && (
-          <Map
-            ref={mapRef}
-            mapboxAccessToken={MAPBOX_TOKEN}
-            initialViewState={viewport}
-            onMove={evt => setViewport(evt.viewState)}
-            style={{ width: '100%', height: '100%' }}
-            mapStyle="mapbox://styles/mapbox/streets-v11"
-          >
-            <NavigationControl position="bottom-right" style={{ marginBottom: '80px' }} />
+        {/* Main Map or List View Area */}
+        <div className="main-view-area">
+          {viewMode === 'map' && MAPBOX_TOKEN && (
+            <Map
+              ref={mapRef}
+              mapboxAccessToken={MAPBOX_TOKEN}
+              initialViewState={viewport}
+              onMove={evt => setViewport(evt.viewState)}
+              style={{ width: '100%', height: '100%' }}
+              mapStyle="mapbox://styles/mapbox/streets-v11"
+            >
+              <NavigationControl position="bottom-right" style={{ marginBottom: '80px' }} />
 
-            {/* Markers for stations */}
-            {filteredStations.map(station => (
-              <Marker
-                key={station.id} // Ensure unique key for each marker
-                longitude={station.longitude}
-                latitude={station.latitude}
-                onClick={() => handleMarkerClick(station)}
-              >
-                <div 
-                  className={`map-marker ${station.isCompatible ? 'compatible' : ''} ${userVehicle ? '' : 'no-vehicle'}`}
-                  title={station.name}
-                />
-              </Marker>
-            ))}
-            
-            {/* User Location Marker */}
-            {userLocation && (
-              <Marker longitude={userLocation.longitude} latitude={userLocation.latitude}>
-                <div className="user-location-dot"></div>
-              </Marker>
-            )}
+              {/* Markers for stations */}
+              {filteredStations.map(station => (
+                <Marker
+                  key={station.id} // Ensure unique key for each marker
+                  longitude={station.longitude}
+                  latitude={station.latitude}
+                  onClick={() => handleMarkerClick(station)}
+                >
+                  <div 
+                    className={`map-marker ${station.isCompatible ? 'compatible' : ''} ${userVehicle ? '' : 'no-vehicle'}`}
+                    title={station.name}
+                  />
+                </Marker>
+              ))}
+              
+              {/* User Location Marker */}
+              {userLocation && (
+                <Marker longitude={userLocation.longitude} latitude={userLocation.latitude}>
+                  <div className="user-location-dot"></div>
+                </Marker>
+              )}
 
-            {selectedStationPopup && (
-              <Popup
-                longitude={selectedStationPopup.originalLng !== undefined ? selectedStationPopup.originalLng : selectedStationPopup.longitude}
-                latitude={selectedStationPopup.originalLat !== undefined ? selectedStationPopup.originalLat : selectedStationPopup.latitude}
-                onClose={() => setSelectedStationPopup(null)}
-                closeButton={true}
-                closeOnClick={false}
-                anchor="bottom"
-                className="station-popup"
-              >
-                <div>
-                  <h3>{selectedStationPopup.name}</h3>
-                  <p>{selectedStationPopup.address}</p>
-                  {selectedStationPopup.isCompatible !== undefined && (
-                    <p className={selectedStationPopup.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
-                      {selectedStationPopup.isCompatible ? 'Compatible with your vehicle' : 'May not be compatible'}
-                    </p>
-                  )}
-                  {/* Add more details or a button to navigate/get directions */}
-                </div>
-              </Popup>
-            )}
-          </Map>
-        )}
-        {viewMode === 'map' && !MAPBOX_TOKEN && (
-           <div className="map-loading-placeholder">Map cannot be displayed. Mapbox token is missing.</div>
-        )}
-
-        {viewMode === 'list' && (
-          <div className="stations-list-container"> {/* Placeholder for list view */}
-            <h2>Stations List</h2>
-            {loading && <p>Loading stations...</p>}
-            {error && <p className="error-message">{error}</p>}
-            {!loading && !error && filteredStations.length === 0 && <p>No stations found.</p>}
-            {!loading && !error && filteredStations.length > 0 && (
-              <ul>
-                {filteredStations.map(station => (
-                  <li key={station.id} className="station-list-item">
-                    <h3>{station.name}</h3>
-                    <p>{station.address}</p>
-                    {station.isCompatible !== undefined && (
-                      <p className={station.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
-                        {station.isCompatible ? 'Compatible' : 'Possibly Incompatible'}
+              {selectedStationPopup && (
+                <Popup
+                  longitude={selectedStationPopup.originalLng !== undefined ? selectedStationPopup.originalLng : selectedStationPopup.longitude}
+                  latitude={selectedStationPopup.originalLat !== undefined ? selectedStationPopup.originalLat : selectedStationPopup.latitude}
+                  onClose={() => setSelectedStationPopup(null)}
+                  closeButton={true}
+                  closeOnClick={false}
+                  anchor="bottom"
+                  className="station-popup"
+                >
+                  <div>
+                    <h3>{selectedStationPopup.name}</h3>
+                    <p>{selectedStationPopup.address}</p>
+                    {selectedStationPopup.isCompatible !== undefined && (
+                      <p className={selectedStationPopup.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
+                        {selectedStationPopup.isCompatible ? 'Compatible with your vehicle' : 'May not be compatible'}
                       </p>
                     )}
-                  </li>
-                ))}
-              </ul>
-            )}
+                    {/* Add more details or a button to navigate/get directions */}
+                  </div>
+                </Popup>
+              )}
+            </Map>
+          )}
+          {viewMode === 'map' && !MAPBOX_TOKEN && (
+             <div className="map-loading-placeholder">Map cannot be displayed. Mapbox token is missing.</div>
+          )}
+
+          {viewMode === 'list' && (
+            <div className="stations-list-container">
+              <h2>Stations List</h2>
+              {loading && <p>Loading stations...</p>}
+              {error && <p className="error-message">{error}</p>}
+              {!loading && !error && filteredStations.length === 0 && <p>No stations found.</p>}
+              {!loading && !error && filteredStations.length > 0 && (
+                <ul>
+                  {filteredStations.map(station => (
+                    <li key={station.id} className="station-list-item" onClick={() => handleMarkerClick(station)}>
+                      <h3>{station.name}</h3>
+                      <p>{station.address}</p>
+                      {station.isCompatible !== undefined && (
+                        <p className={station.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
+                          {station.isCompatible ? 'Compatible' : 'Possibly Incompatible'}
+                        </p>
+                      )}
+                      {/* Optionally show distance if calculated for list view too */}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Nearby Stations Bar - Renders only in map view and if user location is available */}
+        {viewMode === 'map' && userLocation && nearbyStations.length > 0 && (
+          <div className="nearby-stations-carousel-container">
+            {/* Optional: Title for the carousel if needed, though image doesn't show one explicitly above cards */}
+            {/* <h4>Nearby Stations:</h4> */}
+            <div className="nearby-station-cards-scrollable">
+              {nearbyStations.map(station => (
+                <div 
+                  key={station.id} 
+                  className="nearby-station-card"
+                  onClick={() => handleMarkerClick(station)}
+                  title={`${station.name} (${station.distance.toFixed(1)} km away)`}
+                >
+                  <div className="card-content-wrapper">
+                    <div className="card-left">
+                      {/* Placeholder for Brand Icon. You can replace this with an <img> tag if you have icon URLs */}
+                      <div className="station-brand-icon-placeholder">
+                        {station.name ? station.name.charAt(0) : 'S'}
+                      </div>
+                    </div>
+                    <div className="card-main-details">
+                      <h3>{station.name}</h3>
+                      <p className="station-address-line">{station.address ? station.address.split(',')[0] : 'Address unavailable'}</p>
+                      {/* Placeholder for Availability - assuming station.status might exist */}
+                      <p className={`station-availability ${station.status === 'Available' ? 'status-available' : 'status-unavailable'}`}>
+                        {station.status || 'Status N/A'} {/* Default to 'Status N/A' if not present */}
+                        {station.status === 'Available' && <FaCheck className="available-check-icon"/>}
+                      </p>
+                    </div>
+                    <div className="card-right-details">
+                      {/* Placeholder for Rating */}
+                      <div className="station-rating-placeholder">
+                        <span>{station.rating || '4.2'}</span>{/* Default to 4.2 if not present */} 
+                        <span className="star-icon">★</span>
+                      </div>
+                      <p className="station-distance">{station.distance.toFixed(1)} km</p>
+                      <div className="station-charger-types">
+                        {station.chargerTypes && station.chargerTypes.slice(0, 2).map(type => (
+                          <span key={type} className="charger-type-badge">{type}</span>
+                        ))}
+                        {/* Add ellipsis or +more if more than 2 types */} 
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
