@@ -25,23 +25,16 @@ html {
   transition: padding 0.3s ease-in-out;
 }
 
+.home-header .container, 
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.header-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 15px;
-}
-
-.container {
-  max-width: 1200px;
+  max-width: 1400px; /* Increased from 1200px for more space */
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 40px; /* Increased horizontal padding */
+  min-height: 70px; /* Add minimum height to make header more spacious */
+  width: 100%;
 }
 
 .logo-text {
