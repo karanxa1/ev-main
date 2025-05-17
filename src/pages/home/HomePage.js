@@ -90,6 +90,7 @@ const HomePage = () => {
   const [isChatOpen, setIsChatOpen] = useState(false); // State for AI Chat window
   const [hasUnreadAiMessages, setHasUnreadAiMessages] = useState(false); // State for AI new message badge
   const [initialGeolocationAttempted, setInitialGeolocationAttempted] = useState(false); // New state
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   // Common fallback image that's guaranteed to exist
   const commonFallbackImage = '/images/charging-stations/commonoimage.jpg';
@@ -301,14 +302,69 @@ const HomePage = () => {
     // }));
   };
 
+  // Enhanced scrollToSection with smoother transitions
   const scrollToSection = (elementRef) => {
     if (elementRef && elementRef.current) {
+      // Track the scroll starting position
+      const startPosition = window.pageYOffset;
+      const targetPosition = elementRef.current.offsetTop - 80; // Subtract header height
+      const distance = targetPosition - startPosition;
+      
+      // Add animation class based on scroll direction
+      const scrollDirection = distance > 0 ? 'scrolling-down' : 'scrolling-up';
+      document.body.classList.add(scrollDirection);
+      
+      // Perform the smooth scroll
       window.scrollTo({
-        top: elementRef.current.offsetTop - 80, // Subtract header height
+        top: targetPosition,
         behavior: 'smooth'
       });
+      
+      // Remove the animation class after the scroll completes
+      setTimeout(() => {
+        document.body.classList.remove(scrollDirection);
+        
+        // Add highlight effect to the target section
+        if (elementRef.current) {
+          elementRef.current.classList.add('section-highlight');
+          setTimeout(() => {
+            elementRef.current.classList.remove('section-highlight');
+          }, 1000);
+        }
+      }, Math.min(Math.abs(distance), 1000)); // Base timeout on scroll distance, max 1 second
     }
   };
+
+  // Add scroll event listener to animate sections on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset;
+      const windowHeight = window.innerHeight;
+      
+      // Add scroll-based animation classes to elements with data-scroll attribute
+      document.querySelectorAll('[data-scroll]').forEach(element => {
+        const elementTop = element.getBoundingClientRect().top + scrollTop;
+        const elementVisible = 150; // How many pixels from the top before the element becomes visible
+        
+        if (scrollTop > elementTop - windowHeight + elementVisible) {
+          element.classList.add('scroll-visible');
+        } else {
+          element.classList.remove('scroll-visible');
+        }
+      });
+    };
+    
+    // Initial check on component mount
+    handleScroll();
+    
+    // Add scroll event listener
+    window.addEventListener('scroll', handleScroll);
+    
+    // Clean up the event listener on component unmount
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   // Other handlers
   const handleJoinNow = () => {
@@ -738,8 +794,35 @@ const HomePage = () => {
   console.log('[HomePage Debug] selectedCity value:', selectedCity);
   console.log('[HomePage Debug] handleCityChange reference:', !!handleCityChange);
 
+  // Add effect to track scroll progress
+  useEffect(() => {
+    const handleScrollProgress = () => {
+      // Calculate how far down the page the user has scrolled
+      const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const scrolled = (scrollTop / windowHeight) * 100;
+      setScrollProgress(scrolled);
+    };
+
+    // Add scroll event listener
+    window.addEventListener('scroll', handleScrollProgress);
+
+    // Clean up
+    return () => {
+      window.removeEventListener('scroll', handleScrollProgress);
+    };
+  }, []);
+
   return (
     <div className="home-page">
+      {/* Scroll Progress Indicator */}
+      <div className="scroll-progress-container">
+        <div 
+          className="scroll-progress-bar" 
+          style={{ width: `${scrollProgress}%` }} 
+        />
+      </div>
+
       {/* Overlay for mobile menu - conditionally rendered */}
       {mobileMenuOpen && <div className="mobile-menu-overlay" onClick={toggleMobileMenu}></div>}
 
@@ -927,19 +1010,19 @@ const HomePage = () => {
       {/* About Section */}
       <section id="about" ref={aboutRef} className={`about-section ${aboutSectionRef[1] ? 'is-visible' : ''}`}>
         <div className="container" ref={aboutSectionRef[0]}>
-          <h2 className="initially-hidden animate-slide-up">India's Leading EV Charging Network</h2>
+          <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">India's Leading EV Charging Network</h2>
           <div className="features-grid stagger-children">
-            <div className="feature initially-hidden stagger-child-1">
+            <div className="feature initially-hidden stagger-child-1" data-scroll="stagger-item">
               <div className="feature-icon">🔌</div>
               <h3>Widespread Coverage</h3>
               <p>Access to thousands of charging points across major Indian cities.</p>
             </div>
-            <div className="feature initially-hidden stagger-child-2">
+            <div className="feature initially-hidden stagger-child-2" data-scroll="stagger-item">
               <div className="feature-icon">⚡</div>
               <h3>Fast Charging</h3>
               <p>DC fast charging options to get you back on the road quickly.</p>
             </div>
-            <div className="feature initially-hidden stagger-child-3">
+            <div className="feature initially-hidden stagger-child-3" data-scroll="stagger-item">
               <div className="feature-icon">📱</div>
               <h3>Easy Booking</h3>
               <p>Book and pay for charging sessions directly from your phone.</p>
@@ -970,6 +1053,7 @@ const HomePage = () => {
             console.log("[HomePage] MapSection triggered city change for:", city);
             handleCityChange(city);
           }}
+          data-scroll="fade-in"
         />
       </Suspense>
           
@@ -991,30 +1075,30 @@ const HomePage = () => {
       {/* How It Works Section */}
       <section id="how-it-works" ref={howItWorksRef} className={`how-it-works ${howItWorksSectionRef[1] ? 'is-visible' : ''}`}>
         <div className="container" ref={howItWorksSectionRef[0]}>
-          <h2 className="initially-hidden animate-slide-up">How It Works</h2>
+          <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">How It Works</h2>
           <div className="steps stagger-children">
-            <div className="step initially-hidden stagger-child-1">
+            <div className="step initially-hidden stagger-child-1" data-scroll="stagger-item">
               <div className="step-number">1</div>
               <h3>Sign Up</h3>
               <p>Create a free account in seconds and set up your EV vehicle details.</p>
             </div>
-            <div className="step initially-hidden stagger-child-2">
+            <div className="step initially-hidden stagger-child-2" data-scroll="stagger-item">
               <div className="step-number">2</div>
               <h3>Find Stations</h3>
               <p>Discover charging stations near you with real-time availability.</p>
             </div>
-            <div className="step initially-hidden stagger-child-3">
+            <div className="step initially-hidden stagger-child-3" data-scroll="stagger-item">
               <div className="step-number">3</div>
               <h3>Book & Charge</h3>
               <p>Reserve your slot and charge your vehicle hassle-free.</p>
             </div>
-            <div className="step initially-hidden stagger-child-4">
+            <div className="step initially-hidden stagger-child-4" data-scroll="stagger-item">
               <div className="step-number">4</div>
               <h3>Pay Seamlessly</h3>
               <p>Pay securely through the app using multiple payment options.</p>
             </div>
           </div>
-          <div className={`cta-container initially-hidden ${howItWorksSectionRef[1] ? 'animate-slide-up' : ''}`} style={{ animationDelay: '0.5s'}}>
+          <div className={`cta-container initially-hidden ${howItWorksSectionRef[1] ? 'animate-slide-up' : ''}`} style={{ animationDelay: '0.5s'}} data-scroll="slide-up">
             <button 
               onClick={handleGetStarted} 
               className="btn-large"
@@ -1028,8 +1112,8 @@ const HomePage = () => {
       {/* Cost Estimator Section */}
       <section ref={costEstimatorSectionRef[0]} className={`cost-estimator-section ${costEstimatorSectionRef[1] ? 'is-visible' : ''}`}>
         <div className="container">
-          <h2 className="initially-hidden animate-slide-up">Estimate Charging Cost & Time</h2>
-          <div className="initially-hidden animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">Estimate Charging Cost & Time</h2>
+          <div className="initially-hidden animate-fade-in" style={{ animationDelay: '0.2s' }} data-scroll="fade-in">
             <CostEstimator />
           </div>
         </div>
@@ -1048,44 +1132,45 @@ const HomePage = () => {
       {locationFound && nearestStations.length > 0 && (
         <section ref={nearestStationsSectionRef[0]} className={`nearest-stations-section ${nearestStationsSectionRef[1] ? 'is-visible' : ''}`}>
           <div className="container">
-            <h2 className="initially-hidden animate-slide-up">Stations Near You</h2>
+            <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">Stations Near You</h2>
             <div className="stations-grid nearest-stations-grid"> 
               {nearestStations.map((station, index) => (
-                <StationCard
-                  key={`nearest-${station.id}`}
-                  station={station}
-                  onBookNow={handleBookNow}
-                  onLocateOnMap={handleLocateOnMap}
-                  imageFallbackLevel={imageFallbackLevel}
-                  onImageError={handleImageError}
-                  onImageLoad={handleImageLoad}
-                  commonFallbackImage={commonFallbackImage}
-                  animationIndex={index}
-                />
+                <div key={`nearest-${station.id}`} data-scroll="stagger-item">
+                  <StationCard
+                    station={station}
+                    onBookNow={handleBookNow}
+                    onLocateOnMap={handleLocateOnMap}
+                    imageFallbackLevel={imageFallbackLevel}
+                    onImageError={handleImageError}
+                    onImageLoad={handleImageLoad}
+                    commonFallbackImage={commonFallbackImage}
+                    animationIndex={index}
+                  />
+                </div>
               ))}
-                      </div>
-                  </div>
+            </div>
+          </div>
         </section>
       )}
 
       {/* EV Tips Section */}
       <section ref={evTipsSectionRef[0]} className={`ev-tips-section ${evTipsSectionRef[1] ? 'is-visible' : ''}`}>
         <div className="container">
-          <h2 className="initially-hidden animate-slide-up">EV Pro Tips</h2>
+          <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">EV Pro Tips</h2>
           {currentEvTip && (
-            <div className="tip-card initially-hidden animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <div className="tip-card initially-hidden animate-fade-in" style={{ animationDelay: '0.2s' }} data-scroll="fade-in">
               <p className="tip-text">{currentEvTip}</p>
               <button onClick={showNextTip} className="btn-next-tip">
                 Show Another Tip
-                      </button>
-                    </div>
+              </button>
+            </div>
           )}
-          </div>
-        </section>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer ref={footerRef[0]} className={`footer ${footerRef[1] ? 'is-visible animate-fade-in' : 'initially-hidden'}`}>
-        <div className="container">
+        <div className="container" data-scroll="fade-in">
           <div className="footer-columns">
             <div className="footer-column">
               <h3>EV Charging Network</h3>
