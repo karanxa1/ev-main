@@ -152,7 +152,7 @@ const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="johndoe@example.com"
+                  placeholder="    johndoe@example.com"
                   required
                   autoComplete="email"
                 />
