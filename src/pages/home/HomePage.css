@@ -1113,7 +1113,7 @@ html {
     background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
     z-index: 990; /* Below the menu, above content */
   }
-
+  
   .nav-links { /* This is for the mobile dropdown */
     /* Styles for the slide-in menu from side if preferred */
     /* position: fixed;
@@ -1121,7 +1121,7 @@ html {
     right: -280px; // Start off-screen
     width: 280px;
     height: 100vh;
-    background-color: white;
+  background-color: white;
     padding-top: 60px; // Space for close button or header
     box-shadow: -2px 0 5px rgba(0,0,0,0.2);
     transition: right 0.3s ease-in-out;
@@ -1151,7 +1151,7 @@ html {
   }
   .btn-login, .btn-signup {
     width: 100%; /* Full width buttons */
-    text-align: center;
+  text-align: center;
     padding: 12px; /* Consistent padding */
   }
 
@@ -1184,7 +1184,7 @@ html {
   .city-option { font-size: 1rem; margin-bottom: 0px;} /* Adjusted city option */
   .city-name { font-size: 0.7rem; }
 
-  .city-title {
+.city-title {
     font-size: 1.3rem; /* Adjusted city title size */
   }
 
@@ -1334,7 +1334,7 @@ html {
 
 /* More specific styles for very small screens */
 @media (max-width: 480px) {
-  .container {
+.container {
     padding: 0 10px; /* Tighter padding for very small screens */
   }
 
@@ -1489,7 +1489,7 @@ html {
 
   .nav-links .profile-button { /* This is the button that might show user avatar/name */
     display: flex; /* Already flex, good */
-    align-items: center;
+  align-items: center;
     justify-content: flex-start; /* Align content to start */
     width: 100%;
     padding: 12px 20px; /* Match nav-item padding */
@@ -1510,7 +1510,7 @@ html {
   .nav-links .profile-name {
     display: inline-block; /* Ensure it's shown */
     margin-left: 10px;
-    font-weight: 500;
+  font-weight: 500;
     color: #333;
   }
   .nav-links .profile-chevron {
@@ -1526,7 +1526,7 @@ html {
   .nav-links .profile-dropdown {
     position: static; /* Overrides absolute positioning */
     display: none; /* Hidden by default, toggled by JS/React state */
-    width: 100%;
+  width: 100%;
     box-shadow: none;
     border-radius: 0;
     background-color: #f9f9f9; /* Slightly different background to distinguish */
@@ -1543,7 +1543,7 @@ html {
   }
 
   .nav-links .profile-dropdown-items button {
-    width: 100%;
+  width: 100%;
     padding: 12px 20px;
     text-align: left;
     background-color: transparent;
@@ -1568,7 +1568,7 @@ html {
   /* If auth buttons are also in mobile menu */
   .nav-links .auth-buttons {
     display: flex; /* To be sure it's flex */
-    flex-direction: column;
+  flex-direction: column;
     width: 100%;
     padding: 0; /* Remove padding if items inside handle it */
   }
@@ -1598,7 +1598,7 @@ html {
      background-color: #094222;
    }
    .nav-links .auth-buttons > *:last-child { /* Remove bottom border from last auth button */
-      border-bottom: none;
+  border-bottom: none;
    }
 }
 
@@ -1694,7 +1694,7 @@ html {
 .search-suggestions {
   position: absolute;
   top: calc(100% + 8px); /* Position below the search bar with a small gap */
-  left: 0;
+    left: 0;
   right: 0;
   background-color: #fff;
   border: 1px solid #ddd;
@@ -1709,7 +1709,7 @@ html {
 .search-suggestions ul {
   list-style: none;
   padding: 0;
-  margin: 0;
+    margin: 0;
 }
 
 .search-suggestions li {
@@ -1718,10 +1718,10 @@ html {
   font-size: 0.95rem;
   border-bottom: 1px solid #f0f0f0; /* Softer separator */
   transition: background-color 0.15s ease;
-  display: flex;
+    display: flex;
   justify-content: space-between;
-  align-items: center;
-}
+    align-items: center;
+  }
 
 .search-suggestions li:last-child {
   border-bottom: none;
@@ -1754,18 +1754,18 @@ html {
   .search-input {
     font-size: 1rem; /* Ensure readability */
     padding: 12px 15px;
-    width: 100%; 
+    width: 100%;
     margin-left: 0; /* Reset margin */
     text-align: center;
   }
   .search-input::placeholder {
-    text-align: center;
+  text-align: center;
   }
 
   .search-button {
     padding: 12px 20px;
-    width: 100%; 
-    font-size: 1rem;
+  width: 100%;
+  font-size: 1rem;
     margin-left: 0; /* Reset margin */
     justify-content: center; /* Center icon and text */
   }
@@ -1780,7 +1780,7 @@ html {
     right: auto;
     top: auto; /* Reset positioning */
     margin-top: 10px; /* Space from the search bar */
-    border-radius: 12px;
+  border-radius: 12px;
   }
   .search-suggestions li {
     padding: 14px 18px; /* Increase tap area */

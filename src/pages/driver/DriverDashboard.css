@@ -1183,12 +1183,14 @@
   height: 100vh;
   width: 100vw;
   overflow: hidden; /* Prevent scrollbars on the main container */
+  position: relative; /* Context for absolutely positioned elements */
 }
 
 .map-view-full-container {
   flex-grow: 1; /* Takes up all space above bottom nav */
   position: relative; /* Crucial for positioning elements on top */
   background-color: #e0e0e0; /* Fallback if map doesn't load */
+  height: calc(100% - 65px); /* Full height minus bottom nav height */
 }
 
 /* Search and Filters Overlaid on Map */
@@ -1279,12 +1281,12 @@
 }
 
 .recenter-button {
-  bottom: 90px; /* Above bottom nav + a bit of space */
+  bottom: 80px; /* Position above bottom nav */
   left: 15px;
 }
 
 .list-toggle-button {
-  bottom: 90px; /* Above bottom nav + a bit of space */
+  bottom: 80px; /* Position above bottom nav */
   right: 15px;
 }
 
@@ -1365,7 +1367,7 @@
   align-items: center; /* Vertically align items if their heights differ */
   background-color: #ffffff;
   border-top: 1px solid #e0e0e0;
-  padding: 5px 0; /* Reduced padding */
+  height: 65px; /* Fixed height */
   position: fixed; /* Fixed at the bottom */
   bottom: 0;
   left: 0;
@@ -1531,12 +1533,12 @@
 .main-view-area {
   flex-grow: 1; /* Takes up available space */
   position: relative; /* For positioning overlays like map-actions-overlay */
-  height: calc(100% - 120px); /* Adjust 120px based on header/search bar height */
-  /* If search-and-filters-on-map is outside this, adjust height accordingly */
+  height: 100%; /* Fill its container */
 }
 
 .map-view-full-container .main-view-area > .mapboxgl-map {
-  height: 100% !important; /* Ensure map takes full height of this area */
+  height: 100% !important; /* Ensure map takes full height */
+  width: 100% !important;
 }
 
 .stations-list-container {
@@ -1670,41 +1672,43 @@
 /* Nearby Stations Carousel / Horizontal Card List */
 .nearby-stations-carousel-container {
   position: absolute;
-  bottom: 65px; /* MODIFIED_LINE: Adjusted to be above bottom navigation (prev: 10px) */
+  bottom: 65px; /* Right above bottom navigation */
   left: 0;
   right: 0;
   z-index: 10;
-  padding: 0 10px; /* Padding on the sides of the carousel */
+  padding: 0; /* No padding to maximize map visibility */
   display: flex;
-  justify-content: center; /* Center the scrollable area if it's not full width */
+  justify-content: center;
+  background-color: transparent; /* Completely transparent background */
+  box-shadow: none; /* Remove shadow to not interrupt map */
 }
 
 .nearby-station-cards-scrollable {
   display: flex;
   overflow-x: auto;
   gap: 12px; /* Space between cards */
-  padding: 10px 5px; /* Padding inside the scrollable area, top/bottom and sides for scrollbar */
-  width: 100%; /* Take full width of parent */
-  /* Hide scrollbar visually if desired, while keeping functionality */
+  padding: 15px 10px; /* Vertical and horizontal padding */
+  width: 100%;
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+  background-color: transparent; /* Ensure scrollable area is transparent */
 }
 
 .nearby-station-cards-scrollable::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
-  height: 6px;
 }
 
 /* Individual Station Card Styling */
 .nearby-station-card {
   background-color: white;
   border-radius: 12px;
-  min-width: 280px; /* Minimum width of a card, adjust as needed */
+  min-width: 280px; /* Minimum width of a card */
   max-width: 300px; /* Maximum width of a card */
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   cursor: pointer;
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
   overflow: hidden; /* Ensure content respects border-radius */
+  transform: translateY(0); /* Reset any transform */
 }
 
 .nearby-station-card:hover {
