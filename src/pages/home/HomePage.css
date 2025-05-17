@@ -145,6 +145,22 @@ html {
   transform: rotate(-45deg) translate(5px, -5px); /* Adjust translate values as needed */
 }
 
+/* Mobile Menu Overlay */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  z-index: 998; /* Below the nav links, above the page content */
+  display: none; /* Hidden by default */
+}
+
+.mobile-menu-overlay.open {
+  display: block;
+}
+
 /* Hero Banner */
 .hero-banner {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' fill='transparent'/%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E"),
@@ -774,6 +790,127 @@ html {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
+/* Search Bar Styles - Base (Desktop First) */
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 50px; /* More rounded for modern look */
+  padding: 8px 8px 8px 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  max-width: 700px; /* Increased max-width */
+  margin: 40px auto 0; /* Adjusted top margin */
+  transition: box-shadow 0.2s ease-out, transform 0.2s ease-out;
+  position: relative; /* For suggestions positioning */
+  border: 1px solid #e0e0e0; /* Subtle border */
+}
+
+.search-bar-container:focus-within {
+  box-shadow: 0 6px 20px rgba(12, 95, 44, 0.15), 0 0 0 2px rgba(12, 95, 44, 0.2);
+  /* transform: scale(1.01); /* Optional subtle scale */
+  border-color: transparent;
+}
+
+.search-input {
+  flex-grow: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem; 
+  padding: 12px 15px; /* Increased padding */
+  background-color: transparent;
+  color: #333;
+  margin-left: -15px; /* Counteract some of the container padding for text alignment */
+}
+
+.search-input::placeholder {
+  color: #888;
+  opacity: 1;
+}
+
+.search-button {
+  background-color: #0C5F2C; /* Primary color */
+  color: white;
+  border: none;
+  border-radius: 40px; /* Match container rounding */
+  padding: 10px 18px; /* Adjusted padding */
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: flex; /* For icon and text alignment */
+  align-items: center;
+  gap: 8px; /* Space between icon and text */
+  margin-left: 8px; /* Space from input */
+}
+
+.search-button:hover {
+  background-color: #094222; /* Darker shade of primary */
+  transform: scale(1.05);
+}
+.search-button:active {
+  transform: scale(0.98);
+}
+
+.search-button-icon {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+
+.search-button-text {
+  display: inline; /* Default, shown on desktop */
+}
+
+/* Search Suggestions Styles - Base (Desktop First) */
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 8px); /* Position below the search bar with a small gap */
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px; /* More rounded corners */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  z-index: 1000; 
+  max-height: 350px; 
+  overflow-y: auto;
+  padding: 8px 0; /* Padding top/bottom for the list */
+}
+
+.search-suggestions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-suggestions li {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #f0f0f0; /* Softer separator */
+  transition: background-color 0.15s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-suggestions li:last-child {
+  border-bottom: none;
+}
+
+.search-suggestions li:hover {
+  background-color: #f5f5f5;
+}
+
+.search-suggestions .suggestion-type {
+  font-size: 0.8em;
+  color: #777;
+  background-color: #e9e9e9;
+  padding: 3px 7px;
+  border-radius: 10px;
+  margin-left: 10px;
+  font-weight: 500;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 1024px) {
   .steps {
@@ -788,79 +925,82 @@ html {
 
 @media (max-width: 768px) {
   .hamburger-menu {
-    display: flex; /* Make it visible */
-    /* Other styles like z-index, position might be needed if it's not appearing on top */
+    display: flex; /* Show hamburger on mobile */
+    /* margin-left: auto; */ /* Remove if causing issues, use space-between on parent */
   }
 
   .nav-links {
-    display: none; /* Initially hidden */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 280px; /* Adjust as needed */
-    height: 100vh;
-    background-color: white; /* Ensure it has a background */
-    box-shadow: 2px 0 5px rgba(0,0,0,0.2); /* Add shadow for visibility */
+    display: none; /* Hide desktop nav links by default */
     flex-direction: column;
-    align-items: flex-start; /* Or center, stretch, etc. */
-    padding: 70px 20px 20px; /* Add top padding to clear the fixed header */
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 1000; /* Ensure it's above content but potentially below an overlay or hamburger */
-    /* list-style: none; remove bullets if they are ul/li */
-    /* margin: 0; */
+    align-items: center; /* Center items in column */
+    position: absolute;
+    top: 65px; /* Adjust based on header height */
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 20px 0; /* Add some padding */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 999;
+    gap: 0; /* Reset gap for vertical layout */
   }
 
   .nav-links.open {
-    display: flex !important; /* Force display to flex */
-    transform: translateX(0) !important; /* Force slide in */
-    /* visibility: visible !important; /* Adding for good measure */
-    /* opacity: 1 !important; */
+    display: flex; /* Show when mobile menu is open */
+    animation: slideDownMobileMenu 0.3s ease-out;
+  }
+
+  @keyframes slideDownMobileMenu {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .nav-item {
+    padding: 12px 20px; /* Add padding for better tap targets */
+    width: 100%; /* Make nav items take full width */
+    text-align: center; /* Center text */
+    border-bottom: 1px solid #eee; /* Separator */
+  }
+  .nav-item:last-child {
+    border-bottom: none;
   }
 
   .logo-text {
-    font-size: 1.1rem;
-    margin-right: auto;
+    font-size: 20px; /* Slightly smaller logo text */
   }
   
   .hero-banner {
-    padding: 20px 0;
-    margin-top: 40px;
+    padding: 120px 0 60px; /* Adjusted padding for mobile */
   }
   .hero-content h1 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
+    font-size: 32px; /* Smaller font for h1 on mobile */
   }
   .hero-content p {
-    font-size: 0.85rem;
-    margin-bottom: 15px;
+    font-size: 16px; /* Smaller font for p on mobile */
   }
   .hero-cta {
-    flex-direction: column;
+    flex-direction: column; /* Stack buttons vertically */
     gap: 10px;
-    align-items: center;
   }
   .hero-cta .btn-primary, .hero-cta .btn-secondary {
-    width: 85%;
-    max-width: 280px;
-    padding: 10px 15px;
-    font-size: 0.9rem;
-    margin: 0;
+    width: 100%; /* Make buttons full width */
+    padding: 12px 20px; /* Adjust padding */
+    font-size: 16px;
   }
+
   .home-header {
-    padding: 10px 0;
-  }
-  .hero-banner {
-    padding: 25px 0;
-    margin-top: 40px;
+    padding: 10px 0; /* Adjust header padding */
   }
   .hero-content h1 {
-    font-size: 1.8rem;
-    margin-bottom: 12px;
+    font-size: 2rem; /* Adjusted for 768px */
   }
   .hero-content p {
-    font-size: 0.9rem;
-    margin-bottom: 20px;
+    font-size: 1rem; /* Adjusted for 768px */
   }
 
   .about-section,
@@ -871,1642 +1011,598 @@ html {
   .how-it-works-section,
   .testimonials-section,
   .faq-section {
-    padding: 40px 0;
+    padding: 30px 0; /* Reduced vertical padding for sections */
   }
 
   .features-grid, .steps {
-    grid-template-columns: 1fr;
-    gap: 25px;
+    grid-template-columns: 1fr; /* Stack items in a single column */
+    gap: 20px;
   }
   .feature, .step {
-    padding: 25px;
+    margin-bottom: 20px; /* Add some space between stacked items */
+    text-align: center; /* Center content in stacked items */
   }
-
   .cities-grid {
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Responsive grid */
   }
   .city-option { font-size: 1.2rem; margin-bottom: 3px;}
   .city-name { font-size: 0.75rem; }
 
   .city-title {
-    font-size: 1.6rem;
-    margin-top: 30px;
-    margin-bottom: 15px;
+    font-size: 1.3rem; /* Adjusted city title size */
   }
 
   .map-container {
-    height: 300px;
+    height: 250px; /* Further reduced map height */
   }
-
   .stations-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr; /* Stack station cards */
   }
 
   .station-card {
-    flex-direction: column;
-    padding: 15px;
+    width: 100%;
+    max-width: 400px; /* Optional: prevent very wide cards on tablets */
+    margin-left: auto;
+    margin-right: auto;
   }
   .station-image-wrapper {
-    height: 160px;
-    margin-bottom: 10px;
+    height: 180px; /* Adjust image height */
   }
   .station-content {
-    padding: 0;
+    padding: 12px; /* Adjust content padding */
   }
   .station-name {
-    font-size: 1.15rem;
-    margin-bottom: 8px;
+    font-size: 1.1rem; /* Adjust station name size */
   }
   .station-details p, .station-pricing p, .station-availability p {
-    font-size: 0.8rem;
-    margin-bottom: 5px;
+    font-size: 0.85rem; /* Adjust detail text size */
   }
   .station-meta span {
-    font-size: 0.75rem;
+    font-size: 0.8rem; /* Adjust meta text size */
   }
-
   .station-cta {
-    flex-direction: column;
+    flex-direction: column; /* Stack buttons in station card */
     gap: 8px;
-    margin-top: 15px;
   }
   .station-cta button {
-    width: 100%;
-    padding: 10px;
+    width: 100%; /* Full width buttons in card */
     font-size: 0.9rem;
   }
 
   .footer {
-    padding: 30px 0 15px 0;
+    padding: 30px 0; /* Adjust footer padding */
   }
   .footer-columns {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    flex-direction: column; /* Stack footer columns */
+    text-align: center; /* Center text in footer columns */
   }
   .footer-column {
-    text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px; /* Adjust space */
+    padding: 0 10px; /* Add some horizontal padding to prevent text touching edges */
   }
-  .footer-column:last-child {
-    margin-bottom: 0;
-  }
+
   .footer-column h4 {
-    font-size: 1.05rem;
-    margin-bottom: 8px;
+    font-size: 1.1rem; /* Adjust footer heading */
   }
   .footer-links li, .footer-contact p {
-    margin-bottom: 5px;
+    font-size: 0.9rem; /* Adjust footer link/text size */
   }
   .footer-links a, .footer-contact p, .footer-contact a {
-    font-size: 0.85rem;
+    /* justify-content: center; already set */
   }
   .social-links {
-    justify-content: center;
-    gap: 12px;
+    /* justify-content: center; already set */
+    gap: 10px; /* Space between social icons */
   }
-  .social-links a svg {
-    width: 18px;
-    height: 18px;
+  .social-links a svg { /* Assuming direct SVG child */
+      width: 24px;
+      height: 24px;
   }
 
   .copyright {
-    font-size: 0.75rem;
-    margin-top: 20px;
+    font-size: 0.85rem; /* Adjust copyright text size */
   }
 
   .mobile-menu-overlay {
+    /* Styles for the overlay when the mobile menu is open */
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-    z-index: 999; /* Below nav-links (1000) but above page content */
-    /* No transition here, it will appear/disappear with conditional rendering */
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    z-index: 990; /* Below the menu, above content */
   }
-  
+
   .nav-links { /* This is for the mobile dropdown */
-    /* ... existing styles for .nav-links ensuring opacity/transform/visibility transitions ... */
-    /* Ensure z-index is higher than overlay */
-    z-index: 1000; 
-  }
-}
-
-/* City Location Selector */
-.city-selector {
-  background-color: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
-}
-
-.city-selector h3 {
-  font-size: 18px;
-  margin-bottom: 15px;
-  color: #333;
-}
-
-.cities-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 15px;
-}
-
-.city-option {
-  background-color: #f8f8f8;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  padding: 15px 10px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.city-option.active {
-  border-color: #0C5F2C;
-  background-color: rgba(12, 95, 44, 0.05);
-}
-
-.city-option:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.city-name {
-  font-weight: 600;
-  margin-top: 8px;
-  color: #333;
-}
-
-.city-icon {
-  font-size: 24px;
-  margin-bottom: 5px;
-}
-
-/* Multi-city stations section */
-.explore-more {
-  padding: 80px 0;
-  background-color: white;
-}
-
-.explore-more h2 {
-  text-align: center;
-  font-size: 36px;
-  margin-bottom: 20px;
-}
-
-.city-title {
-  margin-top: 50px;
-  margin-bottom: 20px;
-  font-size: 24px;
-  color: #0C5F2C;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.city-title::before {
-  content: "";
-  display: block;
-  width: 5px;
-  height: 25px;
-  background-color: #0C5F2C;
-  border-radius: 3px;
-}
-
-/* Styles for the new City Selector */
-.city-selector-container {
-  margin-bottom: 30px;
-  padding: 20px;
-  background-color: #f8f8f8;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.city-selector-container h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.4rem;
-  color: var(--primary-color, #0C5F2C);
-}
-
-.cities-buttons-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-}
-
-.city-button {
-  padding: 10px 15px;
-  border: 1px solid var(--primary-color, #0C5F2C);
-  background-color: white;
-  color: var(--primary-color, #0C5F2C);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s, transform 0.2s;
-  font-weight: 500;
-}
-
-.city-button:hover {
-  background-color: var(--primary-light, #23AD55);
-  color: white;
-  transform: translateY(-2px);
-}
-
-.city-button.active {
-  background-color: var(--primary-color, #0C5F2C);
-  color: white;
-  border-color: var(--primary-color, #0C5F2C);
-  font-weight: bold;
-}
-
-/* Search Bar Styles */
-.search-bar-container {
-  display: flex;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 50px; /* More rounded for modern look */
-  padding: 8px 8px 8px 20px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  max-width: 600px;
-  margin: 30px auto 0; /* Added top margin */
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; /* For focus effect */
-  position: relative; /* For suggestions positioning */
-}
-
-.search-bar-container:focus-within {
-  transform: scale(1.02);
-  box-shadow: 0 8px 20px rgba(var(--primary-color-rgb), 0.2), 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
-}
-
-.search-input {
-  flex-grow: 1;
-  border: none;
-  outline: none;
-  font-size: 1rem; /* Slightly larger font */
-  padding: 10px 0;
-  background-color: transparent;
-}
-
-.search-button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 40px; /* Match container rounding */
-  padding: 10px 25px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-left: 8px; /* Space from input */
-}
-
-.search-button:hover {
-  background-color: var(--secondary-color);
-}
-
-/* Search Suggestions Styles */
-.search-suggestions {
-  position: absolute;
-  top: calc(100% + 5px); /* Position below the search bar */
-  left: 0;
-  right: 0;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-top: none; /* Remove top border as it connects to search bar */
-  border-radius: 0 0 8px 8px; /* Rounded bottom corners */
-  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-  z-index: 1000; /* Ensure it's above other content */
-  max-height: 300px; /* Limit height and allow scrolling */
-  overflow-y: auto;
-}
-
-.search-suggestions ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.search-suggestions li {
-  padding: 12px 20px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  border-bottom: 1px solid #eee;
-  transition: background-color 0.2s ease;
-}
-
-.search-suggestions li:last-child {
-  border-bottom: none;
-}
-
-.search-suggestions li:hover {
-  background-color: #f5f5f5;
-}
-
-.search-suggestions li strong {
-  font-weight: 600; /* Highlight matched part if we implement that later */
-}
-
-.search-suggestions .suggestion-type {
-  font-size: 0.8em;
-  color: #777;
-  margin-left: 8px;
-  background-color: #eee;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-/* Map Loading Placeholder */
-.map-loading-placeholder,
-.stations-loading-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 50px 20px;
-  text-align: center;
-  color: #666;
-  background-color: #f8f9fa;
-  border-radius: 12px;
-  min-height: 200px;
-}
-
-.map-loading-placeholder {
-  height: 500px;
-}
-
-.stations-loading-placeholder {
-  margin-top: 20px;
-}
-
-.map-loading-placeholder .spinner,
-.stations-loading-placeholder .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(12, 95, 44, 0.2);
-  border-top-color: var(--primary-color, #0C5F2C);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 15px;
-}
-
-.no-stations-message {
-    text-align: center;
-    padding: 40px 20px;
-    font-size: 1.1rem;
-    color: #555;
-    background-color: #f1f3f5;
-    border: 1px dashed #ced4da;
-    border-radius: 8px;
-    margin-top: 20px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Mobile adjustments for Search Bar & Placeholders */
-@media (max-width: 768px) {
-  .search-bar-container {
-    width: 95%;
-    margin: 20px auto;
-    padding: 5px;
-  }
-
-  .search-input {
-    padding: 8px 10px;
-    font-size: 0.9rem;
-  }
-
-  .search-button {
-    padding: 8px 15px;
-    font-size: 0.9rem;
-  }
-
-  .map-loading-placeholder {
-     height: 300px;
-     padding: 20px;
-  }
-
-  .stations-loading-placeholder {
-     padding: 30px 15px;
-  }
-
-  .no-stations-message {
-    font-size: 1rem;
-    padding: 30px 15px;
-  }
-
-  .skeleton-image {
-     height: 160px;
-  }
-  
-  .station-card-skeleton .station-content {
-     padding: 15px;
-  }
-
-  .geolocation-error-message {
-    font-size: 0.9rem;
-  }
-}
-
-/* --- Base Styles & Variables --- */
-:root {
-  --primary-color: #0C5F2C;
-  --secondary-color: #4CAF50;
-  --accent-color: #FFC107;
-  --text-color: #333;
-  --light-gray: #f4f4f4;
-  --medium-gray: #ccc;
-  --dark-gray: #555;
-  --white: #fff;
-  --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  --border-radius: 8px;
-  --transition-speed: 0.3s ease;
-}
-
-body {
-  font-family: 'Arial', sans-serif;
-  color: var(--text-color);
-  line-height: 1.6;
-  margin: 0;
-  padding: 0;
-  background-color: var(--white);
-}
-
-.container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 15px;
-}
-
-h1, h2, h3 {
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-}
-
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; text-align: center; margin-bottom: 2rem; }
-h3 { font-size: 1.5rem; }
-
-p { margin-bottom: 1rem; }
-
-a {
-  color: var(--secondary-color);
-  text-decoration: none;
-  transition: color var(--transition-speed);
-}
-
-a:hover {
-  color: var(--primary-color);
-}
-
-button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-locate, .btn-large {
-  padding: 10px 20px;
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color var(--transition-speed), transform var(--transition-speed);
-  text-align: center;
-}
-
-.btn-primary, .btn-book, .btn-large {
-  background-color: var(--primary-color);
-  color: var(--white);
-}
-.btn-primary:hover, .btn-book:hover, .btn-large:hover {
-  background-color: var(--secondary-color);
-  transform: translateY(-2px);
-}
-
-.btn-secondary, .btn-locate {
-  background-color: var(--white);
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-}
-.btn-secondary:hover, .btn-locate:hover {
-  background-color: var(--light-gray);
-  transform: translateY(-2px);
-}
-
-.btn-login {
-  background-color: transparent;
-  color: var(--primary-color);
-  margin-right: 10px;
-}
-.btn-login:hover {
-  color: var(--secondary-color);
-}
-
-.btn-signup {
-  background-color: var(--accent-color);
-  color: var(--text-color);
-}
-.btn-signup:hover {
-  background-color: #ffca2c;
-  transform: translateY(-2px);
-}
-
-/* --- Header --- */
-.home-header {
-  background-color: var(--white);
-  box-shadow: var(--box-shadow);
-  padding: 1rem 0;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.header-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo-text {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--primary-color);
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-}
-
-.nav-item {
-  margin-left: 20px;
-  color: var(--dark-gray);
-  font-weight: 500;
-}
-.nav-item:hover {
-  color: var(--primary-color);
-}
-
-.auth-buttons {
-  margin-left: 30px;
-  display: flex;
-  align-items: center;
-}
-
-/* Profile Menu Styles */
-.profile-menu-container {
-  position: relative;
-  margin-left: 30px; /* Increased margin for better spacing */
-}
-
-.profile-button {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 20px;
-  transition: background-color 0.2s;
-}
-
-.profile-button:hover {
-  background-color: rgba(12, 95, 44, 0.1);
-}
-
-.profile-avatar {
-  width: 20px !important;
-  height: 20px !important;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-right: 8px;
-  background-color: red !important; /* Diagnostic change */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.avatar-initials {
-  color: white;
-  font-weight: bold;
-  font-size: 10px !important; /* Diagnostic change */
-}
-
-.profile-name {
-  font-weight: 500;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-right: 3px; /* Reduced margin for tighter alignment with chevron */
-}
-
-.profile-chevron {
-  font-size: 10px;
-  color: #333;
-  transition: transform 0.3s ease;
-  display: inline-block;
-}
-
-.profile-chevron.open {
-  transform: rotate(180deg);
-}
-
-.profile-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 220px;
-  z-index: 1000;
-  margin-top: 8px;
-  overflow: hidden;
-  animation: dropdownFadeIn 0.2s ease;
-}
-
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.profile-dropdown-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-email {
-  font-size: 12px;
-  color: #666;
-  margin-top: 3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.profile-dropdown-items {
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-dropdown-items button {
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 10px 16px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
-}
-
-.profile-dropdown-items button:hover {
-  background-color: #f5f5f5;
-}
-
-.logout-button {
-  color: #d32f2f;
-  border-top: 1px solid #eee;
-  margin-top: 4px;
-}
-
-/* Responsive styles for profile menu */
-@media (max-width: 768px) {
-  .profile-name {
-    display: none;
-  }
-  
-  .profile-button {
-    padding: 5px;
-  }
-  
-  .profile-dropdown {
-    width: 180px;
-    right: -110px; /* Adjusted to shift dropdown further rightwards */
-    z-index: 1010;
-    box-sizing: border-box;
-  }
-
-  .profile-dropdown-items button {
-    padding: 8px 8px 8px 10px; /* top right bottom left; Adjusted left padding */
-    font-size: 13px;
-    display: block; /* Ensure full width usage */
-    width: 100%;
-    box-sizing: border-box;
-    text-align: left;
-    text-indent: 0; /* Ensure no unwanted text indent */
-    /* background: none; border: none; cursor: pointer; are from base */
-  }
-}
-
-/* --- Hero Section --- */
-.hero-banner {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' fill='transparent'/%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E"),
-                    linear-gradient(135deg, #0C5F2C 0%, #23AD55 100%);
-  background-size: auto, cover; /* SVG tiles at its native size, gradient covers */
-  background-repeat: repeat, no-repeat; /* SVG repeats, gradient does not */
-  color: white;
-  padding: 160px 0 80px;
-  text-align: center;
-  opacity: 0.9;
-  position: relative; /* Good for potential pseudo-elements if ever needed */
-}
-
-.hero-content h1 {
-  color: var(--white);
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.hero-content p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.hero-cta button, .hero-cta a {
-  margin: 0 10px;
-}
-
-/* --- Sections General --- */
-section {
-  padding: 4rem 0;
-}
-
-.about-section, .how-it-works {
-  background-color: var(--light-gray);
-}
-
-/* --- Features Grid --- */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  text-align: center;
-}
-
-.feature {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  transition: transform var(--transition-speed);
-}
-.feature:hover {
-  transform: translateY(-5px);
-}
-
-.feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  color: var(--secondary-color);
-}
-
-/* --- City Selector --- */
-.city-selector {
-  margin-bottom: 3rem;
-  text-align: center;
-}
-
-.cities-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.city-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  border: 1px solid var(--medium-gray);
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: background-color var(--transition-speed), border-color var(--transition-speed);
-  min-width: 100px;
-  text-align: center;
-}
-.city-option:hover {
-  background-color: var(--light-gray);
-}
-.city-option.active {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-color);
-}
-.city-option.active .city-name {
-  color: var(--white);
-}
-.city-option.active .city-icon {
-  filter: brightness(0) invert(1);
-}
-
-.city-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.city-name {
-  font-weight: 500;
-  color: var(--text-color);
-}
-
-/* --- Map Section --- */
-.map-section .section-intro {
-  text-align: center;
-  max-width: 700px;
-  margin: 0 auto 2rem auto;
-  color: var(--dark-gray);
-}
-
-.map-container {
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--box-shadow);
-  height: 500px;
-}
-
-.station-infowindow {
-  padding: 5px;
-  max-width: 250px;
-}
-.station-infowindow h3 {
-  margin: 0 0 5px 0;
-  font-size: 1.1rem;
-}
-.station-infowindow p {
-  margin: 0 0 8px 0;
-  font-size: 0.9rem;
-  color: var(--dark-gray);
-}
-.station-infowindow .address {
-  font-style: italic;
-}
-.station-infowindow .info-details p {
-  margin-bottom: 3px;
-}
-.station-infowindow button {
-  padding: 5px 10px;
-  font-size: 0.9rem;
-  background-color: var(--secondary-color);
-  color: var(--white);
-  width: 100%;
-  margin-top: 5px;
-}
-.station-infowindow button:hover {
-  background-color: var(--primary-color);
-}
-
-/* --- Stations List Section --- */
-.stations-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.station-card {
-  background-color: var(--white);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
-}
-.station-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.station-image {
-  position: relative;
-  width: 100%;
-  padding-top: 60%;
-  background-color: var(--light-gray);
-}
-
-.station-image img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.image-loader {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.7);
-}
-
-.spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border-left-color: var(--primary-color);
-  animation: spin 1s ease infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.station-rating {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: var(--white);
-  padding: 5px 8px;
-  border-radius: var(--border-radius);
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-}
-
-.star-icon {
-  color: var(--accent-color);
-  margin-right: 4px;
-}
-
-.station-content {
-  padding: 1.5rem;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.station-content h3 {
-  margin-top: 0;
-}
-
-.station-content .address {
-  font-size: 0.9rem;
-  color: var(--dark-gray);
-  margin-bottom: 1rem;
-}
-
-.station-details {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.detail {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  border-bottom: 1px solid var(--light-gray);
-  padding-bottom: 0.5rem;
-}
-.detail:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.detail-label {
-  font-weight: bold;
-  color: var(--dark-gray);
-  margin-right: 10px;
-}
-
-.detail-value {
-  text-align: right;
-}
-
-.connectors, .station-amenities {
-  margin-bottom: 1rem;
-}
-
-.connector-tags, .amenity-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 5px;
-}
-
-.connector-tag, .amenity-tag {
-  background-color: var(--light-gray);
-  color: var(--dark-gray);
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-}
-
-.station-cta {
-  margin-top: auto;
-  display: flex;
-  gap: 10px;
-}
-.station-cta button {
-  flex: 1;
-}
-
-/* --- How It Works --- */
-.steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.step {
-  padding: 1rem;
-}
-
-.step-number {
-  width: 50px;
-  height: 50px;
-  background-color: var(--secondary-color);
-  color: var(--white);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin: 0 auto 1rem auto;
-}
-
-.cta-container {
-  text-align: center;
-  margin-top: 2rem;
-}
-
-/* --- Footer --- */
-.footer {
-  background-color: var(--text-color);
-  color: var(--light-gray);
-  padding: 3rem 0 1rem 0;
-}
-
-.footer-columns {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.footer-column h3, .footer-column h4 {
-  color: var(--white);
-  margin-bottom: 1rem;
-}
-
-.footer-column p, .footer-column li {
-  font-size: 0.9rem;
-  color: var(--medium-gray);
-}
-
-.footer-column ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-column li {
-  margin-bottom: 0.5rem;
-}
-
-.footer-column a {
-  color: var(--medium-gray);
-}
-.footer-column a:hover {
-  color: var(--white);
-}
-
-.social-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  align-items: center;
-}
-
-.social-link {
-  background: none;
-  border: 1px solid #bbb;
-  color: #bbb;
-  text-decoration: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  line-height: 1;
-  padding: 0;
-  cursor: pointer;
-}
-
-.social-link:hover {
-  color: white;
-  border-color: white;
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.social-link span[role="img"] {
-  display: inline-block;
-}
-
-.copyright {
-  text-align: center;
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--dark-gray);
-  font-size: 0.8rem;
-  color: var(--medium-gray);
-}
-
-/* --- Responsiveness --- */
-
-/* Medium screens (Tablets) */
-@media (max-width: 992px) {
-  h1 { font-size: 2.2rem; }
-  h2 { font-size: 1.8rem; }
-  h3 { font-size: 1.3rem; }
-
-  .hero-content h1 { font-size: 2.5rem; }
-  .hero-content p { font-size: 1.1rem; }
-
-  .stations-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  }
-}
-
-/* Small screens (Mobile) */
-@media (max-width: 768px) {
-  .container {
-    padding: 0 15px;
-  }
-
-  h1 { font-size: 1.8rem; }
-  h2 { font-size: 1.5rem; }
-  h3 { font-size: 1.1rem; }
-
-  .header-container {
-    position: relative;
-    padding: 0 10px;
-    align-items: center;
-  }
-
-  .logo-text {
-    font-size: 1.1rem;
-    margin-right: auto;
-  }
-
-  .hamburger-menu {
-    display: flex;
-    order: 3;
-    margin-left: 10px;
-  }
-
-  .nav-links {
-    display: none; /* Initially hidden */
-    position: fixed;
+    /* Styles for the slide-in menu from side if preferred */
+    /* position: fixed;
     top: 0;
-    left: 0;
-    width: 280px; /* Adjust as needed */
+    right: -280px; // Start off-screen
+    width: 280px;
     height: 100vh;
-    background-color: white; /* Ensure it has a background */
-    box-shadow: 2px 0 5px rgba(0,0,0,0.2); /* Add shadow for visibility */
-    flex-direction: column;
-    align-items: flex-start; /* Or center, stretch, etc. */
-    padding: 70px 20px 20px; /* Add top padding to clear the fixed header */
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 1000; /* Ensure it's above content but potentially below an overlay or hamburger */
-    /* list-style: none; remove bullets if they are ul/li */
-    /* margin: 0; */
+    background-color: white;
+    padding-top: 60px; // Space for close button or header
+    box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+    transition: right 0.3s ease-in-out;
+    z-index: 1000; */
   }
 
   .nav-links.open {
-    display: flex !important; /* Force display to flex */
-    transform: translateX(0) !important; /* Force slide in */
-    /* visibility: visible !important; /* Adding for good measure */
-    /* opacity: 1 !important; */
+    /* right: 0; // Slide in */
+    /* Ensure other properties for vertical list are set */
+    /* display: flex;
+    flex-direction: column;
+    align-items: flex-start; */
   }
 
   .nav-item {
-    margin: 0;
-    width: 100%;
-  }
-  .nav-item a, .nav-item button {
-    display: block;
-    padding: 0.8rem 1.5rem;
-    text-align: left;
-    width: 100%;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  .nav-item:last-child a, .nav-item:last-child button {
-    border-bottom: none;
-  }
-  .nav-item a:hover, .nav-item button:hover {
-    background-color: #f9f9f9;
+    /* padding: 15px 25px; */ /* Adjust padding for side menu items */
+    /* width: 100%; */
+    /* text-align: left; */
+    /* border-bottom: 1px solid #eee; */
   }
 
   .auth-buttons {
-    display: flex;
-    margin-left: 0;
-    order: 2;
-    gap: 8px;
+    flex-direction: column; /* Stack login/signup in mobile menu */
+    width: 100%;
+    gap: 10px; /* Space between stacked buttons */
+    padding: 10px 20px; /* Padding around auth buttons */
   }
   .btn-login, .btn-signup {
-    padding: 6px 10px;
-    font-size: 0.85rem;
+    width: 100%; /* Full width buttons */
+    text-align: center;
+    padding: 12px; /* Consistent padding */
   }
 
-  .hero-banner {
-    padding: 20px 0;
-    margin-top: 40px;
-  }
-  .hero-content h1 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-  }
-  .hero-content p {
-    font-size: 0.85rem;
-    margin-bottom: 15px;
-  }
-  .hero-cta {
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-  }
   .hero-cta .btn-primary, .hero-cta .btn-secondary {
-    width: 85%;
-    max-width: 280px;
-    padding: 10px 15px;
-    font-size: 0.9rem;
-    margin: 0;
+    /* width: 100%; already set */
+    font-size: 0.95rem; /* Button text size */
+    padding: 12px 15px;
   }
 
   .about-section,
-  .map-section,
-  .stations-list-section,
   .how-it-works,
-  .explore-more,
-  .how-it-works-section,
-  .testimonials-section,
-  .faq-section {
-    padding: 40px 0;
+  .cost-estimator-section,
+  .nearest-stations-section,
+  .ev-tips-section,
+  .stations-list-section { /* Added stations-list-section */
+    padding: 30px 0; /* Reduced vertical padding for sections */
   }
 
   .features-grid, .steps {
-    grid-template-columns: 1fr;
-    gap: 25px;
+    /* grid-template-columns: 1fr; already set */
   }
   .feature, .step {
-    padding: 25px;
+    padding: 15px; /* Padding inside feature/step cards */
   }
 
   .cities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* More adaptive for smaller screens */
     gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
   }
-  .city-option { font-size: 1.2rem; margin-bottom: 3px;}
-  .city-name { font-size: 0.75rem; }
+  .city-option { font-size: 1rem; margin-bottom: 0px;} /* Adjusted city option */
+  .city-name { font-size: 0.7rem; }
 
   .city-title {
-    font-size: 1.6rem;
-    margin-top: 30px;
-    margin-bottom: 15px;
+    font-size: 1.3rem; /* Adjusted city title size */
   }
 
   .map-container {
-    height: 300px;
+    height: 250px; /* Further reduced map height */
   }
-
   .stations-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    /* grid-template-columns: 1fr; already set */
+    gap: 15px; /* Space between stacked station cards */
   }
 
   .station-card {
-    flex-direction: column;
-    padding: 15px;
+    /* width: 100%; already set */
+    /* max-width: 400px; already set */
   }
   .station-image-wrapper {
-    height: 160px;
-    margin-bottom: 10px;
+    height: 180px; /* Adjust image height */
   }
   .station-content {
-    padding: 0;
+    padding: 12px; /* Adjust content padding */
   }
   .station-name {
-    font-size: 1.15rem;
-    margin-bottom: 8px;
+    font-size: 1.1rem; /* Adjust station name size */
   }
   .station-details p, .station-pricing p, .station-availability p {
-    font-size: 0.8rem;
-    margin-bottom: 5px;
+    font-size: 0.85rem; /* Adjust detail text size */
   }
   .station-meta span {
-    font-size: 0.75rem;
+    font-size: 0.8rem; /* Adjust meta text size */
   }
-
   .station-cta {
-    flex-direction: column;
+    flex-direction: column; /* Stack buttons in station card */
     gap: 8px;
-    margin-top: 15px;
   }
   .station-cta button {
-    width: 100%;
-    padding: 10px;
+    width: 100%; /* Full width buttons in card */
     font-size: 0.9rem;
   }
 
   .footer {
-    padding: 30px 0 15px 0;
+    padding: 30px 0; /* Adjust footer padding */
   }
   .footer-columns {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    /* flex-direction: column; already set */
   }
   .footer-column {
-    text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px; /* Adjust space */
+    padding: 0 10px; /* Add some horizontal padding to prevent text touching edges */
   }
-  .footer-column:last-child {
-    margin-bottom: 0;
-  }
+
   .footer-column h4 {
-    font-size: 1.05rem;
-    margin-bottom: 8px;
+    font-size: 1.1rem; /* Adjust footer heading */
   }
   .footer-links li, .footer-contact p {
-    margin-bottom: 5px;
+    font-size: 0.9rem; /* Adjust footer link/text size */
   }
   .footer-links a, .footer-contact p, .footer-contact a {
-    font-size: 0.85rem;
+    /* justify-content: center; already set */
   }
   .social-links {
-    justify-content: center;
-    gap: 12px;
+    /* justify-content: center; already set */
+    gap: 10px; /* Space between social icons */
   }
-  .social-links a svg {
-    width: 18px;
-    height: 18px;
+  .social-links a svg { /* Assuming direct SVG child */
+      width: 24px;
+      height: 24px;
   }
 
   .copyright {
-    font-size: 0.75rem;
-    margin-top: 20px;
+    font-size: 0.85rem; /* Adjust copyright text size */
+  }
+
+  .tip-card {
+    padding: 15px;
+  }
+  .tip-text {
+    font-size: 0.9rem;
+  }
+  .btn-next-tip {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .ai-assistant-fab {
+    width: 50px;
+    height: 50px;
+    bottom: 15px;
+    right: 15px;
+  }
+  .ai-assistant-fab svg {
+    width: 24px;
+    height: 24px;
+  }
+   .ai-assistant-fab .notification-badge {
+    font-size: 10px;
+    padding: 2px 5px;
+    top: -3px;
+    right: -3px;
+  }
+
+  /* Mobile adjustments for Search Bar (inside @media (max-width: 768px)) */
+  .search-bar-container {
+    flex-direction: column; /* Stack input and button */
+    gap: 12px; /* Increased gap for stacked items */
+    width: 95%; /* Mostly full width */
+    margin: 25px auto 0;
+    padding: 15px;
+    border-radius: 20px; /* Less extreme rounding for stacked view */
+  }
+  .search-input {
+    font-size: 1rem; /* Ensure readability */
+    padding: 12px 15px;
+    width: 100%; 
+    margin-left: 0; /* Reset margin */
+    text-align: center;
+  }
+  .search-input::placeholder {
+    text-align: center;
+  }
+
+  .search-button {
+    padding: 12px 20px;
+    width: 100%; 
+    font-size: 1rem;
+    margin-left: 0; /* Reset margin */
+    justify-content: center; /* Center icon and text */
+  }
+  /* Optional: Hide search button text on mobile if icon is clear enough */
+  /* .search-button-text {
+    display: none; 
+  } */
+
+  .search-suggestions {
+    width: 95%; /* Match search bar width */
+    position: relative; /* Change from absolute to relative to flow with stacked container */
+    left: auto; /* Reset positioning */
+    right: auto;
+    top: auto; /* Reset positioning */
+    margin-top: 10px; /* Space from the search bar */
+    border-radius: 12px;
+  }
+  .search-suggestions li {
+    padding: 14px 18px; /* Increase tap area */
+    font-size: 0.9rem;
   }
 }
 
-/* Nearest Stations Section */
-.nearest-stations-section {
-  padding: 60px 0;
-  background-color: #f9f9f9; /* Light background for contrast */
-}
-
-.nearest-stations-section h2 {
-  text-align: center;
-  font-size: 2.5rem;
-  color: #333;
-  margin-bottom: 40px;
-}
-
-.nearest-stations-grid { /* Uses the same .stations-grid styles by default */
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-}
-
-.nearest-station-card {
-  border: 1px solid var(--primary-light, #23AD55);
-}
-
-.nearest-station-card .distance-info {
-  font-size: 0.95em;
-  color: #007bff;
-  margin-bottom: 10px;
-  font-weight: 500;
-  background-color: rgba(0, 123, 255, 0.05);
-  padding: 5px 8px;
-  border-radius: 4px;
-  display: inline-block;
-}
-
-.nearest-station-card .station-cta button {
-  font-size: 0.9em;
-}
-
-@media (max-width: 768px) {
-  .nearest-stations-section {
-    padding: 40px 0;
+/* More specific styles for very small screens */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 10px; /* Tighter padding for very small screens */
   }
 
-  .nearest-stations-section h2 {
-    font-size: 1.6rem;
-    margin-bottom: 30px;
+  .logo-text {
+    font-size: 18px; /* Even smaller logo */
   }
 
-  .nearest-station-card .distance-info {
+  .hero-content h1 {
+    font-size: 1.7rem;
+  }
+
+  .hero-content p {
+    font-size: 0.9rem;
+    margin-bottom: 20px; /* Less margin */
+  }
+
+  .hero-cta .btn-primary, .hero-cta .btn-secondary {
+    padding: 10px 15px;
     font-size: 0.9rem;
   }
 
-  .nearest-stations-grid {
-     grid-template-columns: 1fr;
+  /* Improved Search Bar for very small screens */
+  .search-bar-container {
+    padding: 8px 10px;
+  }
+
+  .search-input, .search-button {
+    font-size: 14px; /* Smaller font for search on very small screens */
+    padding: 10px 12px;
+  }
+  .search-button {
+    padding: 8px 10px; /* Adjust button padding */
+  }
+  .search-button-icon {
+    width: 18px;
+    height: 18px;
+  }
+  .search-button-text {
+    /* Optionally hide text on very small screens if icon is clear enough */
+    /* display: none; */ 
+  }
+
+  .search-suggestions li {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  .search-suggestions .suggestion-type {
+    font-size: 11px;
+    padding: 2px 4px;
+  }
+
+  .about-section,
+  .how-it-works,
+  .cost-estimator-section,
+  .nearest-stations-section,
+  .ev-tips-section,
+  .stations-list-section {
+    padding: 25px 0;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+  }
+  h3 {
+    font-size: 1rem;
+  }
+
+  .feature, .step {
+    padding: 12px;
+  }
+  .step-number {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+    line-height: 30px;
+    margin-bottom: 8px;
+  }
+
+  .station-card {
+    /* Further adjustments if needed, but 1fr should handle it well */
+  }
+  .station-image-wrapper {
+    height: 160px;
+  }
+  .station-content h3 { /* Station name inside card */
+    font-size: 1rem;
+  }
+   .station-details .detail, .connectors .connector-tag, .station-amenities .amenity-tag {
+    font-size: 0.8rem; /* Smaller text for details within cards */
+  }
+  .station-cta button {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+
+  .footer-column {
+    margin-bottom: 20px;
+  }
+  .footer-column h3, .footer-column h4 { /* Combined for brevity */
+    font-size: 1rem;
+  }
+  .footer-column p, .footer-column li, .footer-column a { /* Combined for brevity */
+    font-size: 0.85rem;
+  }
+  .social-link svg { /* Assuming direct SVG child */
+      width: 24px;
+      height: 24px;
+  }
+   .copyright p { /* Targeting the p inside copyright */
+    font-size: 0.75rem;
+  }
+
+  .tip-card {
+    padding: 15px;
+  }
+  .tip-text {
+    font-size: 0.9rem;
+  }
+  .btn-next-tip {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .ai-assistant-fab {
+    width: 50px;
+    height: 50px;
+    bottom: 15px;
+    right: 15px;
+  }
+  .ai-assistant-fab svg {
+    width: 24px;
+    height: 24px;
+  }
+   .ai-assistant-fab .notification-badge {
+    font-size: 10px;
+    padding: 2px 5px;
+    top: -3px;
+    right: -3px;
   }
 }
 
-/* Skeleton Loader Styles */
-.station-card-skeleton {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  opacity: 0.7;
-}
-
-.skeleton {
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+/* Make sure profile menu in mobile nav is properly handled */
+@media (max-width: 768px) {
+  .nav-links .profile-menu-container {
+    order: 10; /* Ensures it's at the bottom or a specific order */
+    width: 100%;
+    padding: 0; /* Remove padding if items inside handle it */
+    margin-top: 0;
+    border-top: none; /* Remove border if auth buttons have one */
   }
-  50% {
-    opacity: 0.5;
+
+  .nav-links .profile-button { /* This is the button that might show user avatar/name */
+    display: flex; /* Already flex, good */
+    align-items: center;
+    justify-content: flex-start; /* Align content to start */
+    width: 100%;
+    padding: 12px 20px; /* Match nav-item padding */
+    text-align: left; /* Align text to left */
+    border: none;
+    background-color: transparent;
+    border-bottom: 1px solid #eee; /* Separator like other nav items */
   }
+  .nav-links .profile-button:hover {
+    background-color: #f0f0f0; /* Hover effect */
+  }
+
+  .nav-links .profile-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem; /* For initials */
+  }
+  .nav-links .profile-name {
+    display: inline-block; /* Ensure it's shown */
+    margin-left: 10px;
+    font-weight: 500;
+    color: #333;
+  }
+  .nav-links .profile-chevron {
+    display: inline-block; /* Show chevron for dropdown indication */
+    margin-left: auto; /* Push to the right */
+    transition: transform 0.3s ease;
+  }
+  .nav-links .profile-chevron.open {
+     transform: rotate(180deg);
+  }
+
+  /* Styles for the actual dropdown part when it's inside the mobile nav */
+  .nav-links .profile-dropdown {
+    position: static; /* Overrides absolute positioning */
+    display: none; /* Hidden by default, toggled by JS/React state */
+    width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+    background-color: #f9f9f9; /* Slightly different background to distinguish */
+    animation: none; /* No fade-in needed for static display */
+    border-top: 1px solid #e0e0e0; /* Separator from its button */
+  }
+
+  .nav-links .profile-dropdown.open-mobile { /* Specific class to open it in mobile nav */
+      display: block;
+  }
+
+  .nav-links .profile-dropdown-header {
+    display: none; /* Header might be redundant if avatar/name already shown */
+  }
+
+  .nav-links .profile-dropdown-items button {
+    width: 100%;
+    padding: 12px 20px;
+    text-align: left;
+    background-color: transparent;
+    color: #333;
+    border: none;
+    border-bottom: 1px solid #eee; /* Separator */
+    font-weight: 500;
+  }
+  .nav-links .profile-dropdown-items button:last-child {
+    border-bottom: none;
+  }
+  .nav-links .profile-dropdown-items button:hover {
+    background-color: #e9e9e9;
+  }
+  .nav-links .logout-button {
+    color: #d9534f; /* Distinct color for logout */
+  }
+  .nav-links .logout-button:hover {
+    background-color: rgba(217, 83, 79, 0.1);
+  }
+
+  /* If auth buttons are also in mobile menu */
+  .nav-links .auth-buttons {
+    display: flex; /* To be sure it's flex */
+    flex-direction: column;
+    width: 100%;
+    padding: 0; /* Remove padding if items inside handle it */
+  }
+  .nav-links .auth-buttons .btn-login,
+  .nav-links .auth-buttons .btn-signup {
+    width: 100%;
+    padding: 12px 20px; /* Match nav-item padding */
+    text-align: center; /* Center text for buttons */
+    border-bottom: 1px solid #eee; /* Separator */
+    margin: 0; /* Reset margin */
+    border-radius: 0; /* No rounded corners in dropdown list */
+  }
+   .nav-links .auth-buttons .btn-login {
+    color: #0C5F2C;
+    background-color: transparent;
+    border: none; /* Remove border if it's inside menu */
+   }
+   .nav-links .auth-buttons .btn-login:hover {
+     background-color: #f0f0f0;
+   }
+   .nav-links .auth-buttons .btn-signup {
+    color: white;
+    background-color: #0C5F2C; /* Keep theme color */
+    border: none;
+   }
+   .nav-links .auth-buttons .btn-signup:hover {
+     background-color: #094222;
+   }
+   .nav-links .auth-buttons > *:last-child { /* Remove bottom border from last auth button */
+      border-bottom: none;
+   }
 }
 
-.skeleton-image {
-  height: 200px;
-  width: 100%;
-  margin-bottom: 15px;
-}
-
-.station-card-skeleton .station-content {
-  padding: 20px;
-}
-
-.skeleton-title {
-  height: 24px;
-  width: 60%;
-  margin-bottom: 10px;
-}
-
-.skeleton-text {
-  height: 16px;
-  width: 90%;
-  margin-bottom: 8px;
-}
-
-.skeleton-text.short {
-  width: 70%;
-}
-
-.skeleton-details {
-  height: 40px;
-  width: 100%;
-  margin-top: 15px;
-  margin-bottom: 15px;
-}
-
-.skeleton-cta {
-  height: 40px;
-  width: 100%;
-  margin-top: 10px;
-}
-
-/* Geolocation Error Message */
-.geolocation-error-section {
-  padding: 20px 0;
-  background-color: #fff3cd; /* Light yellow for warning */
-  border-top: 1px solid #ffeeba;
-  border-bottom: 1px solid #ffeeba;
-}
-.geolocation-error-message {
-  color: #856404; /* Dark yellow text */
-  text-align: center;
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-/* EV Tips Section Styles */
-.ev-tips-section {
-  padding: 60px 0;
-  background-color: #eef7ff; /* A distinct light blue background */
-  text-align: center;
-}
-
-.ev-tips-section h2 {
-  font-size: 2.5rem;
-  color: #2c3e50; /* Darker blue for title */
-  margin-bottom: 40px;
-}
-
-.tip-card {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  max-width: 700px;
-  margin: 0 auto;
-  border-left: 5px solid #3498db; /* Accent border */
-}
-
-.tip-text {
-  font-size: 1.2rem;
-  line-height: 1.8;
-  color: #34495e; /* Slightly softer text color */
-  margin-bottom: 25px;
-}
-
-.btn-next-tip {
-  background-color: #3498db;
-  color: white;
-  padding: 12px 25px;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.btn-next-tip:hover {
-  background-color: #2980b9;
-  transform: translateY(-2px);
-}
-
-/* General Animation Styles */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; visibility: visible; }
-}
-
-@keyframes slideInUp {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; visibility: visible; }
-}
-
-/* Utility for elements that should start hidden for animation */
-.initially-hidden {
-  opacity: 0;
-  visibility: hidden; /* Important for preventing interaction before visible */
-}
-
-.is-visible .animate-slide-up {
-  animation: slideInUp 0.7s ease-out forwards;
-}
-
-.is-visible .animate-fade-in {
-  animation: fadeIn 0.7s ease-out forwards;
-}
-
-/* Stagger Animation for Children */
-/* Children within .stagger-children should have the .initially-hidden class */
-/* and .stagger-child-X (e.g., .stagger-child-1, .stagger-child-2) */
-
-.is-visible .stagger-children .stagger-child-1 {
-  animation: slideInUp 0.7s ease-out 0.1s forwards;
-}
-.is-visible .stagger-children .stagger-child-2 {
-  animation: slideInUp 0.7s ease-out 0.2s forwards;
-}
-.is-visible .stagger-children .stagger-child-3 {
-  animation: slideInUp 0.7s ease-out 0.3s forwards;
-}
-.is-visible .stagger-children .stagger-child-4 {
-  animation: slideInUp 0.7s ease-out 0.4s forwards;
-}
-.is-visible .stagger-children .stagger-child-5 {
-  /* In case we have up to 5 staggered items in a section */
-  animation: slideInUp 0.7s ease-out 0.5s forwards;
-}
-
-/* Cost Estimator Section Styles (wrapper in HomePage.css) */
+/* Cost Estimator Section */
 .cost-estimator-section {
   padding: 60px 0;
   background-color: #f8f9fa; /* A neutral light background */
@@ -2524,53 +1620,203 @@ section {
   font-weight: 600;
 }
 
-/* Floating AI Assistant Button */
-.ai-assistant-fab {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  background-color: var(--primary-color, #0C5F2C);
-  color: white;
-  border-radius: 50%;
-  border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+/* Search Bar Styles - Base (Desktop First) */
+.search-bar-container {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 28px; /* For icon */
+  background-color: #fff;
+  border-radius: 50px; /* More rounded for modern look */
+  padding: 8px 8px 8px 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  max-width: 700px; /* Increased max-width */
+  margin: 40px auto 0; /* Adjusted top margin */
+  transition: box-shadow 0.2s ease-out, transform 0.2s ease-out;
+  position: relative; /* For suggestions positioning */
+  border: 1px solid #e0e0e0; /* Subtle border */
+}
+
+.search-bar-container:focus-within {
+  box-shadow: 0 6px 20px rgba(12, 95, 44, 0.15), 0 0 0 2px rgba(12, 95, 44, 0.2);
+  /* transform: scale(1.01); /* Optional subtle scale */
+  border-color: transparent;
+}
+
+.search-input {
+  flex-grow: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem; 
+  padding: 12px 15px; /* Increased padding */
+  background-color: transparent;
+  color: #333;
+  margin-left: -15px; /* Counteract some of the container padding for text alignment */
+}
+
+.search-input::placeholder {
+  color: #888;
+  opacity: 1;
+}
+
+.search-button {
+  background-color: #0C5F2C; /* Primary color */
+  color: white;
+  border: none;
+  border-radius: 40px; /* Match container rounding */
+  padding: 10px 18px; /* Adjusted padding */
+  font-size: 1rem;
   cursor: pointer;
-  z-index: 1040; /* Below chat window (1050) but above other content */
-  transition: transform 0.2s ease-out, background-color 0.2s ease-out;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: flex; /* For icon and text alignment */
+  align-items: center;
+  gap: 8px; /* Space between icon and text */
+  margin-left: 8px; /* Space from input */
 }
 
-.ai-assistant-fab:hover {
-  background-color: var(--secondary-color, #23AD55);
-  transform: scale(1.1);
+.search-button:hover {
+  background-color: #094222; /* Darker shade of primary */
+  transform: scale(1.05);
+}
+.search-button:active {
+  transform: scale(0.98);
 }
 
-.ai-assistant-fab svg {
-  width: 28px;
-  height: 28px;
+.search-button-icon {
+  width: 20px;
+  height: 20px;
   fill: white;
 }
 
-/* Notification Badge for AI Assistant FAB */
-.ai-assistant-fab .notification-badge {
+.search-button-text {
+  display: inline; /* Default, shown on desktop */
+}
+
+/* Search Suggestions Styles - Base (Desktop First) */
+.search-suggestions {
   position: absolute;
-  top: -5px; /* Adjust to position correctly */
-  right: -5px; /* Adjust to position correctly */
-  background-color: red;
-  color: white;
-  border-radius: 50%;
-  width: 20px; /* Adjust size as needed */
-  height: 20px; /* Adjust size as needed */
-  font-size: 12px; /* Adjust font size as needed */
-  font-weight: bold;
+  top: calc(100% + 8px); /* Position below the search bar with a small gap */
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px; /* More rounded corners */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  z-index: 1000; 
+  max-height: 350px; 
+  overflow-y: auto;
+  padding: 8px 0; /* Padding top/bottom for the list */
+}
+
+.search-suggestions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-suggestions li {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #f0f0f0; /* Softer separator */
+  transition: background-color 0.15s ease;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-suggestions li:last-child {
+  border-bottom: none;
+}
+
+.search-suggestions li:hover {
+  background-color: #f5f5f5;
+}
+
+.search-suggestions .suggestion-type {
+  font-size: 0.8em;
+  color: #777;
+  background-color: #e9e9e9;
+  padding: 3px 7px;
+  border-radius: 10px;
+  margin-left: 10px;
+  font-weight: 500;
+}
+
+/* Mobile adjustments for Search Bar & Placeholders */
+@media (max-width: 768px) {
+  .search-bar-container {
+    flex-direction: column; /* Stack input and button */
+    gap: 12px; /* Increased gap for stacked items */
+    width: 95%; /* Mostly full width */
+    margin: 25px auto 0;
+    padding: 15px;
+    border-radius: 20px; /* Less extreme rounding for stacked view */
+  }
+  .search-input {
+    font-size: 1rem; /* Ensure readability */
+    padding: 12px 15px;
+    width: 100%; 
+    margin-left: 0; /* Reset margin */
+    text-align: center;
+  }
+  .search-input::placeholder {
+    text-align: center;
+  }
+
+  .search-button {
+    padding: 12px 20px;
+    width: 100%; 
+    font-size: 1rem;
+    margin-left: 0; /* Reset margin */
+    justify-content: center; /* Center icon and text */
+  }
+  .search-button-text {
+    /* display: none; /* Option: hide text on mobile if icon is enough */
+  }
+
+  .search-suggestions {
+    width: 95%; /* Match search bar width */
+    position: relative; /* Change from absolute to relative to flow with stacked container */
+    left: auto; /* Reset positioning */
+    right: auto;
+    top: auto; /* Reset positioning */
+    margin-top: 10px; /* Space from the search bar */
+    border-radius: 12px;
+  }
+  .search-suggestions li {
+    padding: 14px 18px; /* Increase tap area */
+    font-size: 0.9rem;
+  }
+}
+
+/* --- Existing media query for max-width: 480px --- */
+/* This will now inherit from the 768px styles and then apply its own specifics */
+
+
+.map-loading-placeholder,
+.stations-loading-placeholder {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2px solid white; /* Optional: adds a border like in the example */
-  box-shadow: 0 0 5px rgba(0,0,0,0.3); /* Optional: adds a slight shadow */
+  padding: 50px 20px;
+  text-align: center;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  min-height: 200px;
+}
+
+.map-loading-placeholder .spinner,
+.stations-loading-placeholder .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(12, 95, 44, 0.2);
+  border-top-color: #0C5F2C; /* Primary color */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

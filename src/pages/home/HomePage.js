@@ -857,12 +857,20 @@ const HomePage = () => {
               onSubmit={handleSearchSubmit} 
               className={`search-bar-container ${pageLoaded ? 'animate-on-load-slide-right' : 'initially-hidden'}`} 
               style={{ animationDelay: '0.6s' }} // Search bar slides from right
-              // Add onBlur with a timeout to handle suggestion clicks
+              role="search" // Added role for accessibility
               onBlur={(e) => {
+                const formElement = e.currentTarget; // Capture e.currentTarget
                 // Delay hiding suggestions to allow click event on suggestion item to fire
                 setTimeout(() => {
-                  // Check if the new focused element is part of the suggestions
-                  if (!e.currentTarget.contains(document.activeElement)) {
+                  // Check if formElement is still valid and in the document,
+                  // then check if it contains the active element.
+                  if (formElement && document.body.contains(formElement)) {
+                    if (!formElement.contains(document.activeElement)) {
+                      setShowSuggestions(false);
+                    }
+                  } else {
+                    // If the form is null or detached from the document,
+                    // it means focus is not within it, so hide suggestions.
                     setShowSuggestions(false);
                   }
                 }, 150);
@@ -876,9 +884,13 @@ const HomePage = () => {
                 onChange={handleSearchInputChange}
                 onFocus={() => { if (searchQuery.trim().length > 1 && searchSuggestions.length > 0) setShowSuggestions(true); }}
                 ref={searchInputRef} // Assign ref to input
+                aria-label="Search for EV charging stations" // Added aria-label for accessibility
               />
-              <button type="submit" className="search-button">
-                Search
+              <button type="submit" className="search-button" aria-label="Search">
+                <svg className="search-button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5A6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5S14 7.01 14 9.5S11.99 14 9.5 14z"/>
+                </svg>
+                <span class="search-button-text">Search</span>
               </button>
               {/* Display Search Suggestions */}
               {showSuggestions && searchSuggestions.length > 0 && (
