@@ -28,7 +28,18 @@ const SPECIAL_VEHICLE_IMAGES = {
   'BMW i4': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/109123/i4-exterior-right-front-three-quarter.jpeg?isig=0&q=80',
   'BMW i5': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/174353/i5-exterior-right-front-three-quarter-2.jpeg?isig=0&q=80',
   'BMW i7': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/137875/i7-exterior-right-front-three-quarter-8.jpeg?isig=0&q=80',
-  'BMW iX1': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/196035/ix1-exterior-right-front-three-quarter.jpeg?isig=0&q=80'
+  'BMW iX1': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/196035/ix1-exterior-right-front-three-quarter.jpeg?isig=0&q=80',
+  'Ather 450X': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/1/versions/ather-450x-29-kwh-20251735974741344.jpg?q=80',
+  'Bajaj Chetak': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/1/versions/--35031745819961752.jpg?q=80',
+  'Citroen eC3': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/132771/ec3-exterior-right-front-three-quarter-7.jpeg?isig=0&q=80',
+  'Hero Vida V1 Pro': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/132397/v1-right-front-three-quarter-8.jpeg?isig=0&q=80',
+  'Hyundai Ioniq 5': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/110289/ioniq-5-exterior-right-front-three-quarter-95.jpeg?isig=0&q=80',
+  'Hyundai Creta Electric': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/167017/creta-ev-exterior-right-front-three-quarter-14.jpeg?isig=0&q=80',
+  'Hyundai Kona Electric': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/29580/kona-electric-exterior-right-front-three-quarter-162254.jpeg?isig=0&wm=1&q=80',
+  'Kia EV6 GT Line': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/186465/ev6-exterior-right-front-three-quarter-2.jpeg?isig=0&q=80',
+  'Kia EV9': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/144485/ev9-exterior-right-front-three-quarter-3.jpeg?isig=0&q=80',
+  'MG ZS EV': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/110437/zs-ev-exterior-right-front-three-quarter-69.jpeg?isig=0&q=80',
+  'MG Comet EV': 'https://imgd.aeplcdn.com/664x374/n/cw/ec/125193/comet-ev-exterior-right-front-three-quarter-29.jpeg?isig=0&q=80'
 };
 
 const SelectVehiclePage = () => {
