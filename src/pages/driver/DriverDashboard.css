@@ -1,3 +1,118 @@
+/* Loading and Error Overlays */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.loading-overlay .spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(12, 95, 44, 0.1);
+  border-top-color: #0C5F2C; /* Primary color */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.error-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+  z-index: 50;
+  max-width: 80%;
+}
+
+.error-message p {
+  margin-bottom: 15px;
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.error-message button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.error-message button:hover {
+  background-color: #0069d9;
+}
+
+.vehicle-missing-notice {
+  position: absolute;
+  top: 65px; /* Below search bar */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+  z-index: 15;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vehicle-missing-notice p {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.vehicle-select-button {
+  background-color: #0C5F2C; /* Primary brand color */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.vehicle-select-button:hover {
+  background-color: #094523; /* Darker shade */
+}
+
+/* Access Type Tag for Station Cards */
+.station-access-type-tag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  z-index: 1;
+}
+
+/* Animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Base styles - mobile-first approach */
 .driver-dashboard {
   font-family: 'Inter', sans-serif;
@@ -1148,7 +1263,319 @@
 }
 
 .mapboxgl-popup-content {
-  font-family: sans-serif;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  width: 280px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.popup-content {
+  padding: 15px;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 5px;
+  position: relative;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+  flex-grow: 1;
+  padding-right: 70px; /* Space for the access tag */
+}
+
+.popup-access-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.popup-access-tag.public {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+.popup-access-tag.private, .popup-access-tag.captive {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.popup-address {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.popup-details {
+  margin: 15px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.popup-detail-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.popup-detail-label {
+  font-weight: 600;
+  color: #555;
+  margin-right: 8px;
+  min-width: 90px;
+}
+
+.popup-detail-value {
+  color: #333;
+}
+
+.popup-detail-value.available {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.popup-detail-value.unavailable {
+  color: #dc3545;
+}
+
+.popup-charger-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.popup-charger-badge {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.popup-directions-button {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  width: 100%;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.popup-directions-button:hover {
+  background-color: #3a80d2;
+}
+
+.popup-directions-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Compatible/Not compatible text styling */
+.compatible-text {
+  color: #28a745;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  margin: 8px 0;
+}
+
+.not-compatible-text {
+  color: #ffc107; /* Warning color - yellow */
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  margin: 8px 0;
+}
+
+/* Base styles - mobile-first approach */
+.driver-dashboard-mobile {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+  background-color: #f7f9fc; /* Light grey background for areas outside map */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* Prevent scrollbars on the main container */
+  position: relative; /* Context for absolutely positioned elements */
+}
+
+.map-view-full-container {
+  flex-grow: 1; /* Takes up all space above bottom nav */
+  position: relative; /* Crucial for positioning elements on top */
+  background-color: #e0e0e0; /* Fallback if map doesn't load */
+  height: calc(100% - 65px); /* Full height minus bottom nav height */
+}
+
+/* Search and Filters Overlaid on Map */
+.search-and-filters-on-map {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 10; /* Above map, below popups if any */
+  background-color: transparent; /* Let map show through if needed, or set color */
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.search-bar-on-map {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  padding: 8px 12px;
+  border-radius: 25px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  margin-bottom: 8px;
+  position: relative; /* Add this for absolute positioning of dropdown */
+}
+
+.search-bar-on-map .search-icon-on-map {
+  margin-right: 8px;
+  color: #777;
+}
+
+.search-bar-on-map input {
+  flex-grow: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background-color: transparent;
+}
+
+.search-bar-on-map .filter-icon-on-map {
+  margin-left: 8px;
+  color: #333; /* Icon color for filter */
+  cursor: pointer;
+}
+
+.filters-on-map {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto; /* Allow horizontal scrolling if many filters */
+  padding-bottom: 5px; /* For scrollbar visibility if needed */
+}
+
+.filter-chip {
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.filter-chip.active {
+  background-color: #e0e0e0; /* Example active state - use brand color */
+  border-color: #ccc;
+  color: #333;
+  font-weight: 500;
+}
+
+
+/* Map Action Buttons (Recenter, List Toggle) */
+.map-action-button {
+  position: absolute;
+  z-index: 10;
+  background-color: white;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
+  color: #333;
+}
+
+.recenter-button {
+  bottom: 80px; /* Position above bottom nav */
+  left: 15px;
+}
+
+.list-toggle-button {
+  bottom: 80px; /* Position above bottom nav */
+  right: 15px;
+}
+
+/* User and Station Markers (styles from previous step, ensure they work) */
+.user-location-marker {
+  width: 28px;
+  height: 28px;
+  background-color: #007bff;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px #007bff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.user-location-marker::after {
+  content: "\f1b9"; /* Font Awesome car icon */
+  font-family: "Font Awesome 5 Free", FontAwesome;
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.station-marker {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.station-marker.available {
+  background-color: #28a745;
+}
+
+.station-marker.occupied {
+  background-color: #dc3545;
+}
+
+.station-marker.unknown {
+  background-color: #6c757d;
+}
+
+.mapboxgl-popup-content {
   padding: 10px !important;
   border-radius: 6px !important;
 }
@@ -1210,9 +1637,10 @@
   align-items: center;
   background-color: white;
   padding: 8px 12px;
-  border-radius: 25px; /* Fully rounded */
+  border-radius: 25px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   margin-bottom: 8px;
+  position: relative; /* Add this for absolute positioning of dropdown */
 }
 
 .search-bar-on-map .search-icon-on-map {
@@ -1364,52 +1792,73 @@
 .bottom-navigation {
   display: flex;
   justify-content: space-around;
-  align-items: center; /* Vertically align items if their heights differ */
-  background-color: #ffffff;
-  border-top: 1px solid #e0e0e0;
-  height: 65px; /* Fixed height */
-  position: fixed; /* Fixed at the bottom */
+  align-items: center;
+  background-color: white;
+  position: fixed;
   bottom: 0;
   left: 0;
-  width: 100%;
-  z-index: 1000; /* Above map controls like zoom */
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+  right: 0;
+  height: 65px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  z-index: 100;
+  padding: 0 10px;
 }
 
 .bottom-nav-item {
-  background: none;
-  border: none;
-  color: #888; /* Default icon and text color */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Center content if icon/text height varies */
-  flex-grow: 1; /* Each item takes equal width */
-  padding: 5px 0; /* Padding inside the button */
-  font-size: 10px; /* Text size */
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  color: #777;
+  border: none;
+  background-color: transparent;
   cursor: pointer;
-  text-align: center;
-  position: relative; /* For the 'New' badge */
+  transition: all 0.2s ease;
+  position: relative;
+  padding: 6px 0;
+}
+
+.bottom-nav-item span {
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.bottom-nav-item::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background-color: #0C5F2C; /* Primary color */
+  transition: width 0.2s ease;
+  border-radius: 3px 3px 0 0;
 }
 
 .bottom-nav-item.active {
-  color: #007bff; /* Active color - match brand */
+  color: #0C5F2C; /* Primary color */
 }
 
-.bottom-nav-item svg {
-  margin-bottom: 3px; /* Space between icon and text */
+.bottom-nav-item.active::before {
+  width: 40%; /* Indicator width for active tab */
 }
 
-.new-badge {
+.bottom-nav-item:active {
+  background-color: rgba(0,0,0,0.05);
+}
+
+/* Touch ripple effect */
+.bottom-nav-item .ripple {
   position: absolute;
-  top: 0px;
-  right: 5px; /* Adjust as needed for text length */
-  background-color: red;
-  color: white;
-  font-size: 8px;
-  padding: 1px 4px;
-  border-radius: 5px;
-  font-weight: bold;
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  pointer-events: none;
 }
 
 /* Remove old styles that are no longer relevant or conflict */
@@ -2061,6 +2510,74 @@
   padding-bottom: 70px; /* Ensure last card is not hidden by bottom nav */
 }
 
+/* Clear button for search */
+.clear-search-button {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+}
+
+.clear-search-button:hover {
+  color: #666;
+}
+
+/* Search Results Dropdown */
+.search-results-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  margin-top: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 100;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background-color: #f5f5f5;
+}
+
+.search-result-icon {
+  font-size: 18px;
+  color: #666;
+}
+
+.search-result-name {
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-loading {
+  padding: 15px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
 
 /* ... rest of existing styles ... */
 

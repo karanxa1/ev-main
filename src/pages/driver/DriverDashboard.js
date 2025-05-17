@@ -6,7 +6,8 @@ import { getAllStations } from '../../services/dataService';
 import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
 import { 
   FaMapMarkedAlt, FaWallet, FaBullhorn, FaRoute, FaShoppingBag, FaUserCircle, 
-  FaFilter, FaCrosshairs, FaListAlt, FaSearch, FaChevronDown, FaCheck 
+  FaFilter, FaCrosshairs, FaListAlt, FaSearch, FaChevronDown, FaCheck,
+  FaTimes, FaDirections
 } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -61,6 +62,7 @@ const DriverDashboard = () => {
   // User vehicle state
   const [userVehicle, setUserVehicle] = useState(state?.vehicle || null);
   const [showCompatibleOnly, setShowCompatibleOnly] = useState(false);
+  const [showAvailableOnly, setShowAvailableOnly] = useState(false);
 
   const [viewport, setViewport] = useState({
     longitude: 78.9629, // MODIFIED_LINE: India's approximate longitude
@@ -71,6 +73,13 @@ const DriverDashboard = () => {
   });
 
   const mapRef = useRef();
+
+  // New state variables for search functionality
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchTimeoutRef = useRef(null);
 
   // Fetch user vehicle if not passed in location state
   useEffect(() => {
@@ -145,24 +154,28 @@ const DriverDashboard = () => {
     return processedStations;
   }, [rawStations, userVehicle, userLocation]); // Added userLocation to dependencies
 
-  // Filtered stations based on compatibility preference
+  // Filtered stations based on compatibility and availability preference
   const filteredStations = useMemo(() => {
-    // When no vehicle is selected, always show all stations
-    if (!userVehicle) {
-      console.log('DriverDashboard: filteredStations (no vehicle):', stations); // ADDED_LOG
-      return stations;
+    let filtered = stations;
+    
+    // Filter by compatibility if user has a vehicle and wants compatible stations only
+    if (userVehicle && showCompatibleOnly) {
+      filtered = filtered.filter(station => station.isCompatible);
     }
     
-    // Only filter by compatibility if user has a vehicle and wants compatible stations only
-    if (showCompatibleOnly) {
-      const compatibleStations = stations.filter(station => station.isCompatible);
-      console.log('DriverDashboard: filteredStations (compatible only):', compatibleStations); // ADDED_LOG
-      return compatibleStations;
+    // Filter by availability if user wants available stations only
+    if (showAvailableOnly) {
+      filtered = filtered.filter(station => station.status === 'Available');
     }
     
-    console.log('DriverDashboard: filteredStations (all with vehicle):', stations); // ADDED_LOG
-    return stations;
-  }, [stations, showCompatibleOnly, userVehicle]);
+    // Log filtered stations for debugging
+    console.log('DriverDashboard: filteredStations:', 
+      showCompatibleOnly ? 'compatible only' : 
+      showAvailableOnly ? 'available only' : 'all', 
+      filtered);
+    
+    return filtered;
+  }, [stations, showCompatibleOnly, showAvailableOnly, userVehicle]);
 
   // MOVED_EFFECT_BELOW: Calculate and update nearby stations (moved from above stations and filteredStations)
   useEffect(() => {
@@ -249,6 +262,10 @@ const DriverDashboard = () => {
     setShowCompatibleOnly(!showCompatibleOnly);
   };
 
+  const toggleAvailableFilter = () => {
+    setShowAvailableOnly(!showAvailableOnly);
+  };
+
   const handleSelectVehicle = () => {
     console.log('handleSelectVehicle called. Navigating to /change-vehicle...'); // Updated diagnostic log
     navigate('/change-vehicle'); // Changed navigation path
@@ -258,14 +275,160 @@ const DriverDashboard = () => {
     setViewMode(prevMode => prevMode === 'map' ? 'list' : 'map');
   };
 
+  // Geocoding search function
+  const searchGeocoding = async (query) => {
+    if (!MAPBOX_TOKEN || !query.trim()) return;
+    
+    try {
+      setIsSearching(true);
+      const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`;
+      const params = new URLSearchParams({
+        access_token: MAPBOX_TOKEN,
+        // Focus search around user location if available, otherwise around India
+        ...(userLocation 
+          ? { proximity: `${userLocation.longitude},${userLocation.latitude}` }
+          : { proximity: '78.9629,20.5937' }), // Default to center of India
+        country: 'in', // Limit to India
+        types: 'place,locality,neighborhood,address,poi',
+        limit: 5
+      });
+      
+      const response = await fetch(`${endpoint}?${params.toString()}`);
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        setSearchResults(data.features.map(feature => ({
+          id: feature.id,
+          name: feature.place_name,
+          coordinates: {
+            longitude: feature.center[0],
+            latitude: feature.center[1]
+          }
+        })));
+        setShowSearchResults(true);
+      } else {
+        setSearchResults([]);
+      }
+    } catch (err) {
+      console.error("Geocoding search error:", err);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  // Handle search input change with debounce
+  const handleSearchInputChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Set new timeout (debounce)
+    if (value.trim().length > 2) { // Only search if more than 2 characters
+      searchTimeoutRef.current = setTimeout(() => {
+        searchGeocoding(value);
+      }, 500); // 500ms debounce
+    } else {
+      setShowSearchResults(false);
+    }
+  };
+  
+  // Handle search result selection
+  const handleSearchResultSelect = (result) => {
+    if (result && result.coordinates) {
+      // Fly to the selected location
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [result.coordinates.longitude, result.coordinates.latitude],
+          zoom: 14,
+          duration: 1500
+        });
+      }
+      
+      // Close search results
+      setShowSearchResults(false);
+      
+      // Also find the nearest stations to this location and highlight them
+      if (filteredStations.length > 0) {
+        const stationsWithDistance = filteredStations.map(station => {
+          const distance = getDistance(
+            result.coordinates.latitude, 
+            result.coordinates.longitude,
+            station.originalLat !== undefined ? station.originalLat : station.latitude,
+            station.originalLng !== undefined ? station.originalLng : station.longitude
+          );
+          return { ...station, distance };
+        }).sort((a, b) => a.distance - b.distance);
+        
+        setNearbyStations(stationsWithDistance.slice(0, 3));
+      }
+    }
+  };
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showSearchResults && !e.target.closest('.search-bar-on-map')) {
+        setShowSearchResults(false);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showSearchResults]);
+
   return (
     <div className="driver-dashboard-mobile">
       <main className="map-view-full-container">
         <section className="search-and-filters-on-map">
           <div className="search-bar-on-map">
             <FaSearch className="search-icon-on-map" />
-            <input type="text" placeholder="Search location ..." />
+            <input 
+              type="text" 
+              placeholder="Search location or stations..." 
+              value={searchTerm}
+              onChange={handleSearchInputChange}
+              aria-label="Search for locations or charging stations"
+            />
+            {searchTerm && (
+              <button 
+                className="clear-search-button" 
+                onClick={() => {
+                  setSearchTerm('');
+                  setShowSearchResults(false);
+                }}
+                aria-label="Clear search"
+              >
+                <FaTimes size={14} />
+              </button>
+            )}
             <FaFilter className="filter-icon-on-map" />
+            
+            {/* Search Results Dropdown */}
+            {showSearchResults && searchResults.length > 0 && (
+              <div className="search-results-dropdown">
+                {isSearching ? (
+                  <div className="search-loading">Searching...</div>
+                ) : (
+                  <>
+                    {searchResults.map(result => (
+                      <div 
+                        key={result.id} 
+                        className="search-result-item"
+                        onClick={() => handleSearchResultSelect(result)}
+                      >
+                        <span className="search-result-icon">📍</span>
+                        <span className="search-result-name">{result.name}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
           </div>
           <div className="filters-on-map">
             {userVehicle ? (
@@ -283,76 +446,184 @@ const DriverDashboard = () => {
               className={`filter-chip ${showCompatibleOnly ? 'active' : ''}`}
               onClick={toggleCompatibleFilter}
               disabled={!userVehicle}
+              aria-pressed={showCompatibleOnly}
             >
               {showCompatibleOnly ? 'Compatible' : 'All Chargers'}
             </button>
             
-            <button className="filter-chip">Available</button>
+            <button 
+              className={`filter-chip ${showAvailableOnly ? 'active' : ''}`}
+              onClick={toggleAvailableFilter}
+              aria-pressed={showAvailableOnly}
+            >
+              {showAvailableOnly ? 'Available' : 'All Status'}
+            </button>
           </div>
         </section>
 
         {/* Main Map or List View Area */}
         <div className="main-view-area">
-          {viewMode === 'map' && MAPBOX_TOKEN && (
-            <Map
-              ref={mapRef}
-              mapboxAccessToken={MAPBOX_TOKEN}
-              initialViewState={viewport}
-              onMove={evt => setViewport(evt.viewState)}
-              style={{ width: '100%', height: '100%' }}
-              mapStyle="mapbox://styles/mapbox/streets-v11"
-            >
-              <NavigationControl position="bottom-right" style={{ marginBottom: '80px' }} />
-
-              {/* Markers for stations */}
-              {filteredStations.map(station => (
-                <Marker
-                  key={station.id} // Ensure unique key for each marker
-                  longitude={station.longitude}
-                  latitude={station.latitude}
-                  onClick={() => handleMarkerClick(station)}
-                >
-                  {/* Apply station-marker base class and conditional classes for status/compatibility */}
-                  <div 
-                    className={`station-marker ${station.status === 'Available' ? 'available' : (station.status === 'Occupied' ? 'occupied' : 'unknown')} ${station.isCompatible ? 'compatible' : ''} ${userVehicle ? '' : 'no-vehicle'}`}
-                    title={station.name}
-                  >⚡</div> 
-                </Marker>
-              ))}
+          {/* Map View */}
+          {viewMode === 'map' && (
+            <>
+              {/* Loading Overlay */}
+              {loading && (
+                <div className="loading-overlay">
+                  <div className="spinner"></div>
+                  <p>Loading stations...</p>
+                </div>
+              )}
               
-              {/* User Location Marker */}
-              {userLocation && (
-                <Marker longitude={userLocation.longitude} latitude={userLocation.latitude}>
-                  <div className="user-location-dot"></div>
-                </Marker>
+              {/* Error Overlay */}
+              {error && (
+                <div className="error-message">
+                  <p>{error}</p>
+                  <button onClick={() => {
+                    setLoading(true);
+                    setError(null);
+                    getAllStations()
+                      .then(data => {
+                        setRawStations(data);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.error("Error fetching stations:", err);
+                        setError('Failed to load stations. Please try again.');
+                        setLoading(false);
+                      });
+                  }}>
+                    Retry
+                  </button>
+                </div>
               )}
-
-              {selectedStationPopup && (
-                <Popup
-                  longitude={selectedStationPopup.originalLng !== undefined ? selectedStationPopup.originalLng : selectedStationPopup.longitude}
-                  latitude={selectedStationPopup.originalLat !== undefined ? selectedStationPopup.originalLat : selectedStationPopup.latitude}
-                  onClose={() => setSelectedStationPopup(null)}
-                  closeButton={true}
-                  closeOnClick={false}
-                  anchor="bottom"
-                  className="station-popup"
+              
+              {/* Mapbox Map */}
+              {MAPBOX_TOKEN && (
+                <Map
+                  ref={mapRef}
+                  mapboxAccessToken={MAPBOX_TOKEN}
+                  initialViewState={viewport}
+                  onMove={evt => setViewport(evt.viewState)}
+                  style={{ width: '100%', height: '100%' }}
+                  mapStyle="mapbox://styles/mapbox/streets-v11"
                 >
-                  <div>
-                    <h3>{selectedStationPopup.name}</h3>
-                    <p>{selectedStationPopup.address}</p>
-                    {selectedStationPopup.isCompatible !== undefined && (
-                      <p className={selectedStationPopup.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
-                        {selectedStationPopup.isCompatible ? 'Compatible with your vehicle' : 'May not be compatible'}
-                      </p>
-                    )}
-                    {/* Add more details or a button to navigate/get directions */}
-                  </div>
-                </Popup>
+                  <NavigationControl position="bottom-right" style={{ marginBottom: '80px' }} />
+
+                  {/* Markers for stations */}
+                  {filteredStations.map(station => (
+                    <Marker
+                      key={station.id} // Ensure unique key for each marker
+                      longitude={station.longitude}
+                      latitude={station.latitude}
+                      onClick={() => handleMarkerClick(station)}
+                    >
+                      {/* Apply station-marker base class and conditional classes for status/compatibility */}
+                      <div 
+                        className={`station-marker ${station.status === 'Available' ? 'available' : (station.status === 'Occupied' ? 'occupied' : 'unknown')} ${station.isCompatible ? 'compatible' : ''} ${userVehicle ? '' : 'no-vehicle'}`}
+                        title={station.name}
+                      >⚡</div> 
+                    </Marker>
+                  ))}
+                  
+                  {/* User Location Marker */}
+                  {userLocation && (
+                    <Marker longitude={userLocation.longitude} latitude={userLocation.latitude}>
+                      <div className="user-location-dot"></div>
+                    </Marker>
+                  )}
+
+                  {selectedStationPopup && (
+                    <Popup
+                      longitude={selectedStationPopup.originalLng !== undefined ? selectedStationPopup.originalLng : selectedStationPopup.longitude}
+                      latitude={selectedStationPopup.originalLat !== undefined ? selectedStationPopup.originalLat : selectedStationPopup.latitude}
+                      onClose={() => setSelectedStationPopup(null)}
+                      closeButton={true}
+                      closeOnClick={false}
+                      anchor="bottom"
+                      className="station-popup"
+                    >
+                      <div className="popup-content">
+                        <div className="popup-header">
+                          <h3>{selectedStationPopup.name}</h3>
+                          <span className={`popup-access-tag ${selectedStationPopup.accessType?.toLowerCase() || 'public'}`}>
+                            {selectedStationPopup.accessType || 'Public'}
+                          </span>
+                        </div>
+                        
+                        <p className="popup-address">{selectedStationPopup.address}</p>
+                        
+                        {selectedStationPopup.isCompatible !== undefined && (
+                          <p className={selectedStationPopup.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
+                            {selectedStationPopup.isCompatible ? 'Compatible with your vehicle' : 'May not be compatible'}
+                          </p>
+                        )}
+                        
+                        {/* Station Details */}
+                        <div className="popup-details">
+                          <div className="popup-detail-row">
+                            <span className="popup-detail-label">Status:</span>
+                            <span className={`popup-detail-value ${selectedStationPopup.status === 'Available' ? 'available' : 'unavailable'}`}>
+                              {selectedStationPopup.status || 'Unknown'}
+                            </span>
+                          </div>
+                          
+                          {selectedStationPopup.chargerTypes && selectedStationPopup.chargerTypes.length > 0 && (
+                            <div className="popup-detail-row">
+                              <span className="popup-detail-label">Charger Types:</span>
+                              <div className="popup-charger-types">
+                                {selectedStationPopup.chargerTypes.map(type => (
+                                  <span key={type} className="popup-charger-badge">{type}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {selectedStationPopup.distance !== undefined && (
+                            <div className="popup-detail-row">
+                              <span className="popup-detail-label">Distance:</span>
+                              <span className="popup-detail-value">{selectedStationPopup.distance.toFixed(1)} km</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Get Directions Button */}
+                        <button 
+                          className="popup-directions-button"
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent the popup from closing
+                            if (userLocation) {
+                              const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${selectedStationPopup.latitude},${selectedStationPopup.longitude}`;
+                              window.open(url, '_blank');
+                            }
+                          }}
+                          disabled={!userLocation}
+                        >
+                          <FaDirections /> Get Directions
+                        </button>
+                      </div>
+                    </Popup>
+                  )}
+                </Map>
               )}
-            </Map>
-          )}
-          {viewMode === 'map' && !MAPBOX_TOKEN && (
-             <div className="map-loading-placeholder">Map cannot be displayed. Mapbox token is missing.</div>
+              
+              {/* No Mapbox Token Warning */}
+              {!MAPBOX_TOKEN && (
+                <div className="map-loading-placeholder">
+                  <div className="error-icon">⚠️</div>
+                  <p>Map cannot be displayed. Mapbox token is missing.</p>
+                </div>
+              )}
+              
+              {/* No Vehicle Warning - if user needs to be guided to select one */}
+              {!loading && !error && !userVehicle && filteredStations.length > 0 && (
+                <div className="vehicle-missing-notice">
+                  <p>Select a vehicle to see compatible charging stations</p>
+                  <button onClick={handleSelectVehicle} className="vehicle-select-button">
+                    Select Vehicle
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           {viewMode === 'list' && (
@@ -419,6 +690,9 @@ const DriverDashboard = () => {
                   onClick={() => handleMarkerClick(station)}
                   title={`${station.name} (${station.distance.toFixed(1)} km away)`}
                 >
+                  {/* Add access type tag */}
+                  <span className="station-access-type-tag">{station.accessType || 'Public'}</span>
+                  
                   <div className="card-content-wrapper">
                     <div className="card-left">
                       {/* Placeholder for Brand Icon. You can replace this with an <img> tag if you have icon URLs */}
