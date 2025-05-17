@@ -2698,3 +2698,445 @@ section {
 [data-scroll="stagger-item"]:nth-child(4) { transition-delay: 0.3s; }
 [data-scroll="stagger-item"]:nth-child(5) { transition-delay: 0.4s; }
 [data-scroll="stagger-item"]:nth-child(6) { transition-delay: 0.5s; }
+
+/* Advanced Animation Effects */
+
+/* Parallax Background Effect for Hero */
+.hero-banner {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='25' cy='25' r='3'/%3E%3Ccircle cx='75' cy='25' r='3'/%3E%3Ccircle cx='125' cy='25' r='3'/%3E%3Ccircle cx='175' cy='25' r='3'/%3E%3Ccircle cx='25' cy='75' r='3'/%3E%3Ccircle cx='75' cy='75' r='3'/%3E%3Ccircle cx='125' cy='75' r='3'/%3E%3Ccircle cx='175' cy='75' r='3'/%3E%3Ccircle cx='25' cy='125' r='3'/%3E%3Ccircle cx='75' cy='125' r='3'/%3E%3Ccircle cx='125' cy='125' r='3'/%3E%3Ccircle cx='175' cy='125' r='3'/%3E%3Ccircle cx='25' cy='175' r='3'/%3E%3Ccircle cx='75' cy='175' r='3'/%3E%3Ccircle cx='125' cy='175' r='3'/%3E%3Ccircle cx='175' cy='175' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 60px 60px;
+  opacity: 0.3;
+  z-index: 0;
+  animation: parallaxBackground 40s linear infinite;
+}
+
+@keyframes parallaxBackground {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 600px; }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Enhanced Button Hover Effects */
+.btn-primary, .btn-secondary, .btn-large, .btn-book, .btn-locate, .city-button, .search-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+.btn-primary::before, .btn-secondary::before, .btn-large::before, .btn-book::before, .btn-locate::before, .search-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+  z-index: -1;
+}
+
+.btn-primary:hover::before, .btn-secondary:hover::before, .btn-large:hover::before, .btn-book:hover::before, .btn-locate:hover::before, .search-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Animated Counter Effect */
+.counter-animation {
+  display: inline-block;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform 1s ease, opacity 1s ease;
+}
+
+.counter-animation.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Feature Card Hover Effect */
+.feature {
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              box-shadow 0.5s ease, 
+              background-color 0.5s ease;
+}
+
+.feature:hover {
+  transform: translateY(-15px) scale(1.05);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+  background-color: #f9fffc;
+}
+
+.feature .feature-icon {
+  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.feature:hover .feature-icon {
+  transform: scale(1.2) rotate(10deg);
+}
+
+/* Station Card Enhanced Hover */
+.station-card {
+  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1), 
+              box-shadow 0.6s ease;
+}
+
+.station-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(12, 95, 44, 0.15);
+}
+
+.station-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.station-card:hover::after {
+  opacity: 1;
+  box-shadow: 0 5px 15px rgba(12, 95, 44, 0.2);
+}
+
+/* Step Number Animation */
+.step-number {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.4s ease, color 0.4s ease;
+}
+
+.step-number::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #0C5F2C;
+  border-radius: 50%;
+  z-index: -1;
+  transform: scale(1);
+  transition: transform 0.4s ease, background-color 0.4s ease;
+}
+
+.step:hover .step-number {
+  transform: scale(1.1);
+  color: #fff;
+}
+
+.step:hover .step-number::before {
+  transform: scale(1.2);
+  background-color: #23AD55;
+}
+
+/* Cursor Follower Effect */
+.cursor-follower {
+  position: fixed;
+  width: 30px;
+  height: 30px;
+  background-color: rgba(12, 95, 44, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease;
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .cursor-follower {
+    display: block;
+  }
+}
+
+/* Loading Animation for Images */
+@keyframes imagePulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.6; }
+}
+
+.station-image img.loading {
+  animation: imagePulse 1.5s infinite;
+}
+
+/* 3D Card Effect */
+.feature, .station-card, .step {
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+}
+
+.tilt-effect {
+  transform: perspective(1000px) rotateX(var(--rotateX)) rotateY(var(--rotateY));
+}
+
+/* Animated Background for Sections */
+.animated-bg-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.animated-bg-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    rgba(12, 95, 44, 0.03) 0%,
+    rgba(35, 173, 85, 0.03) 20%,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0) 70%,
+    rgba(35, 173, 85, 0.03) 80%,
+    rgba(12, 95, 44, 0.03) 100%
+  );
+  transform: rotate(30deg);
+  animation: gradientMove 20s linear infinite;
+  z-index: -1;
+}
+
+@keyframes gradientMove {
+  0% { transform: rotate(30deg) translateY(0); }
+  50% { transform: rotate(30deg) translateY(-100px); }
+  100% { transform: rotate(30deg) translateY(0); }
+}
+
+/* Floating Animation for Elements */
+.floating-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0); }
+}
+
+/* Typewriter Text Effect */
+.typewriter-text {
+  overflow: hidden;
+  border-right: 2px solid #0C5F2C;
+  white-space: nowrap;
+  margin: 0 auto;
+  animation: typing 4s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: #0C5F2C }
+}
+
+/* Pulse Animation for Highlighting */
+.pulse-animation {
+  position: relative;
+}
+
+.pulse-animation::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(12, 95, 44, 0.5);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(12, 95, 44, 0.5); }
+  70% { box-shadow: 0 0 0 15px rgba(12, 95, 44, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(12, 95, 44, 0); }
+}
+
+/* Create stacked card effect */
+.stacked-cards-container {
+  position: relative;
+  perspective: 1000px;
+  margin: 40px 0;
+}
+
+.stacked-card {
+  position: absolute;
+  width: 100%;
+  transition: all 0.5s ease;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  opacity: 0;
+  transform: translateY(20px) scale(0.9);
+}
+
+.stacked-card.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  z-index: 5;
+}
+
+.stacked-card.prev {
+  opacity: 0.7;
+  transform: translateY(-15px) scale(0.95);
+  z-index: 4;
+}
+
+.stacked-card.next {
+  opacity: 0.7;
+  transform: translateY(15px) scale(0.95);
+  z-index: 3;
+}
+
+/* Animation for scroll progress bar */
+.scroll-progress-bar {
+  position: relative;
+}
+
+.scroll-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 0 2px 2px 0;
+  animation: progressPulse 1.5s ease-out infinite;
+}
+
+@keyframes progressPulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Interactive numbers counter */
+.counting-animation {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.counting-animation.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Rotating icons on hover */
+.rotating-icon {
+  transition: transform 0.5s ease;
+}
+
+.feature:hover .rotating-icon {
+  transform: rotateY(180deg);
+}
+
+/* Enhanced section transitions */
+section {
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+}
+
+section.in-view {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Stats Section */
+.stats-section {
+  padding: 60px 0;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.stats-grid {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.stat-item {
+  flex: 1;
+  min-width: 220px;
+  padding: 30px 20px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+
+.counter-value {
+  font-size: 42px;
+  font-weight: 700;
+  color: #0C5F2C;
+  display: block;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.stat-item h3 {
+  font-size: 18px;
+  margin: 0;
+  color: #333;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stats-grid {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .stat-item {
+    min-width: 100%;
+    padding: 20px 15px;
+  }
+
+  .counter-value {
+    font-size: 36px;
+  }
+
+  .stat-icon {
+    font-size: 32px;
+  }
+}

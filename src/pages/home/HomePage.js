@@ -91,6 +91,18 @@ const HomePage = () => {
   const [hasUnreadAiMessages, setHasUnreadAiMessages] = useState(false); // State for AI new message badge
   const [initialGeolocationAttempted, setInitialGeolocationAttempted] = useState(false); // New state
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [cursorType, setCursorType] = useState('default'); // For different cursor states
+  // Stats counters state
+  const [counters, setCounters] = useState({
+    stations: { value: 0, target: 1000, counted: false },
+    cities: { value: 0, target: 25, counted: false },
+    users: { value: 0, target: 5000, counted: false },
+  });
+  // Refs for counter elements
+  const stationsCounterRef = useRef(null);
+  const citiesCounterRef = useRef(null);
+  const usersCounterRef = useRef(null);
 
   // Common fallback image that's guaranteed to exist
   const commonFallbackImage = '/images/charging-stations/commonoimage.jpg';
@@ -813,6 +825,121 @@ const HomePage = () => {
     };
   }, []);
 
+  // Add effect for cursor follower
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+      
+      // Check if hovering over interactive elements to change cursor appearance
+      const target = e.target;
+      if (target.closest('button') || target.closest('a') || target.closest('.station-card') || target.closest('.feature')) {
+        setCursorType('hover');
+      } else {
+        setCursorType('default');
+      }
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
+  // Effect to mark sections as in-view for animations
+  useEffect(() => {
+    const handleSectionsInView = () => {
+      const sections = document.querySelectorAll('section');
+      const windowHeight = window.innerHeight;
+      
+      sections.forEach(section => {
+        const sectionTop = section.getBoundingClientRect().top;
+        const sectionBottom = section.getBoundingClientRect().bottom;
+        
+        // If section is in viewport
+        if (sectionTop < windowHeight * 0.75 && sectionBottom > 0) {
+          section.classList.add('in-view');
+        }
+      });
+    };
+    
+    // Initialize sections
+    handleSectionsInView();
+    
+    // Add scroll listener
+    window.addEventListener('scroll', handleSectionsInView);
+    
+    return () => {
+      window.removeEventListener('scroll', handleSectionsInView);
+    };
+  }, []);
+
+  // Function to animate counting
+  const startCountingAnimation = (counterKey, targetValue) => {
+    const duration = 2000; // 2 seconds
+    const frameDuration = 1000 / 60; // 60fps
+    const totalFrames = Math.round(duration / frameDuration);
+    const increment = targetValue / totalFrames;
+    
+    let currentFrame = 0;
+    let currentValue = 0;
+    
+    const counter = setInterval(() => {
+      currentFrame++;
+      currentValue += increment;
+      
+      if (currentFrame === totalFrames) {
+        clearInterval(counter);
+        currentValue = targetValue;
+      }
+      
+      // Update the state with new value
+      setCounters(prev => ({
+        ...prev,
+        [counterKey]: {
+          ...prev[counterKey],
+          value: Math.round(currentValue),
+          counted: currentFrame === totalFrames
+        }
+      }));
+    }, frameDuration);
+  };
+
+  // Effect to observe counter elements and trigger animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            // Check which counter this is
+            if (entry.target === stationsCounterRef.current && !counters.stations.counted) {
+              startCountingAnimation('stations', counters.stations.target);
+            } else if (entry.target === citiesCounterRef.current && !counters.cities.counted) {
+              startCountingAnimation('cities', counters.cities.target);
+            } else if (entry.target === usersCounterRef.current && !counters.users.counted) {
+              startCountingAnimation('users', counters.users.target);
+            }
+            
+            // Add visible class for animation
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    
+    // Observe counter elements if they exist
+    if (stationsCounterRef.current) observer.observe(stationsCounterRef.current);
+    if (citiesCounterRef.current) observer.observe(citiesCounterRef.current);
+    if (usersCounterRef.current) observer.observe(usersCounterRef.current);
+    
+    return () => {
+      if (stationsCounterRef.current) observer.unobserve(stationsCounterRef.current);
+      if (citiesCounterRef.current) observer.unobserve(citiesCounterRef.current);
+      if (usersCounterRef.current) observer.unobserve(usersCounterRef.current);
+    };
+  }, [counters.stations.counted, counters.cities.counted, counters.users.counted]);
+
   return (
     <div className="home-page">
       {/* Scroll Progress Indicator */}
@@ -822,6 +949,17 @@ const HomePage = () => {
           style={{ width: `${scrollProgress}%` }} 
         />
       </div>
+      
+      {/* Cursor Follower */}
+      <div 
+        className={`cursor-follower ${cursorType}`} 
+        style={{ 
+          left: `${mousePosition.x}px`, 
+          top: `${mousePosition.y}px`,
+          transform: `translate(-50%, -50%) scale(${cursorType === 'hover' ? 1.5 : 1})`,
+          backgroundColor: cursorType === 'hover' ? 'rgba(12, 95, 44, 0.4)' : 'rgba(12, 95, 44, 0.2)'
+        }}
+      />
 
       {/* Overlay for mobile menu - conditionally rendered */}
       {mobileMenuOpen && <div className="mobile-menu-overlay" onClick={toggleMobileMenu}></div>}
@@ -992,7 +1130,7 @@ const HomePage = () => {
             >
               <button 
                 onClick={handleJoinNow} 
-                className="btn-primary"
+                className="btn-primary pulse-animation"
               >
                 Join Now
               </button>
@@ -1008,24 +1146,54 @@ const HomePage = () => {
       </section>
 
       {/* About Section */}
-      <section id="about" ref={aboutRef} className={`about-section ${aboutSectionRef[1] ? 'is-visible' : ''}`}>
+      <section id="about" ref={aboutRef} className={`about-section animated-bg-section ${aboutSectionRef[1] ? 'is-visible' : ''}`}>
         <div className="container" ref={aboutSectionRef[0]}>
           <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">India's Leading EV Charging Network</h2>
           <div className="features-grid stagger-children">
             <div className="feature initially-hidden stagger-child-1" data-scroll="stagger-item">
-              <div className="feature-icon">🔌</div>
+              <div className="feature-icon floating-animation">🔌</div>
               <h3>Widespread Coverage</h3>
               <p>Access to thousands of charging points across major Indian cities.</p>
             </div>
             <div className="feature initially-hidden stagger-child-2" data-scroll="stagger-item">
-              <div className="feature-icon">⚡</div>
+              <div className="feature-icon floating-animation">⚡</div>
               <h3>Fast Charging</h3>
               <p>DC fast charging options to get you back on the road quickly.</p>
             </div>
             <div className="feature initially-hidden stagger-child-3" data-scroll="stagger-item">
-              <div className="feature-icon">📱</div>
+              <div className="feature-icon floating-animation">📱</div>
               <h3>Easy Booking</h3>
               <p>Book and pay for charging sessions directly from your phone.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Counter Section */}
+      <section className="stats-section" data-scroll="fade-in">
+        <div className="container">
+          <h2 data-scroll="slide-up">Our Impact In Numbers</h2>
+          <div className="stats-grid">
+            <div className="stat-item">
+              <div className="stat-icon floating-animation">🔋</div>
+              <div ref={stationsCounterRef} className="counter-animation">
+                <span className="counter-value">{counters.stations.value}+</span>
+                <h3>Charging Stations</h3>
+              </div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-icon floating-animation">🏙️</div>
+              <div ref={citiesCounterRef} className="counter-animation">
+                <span className="counter-value">{counters.cities.value}+</span>
+                <h3>Cities Covered</h3>
+              </div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-icon floating-animation">👥</div>
+              <div ref={usersCounterRef} className="counter-animation">
+                <span className="counter-value">{counters.users.value}+</span>
+                <h3>Happy EV Drivers</h3>
+              </div>
             </div>
           </div>
         </div>
@@ -1073,7 +1241,7 @@ const HomePage = () => {
       />
 
       {/* How It Works Section */}
-      <section id="how-it-works" ref={howItWorksRef} className={`how-it-works ${howItWorksSectionRef[1] ? 'is-visible' : ''}`}>
+      <section id="how-it-works" ref={howItWorksRef} className={`how-it-works animated-bg-section ${howItWorksSectionRef[1] ? 'is-visible' : ''}`}>
         <div className="container" ref={howItWorksSectionRef[0]}>
           <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">How It Works</h2>
           <div className="steps stagger-children">
@@ -1110,7 +1278,7 @@ const HomePage = () => {
       </section>
 
       {/* Cost Estimator Section */}
-      <section ref={costEstimatorSectionRef[0]} className={`cost-estimator-section ${costEstimatorSectionRef[1] ? 'is-visible' : ''}`}>
+      <section ref={costEstimatorSectionRef[0]} className={`cost-estimator-section animated-bg-section ${costEstimatorSectionRef[1] ? 'is-visible' : ''}`}>
         <div className="container">
           <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">Estimate Charging Cost & Time</h2>
           <div className="initially-hidden animate-fade-in" style={{ animationDelay: '0.2s' }} data-scroll="fade-in">
