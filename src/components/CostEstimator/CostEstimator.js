@@ -24,8 +24,9 @@ export const EV_MODELS = {
 
   'Mahindra XUV400 EC': { capacity: 34.5 },
   'Mahindra XUV400 EL': { capacity: 39.4 },
-  'Mahindra BE.05 (Concept)': { capacity: 70 }, // Concept
-  'Mahindra XUV.e9 (Concept)': { capacity: 79 }, // Concept
+  
+  'Mahindra BE 6e': { capacity: 59 }, // New model
+  'Mahindra XEV 9e': { capacity: 79 }, // New model
   
   'Citroen eC3': { capacity: 29.2 },
   
