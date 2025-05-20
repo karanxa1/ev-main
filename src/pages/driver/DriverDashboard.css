@@ -2581,3 +2581,257 @@
 
 /* ... rest of existing styles ... */
 
+/* Top search bar and filters */
+.map-search-container {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 10px;
+}
+
+/* Search input styling */
+.location-search-input {
+  background-color: white;
+  border-radius: 30px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  height: 42px;
+}
+
+.location-search-input input {
+  border: none;
+  background: transparent;
+  padding: 8px 5px;
+  flex-grow: 1;
+  font-size: 14px;
+  color: #555;
+  outline: none;
+}
+
+.location-search-input input::placeholder {
+  color: #aaa;
+}
+
+.search-icon {
+  color: #999;
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+/* Filter chips row */
+.filter-chips-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  padding-left: 10px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.filter-chips-row::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  flex-shrink: 0;
+  background-color: white;
+  border-radius: 20px;
+  padding: 6px 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 13px;
+  height: 34px;
+  border: none;
+  color: #444;
+}
+
+.filter-chip:active {
+  background-color: #f5f5f5;
+}
+
+/* Vehicle chip specific styling */
+.vehicle-chip {
+  padding-right: 8px;
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.vehicle-chip-icon {
+  color: #666;
+  font-size: 14px;
+}
+
+.dropdown-icon {
+  font-size: 11px;
+  color: #888;
+  margin-left: 5px;
+}
+
+.filter-chip.active {
+  background-color: #f8f8f8;
+}
+
+/* Available toggle styling */
+.available-toggle {
+  position: relative;
+  padding-left: 32px; /* Space for the toggle circle */
+}
+
+.toggle-circle {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #4CAF50; /* Green color for available */
+}
+
+/* Map layout controls in top right of map */
+.map-layout-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 15;
+  display: flex;
+  gap: 10px;
+}
+
+.map-layout-button {
+  width: 36px;
+  height: 36px;
+  background-color: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  border: none;
+  font-size: 16px;
+  color: #555;
+}
+
+/* Map view layers button */
+.map-layers-button {
+  background-color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+
+.map-layers-button svg {
+  color: #555;
+  font-size: 18px;
+}
+
+/* Driver Map control buttons styles */
+.driver-map-control-buttons {
+  position: absolute;
+  z-index: 20; /* Increased z-index to be higher than the stations carousel (z-index: 10) */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  bottom: 150px; /* Adjusted to be higher to avoid overlap with nearby stations carousel */
+  right: 20px;
+  width: auto;
+}
+
+.driver-map-control-btn {
+  background-color: white;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #333;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.driver-map-control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.driver-map-control-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.driver-map-control-btn .btn-icon {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.driver-map-control-btn.list-stations-btn {
+  background-color: #0C5F2C;
+  color: white;
+}
+
+.driver-map-control-btn.live-location-btn {
+  background-color: white;
+  color: #0C5F2C;
+  border: 1px solid #0C5F2C;
+}
+
+/* Responsive styles for map control buttons */
+@media (max-width: 768px) {
+  .driver-map-control-buttons {
+    bottom: 150px;
+    right: 15px;
+    gap: 8px;
+    z-index: 20;
+  }
+  
+  .driver-map-control-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+  
+  .driver-map-control-btn .btn-icon {
+    font-size: 16px;
+    margin-right: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .driver-map-control-btn .btn-text {
+    display: none; /* Hide text on very small screens */
+  }
+  
+  .driver-map-control-btn {
+    padding: 10px;
+  }
+  
+  .driver-map-control-btn .btn-icon {
+    font-size: 20px;
+    margin-right: 0;
+  }
+
+  .driver-map-control-buttons {
+    bottom: 150px;
+    right: 15px;
+    z-index: 20;
+  }
+}
+

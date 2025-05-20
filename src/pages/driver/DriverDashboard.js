@@ -7,7 +7,8 @@ import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
 import { 
   FaMapMarkedAlt, FaWallet, FaBullhorn, FaRoute, FaShoppingBag, FaUserCircle, 
   FaFilter, FaCrosshairs, FaListAlt, FaSearch, FaChevronDown, FaCheck,
-  FaTimes, FaDirections
+  FaTimes, FaDirections, FaBatteryHalf, FaSortAmountDown, FaSort,
+  FaCar, FaCircle
 } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -45,6 +46,96 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
 
+// StationMarker component - separating UI logic
+const StationMarker = ({ station, onClick }) => {
+  return (
+    <Marker
+      longitude={station.longitude}
+      latitude={station.latitude}
+      onClick={() => onClick(station)}
+    >
+      <div 
+        className={`station-marker ${station.status === 'Available' ? 'available' : (station.status === 'Occupied' ? 'occupied' : 'unknown')} ${station.isCompatible ? 'compatible' : ''} ${station.userVehicle ? '' : 'no-vehicle'}`}
+        title={station.name}
+      >⚡</div> 
+    </Marker>
+  );
+};
+
+// StationCard component - simplify rendering of station cards
+const StationCard = ({ station, onClick, isMobile = false }) => {
+  return (
+    <div 
+      className={`station-list-card-item enhanced-station-card ${isMobile ? 'mobile-optimized' : ''}`}
+      onClick={() => onClick(station)}
+    >
+      <div className="card-header">
+        <span className="station-name" title={station.name}>{station.name}</span>
+        {station.isCompatible !== undefined && (
+          <span className={`enhanced-station-compatibility ${station.isCompatible ? 'compatible' : 'incompatible'}`}>
+            {station.isCompatible ? 'Compatible' : 'Not Compatible'}
+          </span>
+        )}
+      </div>
+      
+      <div className="station-details">
+        <div className="detail-item">
+          <span className="detail-label">Status</span>
+          <span className={`detail-value ${station.status === 'Available' ? 'available-status' : 'unavailable-status'}`}>
+            {station.status || 'Unknown'}
+          </span>
+        </div>
+        {station.distance !== undefined && (
+          <div className="detail-item">
+            <span className="detail-label">Distance</span>
+            <span className="detail-value">{station.distance.toFixed(1)} km</span>
+          </div>
+        )}
+        <div className="detail-item">
+          <span className="detail-label">Chargers</span>
+          <span className="detail-value">
+            {station.chargerTypes && station.chargerTypes.length > 0 
+              ? (isMobile ? station.chargerTypes[0] + (station.chargerTypes.length > 1 ? ' +' + (station.chargerTypes.length - 1) : '') : station.chargerTypes.join(', ')) 
+              : 'Not specified'}
+          </span>
+        </div>
+        <div className="detail-item">
+          <span className="detail-label">Price</span>
+          <span className="detail-value">₹{station.pricePerKwh || '--'}/kWh</span>
+        </div>
+      </div>
+      
+      <div className="card-footer">
+        <button 
+          className="btn-action btn-directions" 
+          aria-label="Get directions"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (station.latitude && station.longitude && navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const url = `https://www.google.com/maps/dir/?api=1&origin=${position.coords.latitude},${position.coords.longitude}&destination=${station.latitude},${station.longitude}`;
+                  window.open(url, '_blank');
+                },
+                (err) => console.warn("Error getting user location:", err.message)
+              );
+            }
+          }}
+        >
+          <FaDirections /> {isMobile ? '' : 'Directions'}
+        </button>
+        <button 
+          className="btn-action btn-book"
+          disabled={station.status !== 'Available'}
+          aria-label={station.status === 'Available' ? 'Book now' : 'Currently unavailable'}
+        >
+          {station.status === 'Available' ? (isMobile ? 'Book' : 'Book Now') : (isMobile ? 'Unavailable' : 'Currently Unavailable')}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const DriverDashboard = () => {
   const reactRouterLocation = useLocation(); // Renamed to avoid conflict if global `location` was intended elsewhere, and to be clear.
   const { state } = reactRouterLocation; // Continue using state if needed from the location object
@@ -56,18 +147,29 @@ const DriverDashboard = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [selectedStationPopup, setSelectedStationPopup] = useState(null);
   const [activeBottomNav, setActiveBottomNav] = useState('Map');
-  const [viewMode, setViewMode] = useState('map'); // ADDED_LINE: 'map' or 'list' view
-  const [nearbyStations, setNearbyStations] = useState([]); // ADDED_LINE: For closest station suggestions
+  const [viewMode, setViewMode] = useState('map'); // 'map' or 'list' view
+  const [nearbyStations, setNearbyStations] = useState([]); // For closest station suggestions
   
   // User vehicle state
   const [userVehicle, setUserVehicle] = useState(state?.vehicle || null);
   const [showCompatibleOnly, setShowCompatibleOnly] = useState(false);
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+  
+  // New state variables for enhanced features
+  const [sortOption, setSortOption] = useState('distance'); // 'distance', 'availability', 'price'
+  const [recentStations, setRecentStations] = useState([]);
+  const [batteryRangeFilter, setBatteryRangeFilter] = useState(false);
+  const [estimatedRange, setEstimatedRange] = useState(userVehicle?.range || 150); // km
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [selectedChargerType, setSelectedChargerType] = useState('all');
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [isMobileDetailsOpen, setIsMobileDetailsOpen] = useState(false);
 
   const [viewport, setViewport] = useState({
-    longitude: 78.9629, // MODIFIED_LINE: India's approximate longitude
-    latitude: 20.5937,  // MODIFIED_LINE: India's approximate latitude
-    zoom: 4.5,            // MODIFIED_LINE: Zoom level for an overview of India
+    longitude: 78.9629, // India's approximate longitude
+    latitude: 20.5937,  // India's approximate latitude
+    zoom: 4.5,          // Zoom level for an overview of India
     bearing: 0,
     pitch: 0
   });
@@ -168,14 +270,36 @@ const DriverDashboard = () => {
       filtered = filtered.filter(station => station.status === 'Available');
     }
     
-    // Log filtered stations for debugging
-    console.log('DriverDashboard: filteredStations:', 
-      showCompatibleOnly ? 'compatible only' : 
-      showAvailableOnly ? 'available only' : 'all', 
-      filtered);
+    // Filter by battery range if enabled
+    if (batteryRangeFilter && userLocation) {
+      filtered = filtered.filter(station => 
+        station.distance && station.distance <= estimatedRange
+      );
+    }
+    
+    // Filter by charger type if selected
+    if (selectedChargerType !== 'all') {
+      filtered = filtered.filter(station => 
+        station.chargerTypes && station.chargerTypes.includes(selectedChargerType)
+      );
+    }
+    
+    // Sort stations based on selected sort option
+    filtered = [...filtered].sort((a, b) => {
+      if (sortOption === 'distance') {
+        return (a.distance || Infinity) - (b.distance || Infinity);
+      } else if (sortOption === 'availability') {
+        if (a.status === 'Available' && b.status !== 'Available') return -1;
+        if (a.status !== 'Available' && b.status === 'Available') return 1;
+        return 0;
+      } else if (sortOption === 'price') {
+        return (a.pricePerKwh || 0) - (b.pricePerKwh || 0);
+      }
+      return 0;
+    });
     
     return filtered;
-  }, [stations, showCompatibleOnly, showAvailableOnly, userVehicle]);
+  }, [stations, showCompatibleOnly, showAvailableOnly, userVehicle, batteryRangeFilter, estimatedRange, selectedChargerType, sortOption, userLocation]);
 
   // MOVED_EFFECT_BELOW: Calculate and update nearby stations (moved from above stations and filteredStations)
   useEffect(() => {
@@ -234,6 +358,18 @@ const DriverDashboard = () => {
 
   const handleMarkerClick = (station) => {
     setSelectedStationPopup(station);
+    
+    // Add to recently viewed if not already there
+    if (!recentStations.some(s => s.id === station.id)) {
+      setRecentStations(prev => [station, ...prev].slice(0, 5)); // Keep last 5
+    }
+    
+    // Reset photo index when selecting a new station
+    setPhotoIndex(0);
+    
+    // Open mobile details panel
+    setIsMobileDetailsOpen(true);
+    
     // Fly to original coordinates if jittered, otherwise the actual ones.
     const targetLng = station.originalLng !== undefined ? station.originalLng : station.longitude;
     const targetLat = station.originalLat !== undefined ? station.originalLat : station.latitude;
@@ -273,6 +409,56 @@ const DriverDashboard = () => {
 
   const handleToggleViewMode = () => {
     setViewMode(prevMode => prevMode === 'map' ? 'list' : 'map');
+  };
+
+  // New handler functions for enhanced features
+
+  const toggleBatteryRangeFilter = () => {
+    setBatteryRangeFilter(!batteryRangeFilter);
+  };
+
+  const handleSortChange = (option) => {
+    setSortOption(option);
+    setShowSortDropdown(false);
+  };
+
+  const handleChargerTypeChange = (type) => {
+    setSelectedChargerType(type);
+    setShowFilterDropdown(false);
+  };
+
+  const handleRangeChange = (e) => {
+    setEstimatedRange(Number(e.target.value));
+  };
+
+  const handleNextPhoto = () => {
+    if (selectedStationPopup?.photos?.length > 1) {
+      setPhotoIndex((prev) => (prev + 1) % selectedStationPopup.photos.length);
+    }
+  };
+
+  const handlePrevPhoto = () => {
+    if (selectedStationPopup?.photos?.length > 1) {
+      setPhotoIndex((prev) => (prev - 1 + selectedStationPopup.photos.length) % selectedStationPopup.photos.length);
+    }
+  };
+
+  const handleBookStation = (station) => {
+    // Implement booking functionality or navigate to booking page
+    console.log('Booking station:', station.id);
+    // navigate(`/station-booking/${station.id}`);
+  };
+
+  const toggleFilterDropdown = () => {
+    setShowFilterDropdown(!showFilterDropdown);
+    // Close other dropdown if open
+    if (showSortDropdown) setShowSortDropdown(false);
+  };
+
+  const toggleSortDropdown = () => {
+    setShowSortDropdown(!showSortDropdown);
+    // Close other dropdown if open
+    if (showFilterDropdown) setShowFilterDropdown(false);
   };
 
   // Geocoding search function
@@ -382,31 +568,29 @@ const DriverDashboard = () => {
   }, [showSearchResults]);
 
   return (
-    <div className="driver-dashboard-mobile">
+    <div className="driver-dashboard-mobile enhanced-driver-dashboard">
       <main className="map-view-full-container">
-        <section className="search-and-filters-on-map">
-          <div className="search-bar-on-map">
-            <FaSearch className="search-icon-on-map" />
+        {/* Search and filter UI matching the image */}
+        <div className="map-search-container">
+          {/* Search Location Input */}
+          <div className="location-search-input">
+            <FaSearch className="search-icon" />
             <input 
               type="text" 
-              placeholder="Search location or stations..." 
+              placeholder="Search location..." 
               value={searchTerm}
               onChange={handleSearchInputChange}
-              aria-label="Search for locations or charging stations"
             />
             {searchTerm && (
               <button 
-                className="clear-search-button" 
                 onClick={() => {
                   setSearchTerm('');
                   setShowSearchResults(false);
                 }}
-                aria-label="Clear search"
               >
                 <FaTimes size={14} />
               </button>
             )}
-            <FaFilter className="filter-icon-on-map" />
             
             {/* Search Results Dropdown */}
             {showSearchResults && searchResults.length > 0 && (
@@ -430,36 +614,54 @@ const DriverDashboard = () => {
               </div>
             )}
           </div>
-          <div className="filters-on-map">
-            {userVehicle ? (
-              <button className="filter-chip" onClick={handleSelectVehicle}>
-                {userVehicle.name.length > 15 
-                  ? `${userVehicle.name.substring(0, 15)}...` 
-                  : userVehicle.name} 
-                <FaChevronDown size={12}/>
-              </button>
-            ) : (
-              <button className="filter-chip" onClick={handleSelectVehicle}>Select Vehicle <FaChevronDown size={12}/></button>
-            )}
-            
+          
+          {/* Filter Chips Row */}
+          <div className="filter-chips-row">
+            {/* Vehicle Chip */}
             <button 
-              className={`filter-chip ${showCompatibleOnly ? 'active' : ''}`}
-              onClick={toggleCompatibleFilter}
-              disabled={!userVehicle}
-              aria-pressed={showCompatibleOnly}
+              className="filter-chip vehicle-chip"
+              onClick={handleSelectVehicle}
             >
-              {showCompatibleOnly ? 'Compatible' : 'All Chargers'}
+              <FaCar className="vehicle-chip-icon" />
+              {/* Use Tata Nexon EV text as in the image */}
+              {userVehicle?.name || "Tata Nexon EV"} 
+              <FaChevronDown className="dropdown-icon" />
             </button>
             
+            {/* All Chargers Filter */}
             <button 
-              className={`filter-chip ${showAvailableOnly ? 'active' : ''}`}
-              onClick={toggleAvailableFilter}
-              aria-pressed={showAvailableOnly}
+              className={`filter-chip ${!showCompatibleOnly ? 'active' : ''}`}
+              onClick={toggleCompatibleFilter}
             >
-              {showAvailableOnly ? 'Available' : 'All Status'}
+              All Chargers
+            </button>
+            
+            {/* Available Filter with circle icon */}
+            <button 
+              className={`filter-chip available-toggle ${showAvailableOnly ? 'active' : ''}`}
+              onClick={toggleAvailableFilter}
+            >
+              {showAvailableOnly && <span className="toggle-circle"></span>}
+              Available
             </button>
           </div>
-        </section>
+        </div>
+        
+        {/* Map Layers Button - top right corner */}
+        {/* Removing this button as it has no functionality */}
+
+        {/* Map Control Icons */}
+        <div className="map-control-buttons">
+          {/* Recenter Map Button */}
+          <button className="map-control-button" onClick={flyToUserLocation} aria-label="Recenter map">
+            <FaCrosshairs />
+          </button>
+          
+          {/* Toggle list view button */}
+          <button className="map-control-button" onClick={handleToggleViewMode} aria-label="Toggle list view">
+            <FaListAlt />
+          </button>
+        </div>
 
         {/* Main Map or List View Area */}
         <div className="main-view-area">
@@ -511,18 +713,11 @@ const DriverDashboard = () => {
 
                   {/* Markers for stations */}
                   {filteredStations.map(station => (
-                    <Marker
-                      key={station.id} // Ensure unique key for each marker
-                      longitude={station.longitude}
-                      latitude={station.latitude}
-                      onClick={() => handleMarkerClick(station)}
-                    >
-                      {/* Apply station-marker base class and conditional classes for status/compatibility */}
-                      <div 
-                        className={`station-marker ${station.status === 'Available' ? 'available' : (station.status === 'Occupied' ? 'occupied' : 'unknown')} ${station.isCompatible ? 'compatible' : ''} ${userVehicle ? '' : 'no-vehicle'}`}
-                        title={station.name}
-                      >⚡</div> 
-                    </Marker>
+                    <StationMarker
+                      key={station.id}
+                      station={{...station, userVehicle}}
+                      onClick={handleMarkerClick}
+                    />
                   ))}
                   
                   {/* User Location Marker */}
@@ -532,7 +727,31 @@ const DriverDashboard = () => {
                     </Marker>
                   )}
 
-                  {selectedStationPopup && (
+                  {/* Map control buttons - Add the new buttons here */}
+                  <div className="driver-map-control-buttons">
+                    {/* List EV charging stations button */}
+                    <button 
+                      className="driver-map-control-btn list-stations-btn"
+                      onClick={handleToggleViewMode}
+                      title="List all stations"
+                    >
+                      <span className="btn-icon"><FaListAlt /></span>
+                      <span className="btn-text">List Stations</span>
+                    </button>
+                    
+                    {/* Live location button */}
+                    <button 
+                      className="driver-map-control-btn live-location-btn"
+                      onClick={flyToUserLocation}
+                      title="Go to my location"
+                    >
+                      <span className="btn-icon"><FaCrosshairs /></span>
+                      <span className="btn-text">My Location</span>
+                    </button>
+                  </div>
+
+                  {/* Show popup on smaller screens, enhanced panel on larger screens */}
+                  {selectedStationPopup && window.innerWidth <= 768 && (
                     <Popup
                       longitude={selectedStationPopup.originalLng !== undefined ? selectedStationPopup.originalLng : selectedStationPopup.longitude}
                       latitude={selectedStationPopup.originalLat !== undefined ? selectedStationPopup.originalLat : selectedStationPopup.latitude}
@@ -603,6 +822,91 @@ const DriverDashboard = () => {
                       </div>
                     </Popup>
                   )}
+                  
+                  {/* Enhanced Station Details Panel for larger screens */}
+                  {selectedStationPopup && window.innerWidth > 768 && (
+                    <div className="enhanced-station-details">
+                      <div className="details-header">
+                        <h2>{selectedStationPopup.name}</h2>
+                        <button className="close-details" onClick={() => setSelectedStationPopup(null)}>×</button>
+                      </div>
+                      <div className="details-content">
+                        {/* Station photos carousel - use dummy image if no photos available */}
+                        <div className="station-photos">
+                          <img 
+                            src={selectedStationPopup.photos && selectedStationPopup.photos.length > 0 
+                              ? selectedStationPopup.photos[photoIndex] 
+                              : `https://via.placeholder.com/400x200?text=${encodeURIComponent(selectedStationPopup.name)}`} 
+                            alt={selectedStationPopup.name}
+                          />
+                          {selectedStationPopup.photos && selectedStationPopup.photos.length > 1 && (
+                            <div className="photo-nav">
+                              <button onClick={handlePrevPhoto} aria-label="Previous photo">&#10094;</button>
+                              <button onClick={handleNextPhoto} aria-label="Next photo">&#10095;</button>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <p className="station-address">{selectedStationPopup.address}</p>
+                        
+                        {selectedStationPopup.isCompatible !== undefined && (
+                          <div className="compatibility-status">
+                            <span className={selectedStationPopup.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
+                              {selectedStationPopup.isCompatible ? '✓ Compatible with your vehicle' : '✕ May not be compatible'}
+                            </span>
+                          </div>
+                        )}
+                        
+                        <div className="details-section">
+                          <h3>Charging Options</h3>
+                          <div className="charges-grid">
+                            {selectedStationPopup.chargerTypes && selectedStationPopup.chargerTypes.map(type => (
+                              <div key={type} className="charge-type">
+                                <span className="charge-type-name">{type}</span>
+                                <span className="charge-type-details">
+                                  {selectedStationPopup.power || '7.4'} kW - ₹{selectedStationPopup.pricePerKwh || '10'}/kWh
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {selectedStationPopup.amenities && selectedStationPopup.amenities.length > 0 && (
+                          <div className="details-section">
+                            <h3>Amenities</h3>
+                            <div className="amenities-grid">
+                              {selectedStationPopup.amenities.map((amenity, index) => (
+                                <span key={index} className="amenity-tag">{amenity}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="action-buttons">
+                          <button 
+                            className="btn-action btn-directions"
+                            onClick={() => {
+                              if (userLocation) {
+                                const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${selectedStationPopup.latitude},${selectedStationPopup.longitude}`;
+                                window.open(url, '_blank');
+                              }
+                            }}
+                            disabled={!userLocation}
+                          >
+                            <FaDirections /> Get Directions
+                          </button>
+                          
+                          <button 
+                            className="booking-cta"
+                            onClick={() => handleBookStation(selectedStationPopup)}
+                            disabled={selectedStationPopup.status !== 'Available'}
+                          >
+                            {selectedStationPopup.status === 'Available' ? 'Book Now' : 'Currently Unavailable'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </Map>
               )}
               
@@ -617,9 +921,19 @@ const DriverDashboard = () => {
               {/* No Vehicle Warning - if user needs to be guided to select one */}
               {!loading && !error && !userVehicle && filteredStations.length > 0 && (
                 <div className="vehicle-missing-notice">
-                  <p>Select a vehicle to see compatible charging stations</p>
+                  <p>To see compatible charging stations, please select your vehicle</p>
                   <button onClick={handleSelectVehicle} className="vehicle-select-button">
                     Select Vehicle
+                  </button>
+                </div>
+              )}
+
+              {/* Add a reminder banner even when user has vehicle selected */}
+              {!loading && !error && viewMode === 'map' && userVehicle && (
+                <div className="vehicle-info-banner">
+                  <span>Current vehicle: {userVehicle.name}</span>
+                  <button onClick={handleSelectVehicle} className="change-vehicle-button">
+                    Change
                   </button>
                 </div>
               )}
@@ -627,51 +941,157 @@ const DriverDashboard = () => {
           )}
 
           {viewMode === 'list' && (
-            <div className="stations-list-view-container">
-              {/* Search and filter chips can be re-integrated here if needed for list view specifically */}
-              {/* For now, showing a simple list based on filteredStations from map view */}
-              {loading && <p className="list-loading-message">Loading stations...</p>}
-              {error && <p className="list-error-message">{error}</p>}
-              {!loading && !error && filteredStations.length === 0 && <p className="list-empty-message">No stations found.</p>}
-              {!loading && !error && filteredStations.length > 0 && (
-                <div className="station-cards-list">
-                  {filteredStations.map(station => (
-                    <div key={station.id} className="station-list-card-item" onClick={() => handleMarkerClick(station)}>
-                      <div className="list-card-left">
-                        {/* Placeholder for Brand Icon */}
-                        <div className="list-station-brand-icon">
-                          {station.name ? station.name.charAt(0) : 'S'} 
-                        </div>
-                      </div>
-                      <div className="list-card-main">
-                        <h3 className="list-station-name">{station.name}</h3>
-                        <p className="list-station-address">{station.address ? station.address.split(',')[0] : 'Address details'}</p>
-                        <p className={`list-station-availability ${station.status === 'Available' ? 'available' : 'unavailable'}`}>
-                          {station.status || 'Status N/A'} {/* Placeholder for status */}
-                          {station.status === 'Available' && <FaCheck className="icon" />}
-                          {station.status === 'Unavailable' && <span className="icon">✕</span>}
-                        </p>
-                      </div>
-                      <div className="list-card-right">
-                        <span className={`list-station-access ${station.accessType?.toLowerCase()}`}>{station.accessType || 'Public'}</span>
-                        {/* Placeholder for Rating */}
-                        <div className="list-station-rating">
-                          <span>{station.rating || '4.3'}</span> <span className="star">★</span>
-                        </div>
-                        {/* Conditional "New" Tag placeholder */}
-                        {station.isNew && <span className="list-station-new-tag">New</span>}
-                        {station.distance !== undefined && (
-                          <p className="list-station-distance">{station.distance.toFixed(1)} kms</p>
-                        )}
-                        <div className="list-station-chargers">
-                          {station.chargerTypes && station.chargerTypes.slice(0,2).map(type => (
-                            <span key={type} className="type-badge">{type}</span>
-                          ))}
-                        </div>
-                      </div>
+            <div className="stations-list-view-container mobile-optimized-list">
+              {/* Mobile optimized filters */}
+              <div className="enhanced-filter-bar mobile-optimized">
+                <button 
+                  className={`enhanced-filter-button ${showCompatibleOnly ? 'active' : ''}`}
+                  onClick={toggleCompatibleFilter}
+                >
+                  {showCompatibleOnly ? 'Compatible' : 'All Chargers'}
+                </button>
+                
+                <button 
+                  className={`enhanced-filter-button ${showAvailableOnly ? 'active' : ''}`}
+                  onClick={toggleAvailableFilter}
+                >
+                  {showAvailableOnly ? 'Available' : 'All Status'}
+                </button>
+                
+                <button 
+                  className={`enhanced-filter-button ${batteryRangeFilter ? 'active' : ''}`}
+                  onClick={toggleBatteryRangeFilter}
+                  disabled={!userVehicle || !userLocation}
+                >
+                  <FaBatteryHalf /> {estimatedRange} km
+                </button>
+                
+                <button 
+                  className="enhanced-filter-button"
+                  onClick={toggleFilterDropdown}
+                >
+                  Charger Type
+                </button>
+                
+                <button 
+                  className="enhanced-filter-button"
+                  onClick={toggleSortDropdown}
+                >
+                  <FaSort /> Sort
+                </button>
+              </div>
+              
+              {/* Loading and Error States */}
+              {loading && (
+                <div className="enhanced-loading-state mobile-optimized">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="skeleton-station-card">
+                      <div className="skeleton-header"></div>
+                      <div className="skeleton-content"></div>
                     </div>
                   ))}
                 </div>
+              )}
+              
+              {error && (
+                <div className="enhanced-error-state">
+                  <div className="error-icon">⚠️</div>
+                  <h3>Unable to Load Stations</h3>
+                  <p>{error}</p>
+                  <button onClick={() => {
+                    setLoading(true);
+                    setError(null);
+                    getAllStations()
+                      .then(data => {
+                        setRawStations(data);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.error("Error fetching stations:", err);
+                        setError('Failed to load stations. Please try again.');
+                        setLoading(false);
+                      });
+                  }}>Try Again</button>
+                </div>
+              )}
+              
+              {!loading && !error && (
+                <>
+                  {/* Recently Viewed Stations - Horizontal Scrollable */}
+                  {recentStations.length > 0 && (
+                    <div className="recent-stations-section-mobile">
+                      <h3>Recently Viewed</h3>
+                      <div className="recent-stations-list-mobile">
+                        {recentStations.map(station => (
+                          <StationCard 
+                            key={`recent-${station.id}`} 
+                            station={station} 
+                            onClick={handleMarkerClick}
+                            isMobile={true}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                
+                  {/* Group Stations by Distance */}
+                  {filteredStations.length > 0 ? (
+                    <div className="grouped-stations">
+                      {(() => {
+                        // Group stations by distance ranges
+                        const groupedStations = {
+                          'Nearby (< 5km)': [],
+                          'Within 15km': [],
+                          'Further Away (15km+)': []
+                        };
+                        
+                        filteredStations.forEach(station => {
+                          const distance = station.distance || 0;
+                          if (distance < 5) {
+                            groupedStations['Nearby (< 5km)'].push(station);
+                          } else if (distance < 15) {
+                            groupedStations['Within 15km'].push(station);
+                          } else {
+                            groupedStations['Further Away (15km+)'].push(station);
+                          }
+                        });
+                        
+                        return Object.entries(groupedStations)
+                          .filter(([, stations]) => stations.length > 0)
+                          .map(([group, stations]) => (
+                            <div key={group} className="station-group-mobile">
+                              <h3 className="station-group-heading-mobile">{group}</h3>
+                              <div className="station-group-list">
+                                {stations.map(station => (
+                                  <StationCard
+                                    key={station.id}
+                                    station={station}
+                                    onClick={handleMarkerClick}
+                                    isMobile={true}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          ));
+                      })()}
+                    </div>
+                  ) : (
+                    <div className="no-stations-message mobile-optimized">
+                      <p>No charging stations match your criteria.</p>
+                      <button 
+                        className="reset-filters-button mobile-optimized" 
+                        onClick={() => {
+                          setShowCompatibleOnly(false);
+                          setShowAvailableOnly(false);
+                          setBatteryRangeFilter(false);
+                          setSelectedChargerType('all');
+                        }}
+                      >
+                        Reset Filters
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -680,64 +1100,100 @@ const DriverDashboard = () => {
         {/* Nearby Stations Bar - Renders only in map view and if user location is available */}
         {viewMode === 'map' && userLocation && nearbyStations.length > 0 && (
           <div className="nearby-stations-carousel-container">
-            {/* Optional: Title for the carousel if needed, though image doesn't show one explicitly above cards */}
-            {/* <h4>Nearby Stations:</h4> */}
             <div className="nearby-station-cards-scrollable">
-              {nearbyStations.map(station => (
-                <div 
-                  key={station.id} 
-                  className="nearby-station-card"
-                  onClick={() => handleMarkerClick(station)}
-                  title={`${station.name} (${station.distance.toFixed(1)} km away)`}
-                >
-                  {/* Add access type tag */}
-                  <span className="station-access-type-tag">{station.accessType || 'Public'}</span>
-                  
-                  <div className="card-content-wrapper">
-                    <div className="card-left">
-                      {/* Placeholder for Brand Icon. You can replace this with an <img> tag if you have icon URLs */}
-                      <div className="station-brand-icon-placeholder">
-                        {station.name ? station.name.charAt(0) : 'S'}
+              {nearbyStations.map(station => {
+                // Generate station class name for brand-specific styling
+                let stationClassName = '';
+                if (station.name) {
+                  if (station.name.includes('ChargeZone') || station.name.includes('JW Marriott')) {
+                    stationClassName = 'chargezone-jw';
+                  } else if (station.name.includes('TML')) {
+                    stationClassName = 'tml';
+                  } else {
+                    stationClassName = station.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                  }
+                }
+                
+                // Get first letter for icon
+                let stationInitial = 'S';
+                if (station.name) {
+                  if (station.name.includes('ChargeZone') || station.name.includes('JW Marriott')) {
+                    stationInitial = 'C';
+                  } else if (station.name.includes('TML')) {
+                    stationInitial = 'T';
+                  } else {
+                    stationInitial = station.name.charAt(0);
+                  }
+                }
+                
+                // Format distance to show km with proper spacing
+                const distance = station.distance ? 
+                  `${station.distance.toFixed(1)} km` : '';
+                
+                return (
+                  <div 
+                    key={station.id} 
+                    className="nearby-station-card"
+                    onClick={() => handleMarkerClick(station)}
+                    title={`${station.name} (${station.distance ? station.distance.toFixed(1) + ' km' : 'Unknown distance'})`}
+                  >
+                    {/* Add access type tag */}
+                    <span className={`station-access-type-tag ${(station.accessType || 'public').toLowerCase()}`}>
+                      {station.accessType || 'Public'}
+                    </span>
+                    
+                    <div className="card-content-wrapper">
+                      <div className="card-left">
+                        {/* Use brand-specific class */}
+                        <div className={`station-brand-icon-placeholder ${stationClassName}`}>
+                          {stationInitial}
+                        </div>
                       </div>
-                    </div>
-                    <div className="card-main-details">
-                      <h3>{station.name}</h3>
-                      <p className="station-address-line">{station.address ? station.address.split(',')[0] : 'Address unavailable'}</p>
-                      {/* Placeholder for Availability - assuming station.status might exist */}
-                      <p className={`station-availability ${station.status === 'Available' ? 'status-available' : 'status-unavailable'}`}>
-                        {station.status || 'Status N/A'} {/* Default to 'Status N/A' if not present */}
-                        {station.status === 'Available' && <FaCheck className="available-check-icon"/>}
-                      </p>
-                    </div>
-                    <div className="card-right-details">
-                      {/* Placeholder for Rating */}
-                      <div className="station-rating-placeholder">
-                        <span>{station.rating || '4.2'}</span>{/* Default to 4.2 if not present */} 
-                        <span className="star-icon">★</span>
+                      <div className="card-main-details">
+                        <h3>{station.name}</h3>
+                        <p className="station-address-line">
+                          {station.address ? 
+                            (station.address.length > 30 ? 
+                              station.address.substring(0, 30) + '...' : 
+                              station.address) : 
+                            'Address unavailable'
+                          }
+                        </p>
+                        {/* Fix status display */}
+                        <p className={`station-availability ${
+                          station.status === 'Available' ? 'status-available' : 
+                          station.status === 'Occupied' ? 'status-unavailable' : 
+                          'status-unknown'
+                        }`}>
+                          {station.status || 'Status N/A'} 
+                          {station.status === 'Available' && <FaCheck className="available-check-icon"/>}
+                        </p>
                       </div>
-                      <p className="station-distance">{station.distance.toFixed(1)} km</p>
-                      <div className="station-charger-types">
-                        {station.chargerTypes && station.chargerTypes.slice(0, 2).map(type => (
-                          <span key={type} className="charger-type-badge">{type}</span>
-                        ))}
-                        {/* Add ellipsis or +more if more than 2 types */} 
+                      <div className="card-right-details">
+                        {/* Show rating only if available */}
+                        {station.rating && (
+                          <div className="station-rating-placeholder actual-rating">
+                            <span>{station.rating}</span>
+                            <span className="star-icon">★</span>
+                          </div>
+                        )}
+                        <p className="station-distance">{distance}</p>
+                        <div className="station-charger-types">
+                          {station.chargerTypes && station.chargerTypes.slice(0, 2).map(type => (
+                            <span key={type} className="charger-type-badge">{type}</span>
+                          ))}
+                          {station.chargerTypes && station.chargerTypes.length > 2 && 
+                            <span className="charger-type-badge">+{station.chargerTypes.length - 2}</span>
+                          }
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
-
-        <div className="map-actions-overlay">
-          <div className="map-action-button recenter-button" onClick={flyToUserLocation}>
-            <FaCrosshairs />
-          </div>
-          <div className="map-action-button list-toggle-button" onClick={handleToggleViewMode}> {/* MODIFIED_LINE */}
-            {viewMode === 'map' ? <FaListAlt /> : <FaMapMarkedAlt />} {/* Toggle icon based on viewMode */}
-          </div>
-        </div>
       </main>
 
       <nav className="bottom-navigation">
@@ -756,6 +1212,91 @@ const DriverDashboard = () => {
           </button>
         ))}
       </nav>
+      
+      {/* Mobile Station Details Bottom Sheet */}
+      {selectedStationPopup && (
+        <div className={`enhanced-station-details mobile-sheet ${isMobileDetailsOpen ? 'open' : ''}`}>
+          <div className="details-header">
+            <h2>{selectedStationPopup.name}</h2>
+            <button className="close-details" onClick={() => setIsMobileDetailsOpen(false)}>×</button>
+          </div>
+          <div className="details-content">
+            {/* Station photos carousel - use dummy image if no photos available */}
+            <div className="station-photos">
+              <img 
+                src={selectedStationPopup.photos && selectedStationPopup.photos.length > 0 
+                  ? selectedStationPopup.photos[photoIndex] 
+                  : `https://via.placeholder.com/400x200?text=${encodeURIComponent(selectedStationPopup.name)}`} 
+                alt={selectedStationPopup.name}
+              />
+              {selectedStationPopup.photos && selectedStationPopup.photos.length > 1 && (
+                <div className="photo-nav">
+                  <button onClick={handlePrevPhoto} aria-label="Previous photo">&#10094;</button>
+                  <button onClick={handleNextPhoto} aria-label="Next photo">&#10095;</button>
+                </div>
+              )}
+            </div>
+            
+            <p className="station-address">{selectedStationPopup.address}</p>
+            
+            {selectedStationPopup.isCompatible !== undefined && (
+              <div className="compatibility-status">
+                <span className={selectedStationPopup.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
+                  {selectedStationPopup.isCompatible ? '✓ Compatible with your vehicle' : '✕ May not be compatible'}
+                </span>
+              </div>
+            )}
+            
+            <div className="details-section">
+              <h3>Charging Options</h3>
+              <div className="charges-grid">
+                {selectedStationPopup.chargerTypes && selectedStationPopup.chargerTypes.map(type => (
+                  <div key={type} className="charge-type">
+                    <span className="charge-type-name">{type}</span>
+                    <span className="charge-type-details">
+                      {selectedStationPopup.power || '7.4'} kW - ₹{selectedStationPopup.pricePerKwh || '10'}/kWh
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {selectedStationPopup.amenities && selectedStationPopup.amenities.length > 0 && (
+              <div className="details-section">
+                <h3>Amenities</h3>
+                <div className="amenities-grid">
+                  {selectedStationPopup.amenities.map((amenity, index) => (
+                    <span key={index} className="amenity-tag">{amenity}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="action-buttons">
+              <button 
+                className="btn-action btn-directions"
+                onClick={() => {
+                  if (userLocation) {
+                    const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${selectedStationPopup.latitude},${selectedStationPopup.longitude}`;
+                    window.open(url, '_blank');
+                  }
+                }}
+                disabled={!userLocation}
+              >
+                <FaDirections /> Get Directions
+              </button>
+              
+              <button 
+                className="booking-cta"
+                onClick={() => handleBookStation(selectedStationPopup)}
+                disabled={selectedStationPopup.status !== 'Available'}
+              >
+                {selectedStationPopup.status === 'Available' ? 'Book Now' : 'Currently Unavailable'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

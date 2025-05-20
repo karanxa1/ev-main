@@ -34,6 +34,7 @@ const MapSection = forwardRef(({
   const mapContainerRef = useRef(null); // Ref for the map container div
   const mapRef = useRef(null); // Ref for the map instance
   const [scrollZoomEnabled, setScrollZoomEnabled] = useState(false); // Track if scroll zoom is enabled
+  const [showStationsList, setShowStationsList] = useState(false); // State to track station list visibility
   
   // Wait until after mount to render the map
   useEffect(() => {
@@ -45,6 +46,88 @@ const MapSection = forwardRef(({
     
     return () => clearTimeout(timer);
   }, []);
+  
+  // Handler for EV stations list button click
+  const handleListStationsClick = () => {
+    setShowStationsList(prevState => !prevState);
+    console.log("[MapSection] Toggle stations list:", !showStationsList);
+  };
+  
+  // Handler for live location button click
+  const handleLiveLocationClick = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const userLocation = {
+          longitude: position.coords.longitude,
+          latitude: position.coords.latitude,
+          zoom: 14
+        };
+        console.log("[MapSection] Got user location:", userLocation);
+        if (mapRef.current && onViewStateChange) {
+          onViewStateChange(userLocation);
+        }
+      }, (error) => {
+        console.error("[MapSection] Error getting location:", error);
+        alert("Unable to get your current location. Please check your location settings.");
+      });
+    } else {
+      alert("Geolocation is not supported by your browser.");
+    }
+  };
+  
+  // Function to render stations in list view when button is clicked
+  const renderStationsList = () => {
+    if (!showStationsList || !currentCityStations || ensureArray(currentCityStations).length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="stations-list-overlay">
+        <div className="stations-list-container">
+          <div className="stations-list-header">
+            <h3>EV Charging Stations</h3>
+            <button 
+              className="close-list-btn" 
+              onClick={() => setShowStationsList(false)}
+              aria-label="Close stations list"
+            >
+              ×
+            </button>
+          </div>
+          <div className="stations-list-content">
+            {ensureArray(currentCityStations).map(station => (
+              <div 
+                key={station.id || `station-list-${Math.random()}`} 
+                className={`station-list-item ${selectedStation && selectedStation.id === station.id ? 'selected' : ''}`}
+                onClick={() => {
+                  onMarkerClick(station);
+                  if (window.innerWidth < 768) {
+                    setShowStationsList(false); // Close list on mobile after selection
+                  }
+                }}
+              >
+                <div className="station-list-name">{station.name || 'EV Charging Station'}</div>
+                <div className="station-list-details">
+                  <div className="station-list-rating">
+                    <span>★</span> {station.rating || '4.0'}
+                  </div>
+                  {station.status && (
+                    <div className={`station-list-status ${station.status.toLowerCase()}`}>
+                      {station.status}
+                    </div>
+                  )}
+                </div>
+                <div className="station-list-address">{station.address || 'No address available'}</div>
+                {station.distance !== undefined && (
+                  <div className="station-list-distance">{station.distance} kms</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
   
   // City buttons rendering with the restored UI style
   const renderStyledCityButtons = () => {
@@ -184,25 +267,51 @@ const MapSection = forwardRef(({
           )}
           
           {!loading && shouldRenderMap && mapboxToken && (
-            <Map
-              ref={mapRef}
-              mapboxAccessToken={mapboxToken}
-              initialViewState={viewState}
-              onMove={evt => onViewStateChange(evt.viewState)}
-              mapStyle="mapbox://styles/mapbox/streets-v11"
-              container={MAPBOX_CONTAINER_ID} 
-              style={{ width: '100%', height: '100%' }}
-              scrollZoom={scrollZoomEnabled}
-              onClick={() => {
-                if (!scrollZoomEnabled) {
-                  setScrollZoomEnabled(true);
-                }
-              }}
-            >
-              <NavigationControl position="top-right" />
-              {renderMarkers()}
-              {renderPopup()}
-            </Map>
+            <>
+              <Map
+                ref={mapRef}
+                mapboxAccessToken={mapboxToken}
+                initialViewState={viewState}
+                onMove={evt => onViewStateChange(evt.viewState)}
+                mapStyle="mapbox://styles/mapbox/streets-v11"
+                container={MAPBOX_CONTAINER_ID} 
+                style={{ width: '100%', height: '100%' }}
+                scrollZoom={scrollZoomEnabled}
+                onClick={() => {
+                  if (!scrollZoomEnabled) {
+                    setScrollZoomEnabled(true);
+                  }
+                }}
+              >
+                <NavigationControl position="top-right" />
+                {renderMarkers()}
+                {renderPopup()}
+              </Map>
+              
+              {/* Render stations list overlay when button is clicked */}
+              {renderStationsList()}
+              
+              {/* Map control buttons */}
+              <div className="map-control-buttons">
+                {/* List EV charging stations button */}
+                <button 
+                  className="map-control-btn list-stations-btn"
+                  onClick={handleListStationsClick}
+                >
+                  <span className="btn-icon">≡</span>
+                  <span className="btn-text">List Stations</span>
+                </button>
+                
+                {/* Live location button */}
+                <button 
+                  className="map-control-btn live-location-btn"
+                  onClick={handleLiveLocationClick}
+                >
+                  <span className="btn-icon">📍</span>
+                  <span className="btn-text">My Location</span>
+                </button>
+              </div>
+            </>
           )}
           
           {!loading && shouldRenderMap && !mapboxToken && (

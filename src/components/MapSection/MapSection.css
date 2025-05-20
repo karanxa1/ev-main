@@ -17,6 +17,182 @@
   background-color: #f0f0f0;
 }
 
+/* Stations list overlay styles */
+.stations-list-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stations-list-container {
+  width: 90%;
+  max-width: 500px;
+  max-height: 80%;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.stations-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.stations-list-header h3 {
+  margin: 0;
+  color: #0C5F2C;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-list-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #777;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.stations-list-content {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.station-list-item {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.station-list-item:hover {
+  background-color: #f8f8f8;
+}
+
+.station-list-item.selected {
+  background-color: #e8f5e9; /* Light green background for selected item */
+  border-left: 4px solid #0C5F2C;
+}
+
+.station-list-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.station-list-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.station-list-rating {
+  color: #f5a623;
+  font-size: 14px;
+}
+
+.station-list-status {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.station-list-status.available {
+  background-color: #e8f5e9;
+  color: #0C5F2C;
+}
+
+.station-list-status.occupied {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.station-list-status.unavailable {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.station-list-address {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.station-list-distance {
+  font-size: 13px;
+  color: #0C5F2C;
+  font-weight: 500;
+}
+
+/* Map control buttons styles */
+.map-control-buttons {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  bottom: 20px;
+  right: 20px;
+  width: auto;
+}
+
+.map-control-btn {
+  background-color: white;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #333;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.map-control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.map-control-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-icon {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.list-stations-btn {
+  background-color: #0C5F2C;
+  color: white;
+}
+
+.live-location-btn {
+  background-color: white;
+  color: #0C5F2C;
+  border: 1px solid #0C5F2C;
+}
+
+/* City selector container */
 .city-selector-container {
   margin-bottom: 20px;
 }
@@ -263,6 +439,58 @@
     padding: 8px 12px;
     font-size: 14px;
     min-width: 80px;
+  }
+  
+  .map-control-buttons {
+    bottom: 15px;
+    right: 15px;
+    gap: 8px;
+  }
+  
+  .map-control-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+  
+  .btn-icon {
+    font-size: 16px;
+    margin-right: 6px;
+  }
+
+  /* Adjust stations list for mobile */
+  .stations-list-container {
+    width: 95%;
+    max-height: 85%;
+    max-width: none;
+  }
+
+  .station-list-item {
+    padding: 12px 15px;
+  }
+  
+  .stations-list-header h3 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-control-btn .btn-text {
+    display: none; /* Hide text on very small screens */
+  }
+  
+  .map-control-btn {
+    padding: 10px;
+  }
+  
+  .btn-icon {
+    font-size: 20px;
+    margin-right: 0;
+  }
+
+  .map-control-buttons {
+    bottom: 15px;
+    right: 15px;
   }
 }
 
