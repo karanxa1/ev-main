@@ -168,9 +168,10 @@ const Signup = () => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="    Enter your full name"
+                  placeholder="Enter your full name"
                   required
                   autoComplete="name"
+                  className="spaced-input"
                 />
               </div>
               {validationError && validationError.includes('Name') && (
@@ -190,9 +191,10 @@ const Signup = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="     johndoe@example.com"
+                  placeholder="johndoe@example.com"
                   required
                   autoComplete="email"
+                  className="spaced-input"
                 />
               </div>
               {validationError && validationError.includes('email') && (
@@ -215,6 +217,7 @@ const Signup = () => {
                   placeholder="******"
                   required
                   autoComplete="new-password"
+                  className="spaced-input"
                 />
                 <button 
                   type="button" 
@@ -249,6 +252,7 @@ const Signup = () => {
                   placeholder="******"
                   required
                   autoComplete="new-password"
+                  className="spaced-input"
                 />
                 <button 
                   type="button" 

@@ -79,6 +79,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .input-container svg {
@@ -86,9 +87,6 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  color: var(--text-light);
   z-index: 1;
 }
 
@@ -410,4 +408,10 @@
 
 .forgot-link:hover {
   text-decoration: underline;
+}
+
+/* Add styles for proper input spacing */
+.spaced-input {
+  padding-left: 36px !important; /* Ensure text starts after the icon with good spacing */
+  letter-spacing: 0.3px; /* Add slight spacing between characters */
 }

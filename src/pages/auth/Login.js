@@ -152,9 +152,10 @@ const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="    johndoe@example.com"
+                  placeholder="johndoe@example.com"
                   required
                   autoComplete="email"
+                  className="spaced-input"
                 />
               </div>
             </div>
@@ -186,6 +187,7 @@ const Login = () => {
                   placeholder="******"
                   required
                   autoComplete="current-password"
+                  className="spaced-input"
                 />
                 <button 
                   type="button" 
@@ -262,6 +264,7 @@ const Login = () => {
                     onChange={(e) => setForgotPasswordEmail(e.target.value)}
                     placeholder="Enter your email"
                     required
+                    className="spaced-input"
                   />
                 </div>
               </div>
