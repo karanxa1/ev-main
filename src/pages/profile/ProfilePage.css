@@ -9,6 +9,59 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* Dark mode styling */
+.profile-page-container.dark-mode {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+.dark-mode .profile-page-header,
+.dark-mode .profile-avatar-section,
+.dark-mode .profile-form,
+.dark-mode .vehicle-tab-content,
+.dark-mode .trips-tab-content {
+  background-color: #222;
+  color: #f0f0f0;
+}
+
+.dark-mode input,
+.dark-mode select,
+.dark-mode .phone-input-container,
+.dark-mode .date-input-container {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.dark-mode .profile-tabs .tab-button {
+  background-color: #333;
+  color: #ccc;
+}
+
+.dark-mode .profile-tabs .tab-button.active {
+  background-color: #4a3aff;
+  color: white;
+}
+
+.dark-mode .btn-update-profile {
+  background-color: #4a3aff;
+}
+
+.dark-mode .trip-card,
+.dark-mode .vehicle-details {
+  background-color: #333;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.dark-mode .vehicle-spec-item {
+  border-color: #444;
+}
+
+.dark-mode .profile-email-display {
+  color: #ccc;
 }
 
 /* Header styling */
@@ -33,6 +86,10 @@
   margin-right: 15px;
 }
 
+.dark-mode .back-button-bio {
+  color: #f0f0f0;
+}
+
 .profile-page-header h1 {
   font-size: 1.2rem; /* Adjust as per image */
   font-weight: 600;
@@ -40,7 +97,74 @@
   margin: 0; /* Remove default margin */
   text-align: center;
   flex-grow: 1; /* Allow title to take space and center */
-  /* If the back button makes it off-center, adjust margins or use absolute positioning for back button */
+}
+
+.dark-mode .profile-page-header h1 {
+  color: #f0f0f0;
+}
+
+/* Profile menu styling */
+.profile-menu-container {
+  position: relative;
+}
+
+.profile-menu-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #333;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.dark-mode .profile-menu-button {
+  color: #f0f0f0;
+}
+
+.profile-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  min-width: 150px;
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.dark-mode .profile-dropdown-menu {
+  background: #333;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.profile-dropdown-menu button {
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #333;
+  font-size: 14px;
+}
+
+.dark-mode .profile-dropdown-menu button {
+  color: #f0f0f0;
+}
+
+.profile-dropdown-menu button:hover {
+  background-color: #f0f0f0;
+}
+
+.dark-mode .profile-dropdown-menu button:hover {
+  background-color: #444;
+}
+
+.profile-dropdown-menu button svg {
+  margin-right: 10px;
 }
 
 /* Avatar section styling */
@@ -48,6 +172,7 @@
   text-align: center;
   padding: 30px 20px;
   background-color: #fff; /* White background for this section */
+  position: relative;
 }
 
 .profile-avatar-lg {
@@ -62,6 +187,28 @@
   justify-content: center;
   border: 3px solid #fff; /* White border as in some avatar styles */
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.change-avatar-button {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: #4a3aff;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.change-avatar-button:hover {
+  background: #3a2ce0;
 }
 
 .profile-avatar-lg img {
@@ -83,10 +230,48 @@
   font-weight: 600;
 }
 
+.dark-mode .profile-avatar-section h2 {
+  color: #f0f0f0;
+}
+
 .profile-email-display {
   color: #666;
   font-size: 0.9rem;
   margin-bottom: 20px;
+}
+
+/* Tabs styling */
+.profile-tabs {
+  display: flex;
+  background-color: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 0;
+}
+
+.dark-mode .profile-tabs {
+  background-color: #222;
+  border-color: #444;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 15px 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: #777;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  color: #4a3aff;
+  border-bottom: 2px solid #4a3aff;
+}
+
+.tab-button:hover {
+  color: #4a3aff;
 }
 
 /* Form styling */
@@ -105,6 +290,10 @@
   font-size: 0.85rem;
   color: #555;
   margin-bottom: 8px;
+}
+
+.dark-mode .form-field label {
+  color: #ccc;
 }
 
 .form-field input[type="text"],
@@ -129,6 +318,32 @@
   border-color: #6d5ff6; /* Accent color border on focus */
   background-color: #fff;
   box-shadow: 0 0 0 2px rgba(109, 95, 246, 0.2);
+}
+
+/* Success message styling */
+.success-message {
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  border-radius: 5px;
+  margin-top: 10px;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  max-width: 300px;
+  width: 90%;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s ease;
+}
+
+.success-message.show {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Phone input specific styling */
@@ -200,6 +415,10 @@
   /* Position it inside the input container if needed */
 }
 
+.dark-mode .calendar-icon {
+  color: #aaa;
+}
+
 /* Select (dropdown) styling */
 .form-field select {
   appearance: none; /* Remove default arrow */
@@ -212,8 +431,7 @@
 /* Button styling */
 .profile-actions-bio {
   margin-top: 30px;
-  padding: 0 20px 20px; /* Add padding to bottom if form ends here */
-  background-color: #fff;
+  padding: 0 0 20px; /* Add padding to bottom if form ends here */
 }
 
 .btn-update-profile {
@@ -246,24 +464,326 @@
   font-size: 0.9rem;
 }
 
-/* Remove old styles or ensure they don't conflict */
-.profile-container, 
-.profile-nav, 
-.back-button, 
-.page-shortcuts, 
-.shortcut-button, 
-.profile-card, 
-.profile-header, /* old header */
-.profile-avatar, /* old avatar */
-.avatar-initials, /* old initials */
-.profile-email, /* old email class */
-.profile-details, 
-.profile-field, /* old field structure */
-.profile-actions, /* old actions */
-.btn-edit, .btn-save, .btn-cancel {
-  /* If these classes are completely replaced, you might not need to do anything.
-     If they are still somehow present or if new HTML uses old class names by mistake,
-     you might need to hide them or reset their styles. */
-  /* For example: display: none; or more specific overrides. */
-  /* Given the JS rewrite, these are likely not needed unless there are remnants or future conflicts */
+/* Vehicle tab styling */
+.vehicle-tab-content {
+  padding: 20px;
+  background-color: #fff;
+  flex-grow: 1;
+}
+
+.vehicle-details {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.vehicle-header {
+  background-color: #f0f0f0;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dark-mode .vehicle-header {
+  background-color: #333;
+  border-color: #444;
+}
+
+.vehicle-header h3 {
+  margin: 0 0 5px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.vehicle-header p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.dark-mode .vehicle-header p {
+  color: #ccc;
+}
+
+.vehicle-specs {
+  padding: 15px 20px;
+}
+
+.vehicle-spec-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.vehicle-spec-item:last-child {
+  border-bottom: none;
+}
+
+.spec-label {
+  font-weight: 500;
+  color: #666;
+}
+
+.dark-mode .spec-label {
+  color: #aaa;
+}
+
+.spec-value {
+  font-weight: 600;
+  color: #333;
+}
+
+.dark-mode .spec-value {
+  color: #f0f0f0;
+}
+
+.charger-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.charger-type-badge {
+  background-color: #e0f0ff;
+  color: #2266cc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dark-mode .charger-type-badge {
+  background-color: #2a3d5d;
+  color: #a0c0ff;
+}
+
+.btn-change-vehicle,
+.btn-add-vehicle {
+  background-color: #4a3aff;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px auto;
+  width: calc(100% - 40px);
+}
+
+.btn-change-vehicle:hover,
+.btn-add-vehicle:hover {
+  background-color: #3a2ce0;
+}
+
+.no-vehicle-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.dark-mode .no-vehicle-message {
+  color: #aaa;
+}
+
+.no-vehicle-message svg {
+  color: #ccc;
+  margin-bottom: 15px;
+}
+
+.dark-mode .no-vehicle-message svg {
+  color: #666;
+}
+
+.no-vehicle-message p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+/* Trips tab styling */
+.trips-tab-content {
+  padding: 20px;
+  background-color: #fff;
+  flex-grow: 1;
+}
+
+.trips-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 15px;
+}
+
+.trips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.trip-card {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.trip-date {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.dark-mode .trip-date {
+  color: #aaa;
+}
+
+.trip-route {
+  position: relative;
+  margin: 15px 0;
+  padding-left: 15px;
+}
+
+.trip-route-line {
+  position: absolute;
+  left: 5px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background-color: #4a3aff;
+  opacity: 0.7;
+}
+
+.trip-from, .trip-to {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.trip-to {
+  margin-bottom: 0;
+}
+
+.route-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.route-dot.start {
+  background-color: #4CAF50;
+}
+
+.route-dot.end {
+  background-color: #F44336;
+}
+
+.trip-details {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.trip-distance {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #666;
+}
+
+.dark-mode .trip-distance {
+  color: #ccc;
+}
+
+.view-all-trips {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.view-all-trips button {
+  background-color: transparent;
+  border: 1px solid #4a3aff;
+  color: #4a3aff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.view-all-trips button:hover {
+  background-color: #f0f0ff;
+}
+
+.dark-mode .view-all-trips button:hover {
+  background-color: #2a2a3d;
+}
+
+.no-trips-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.dark-mode .no-trips-message {
+  color: #aaa;
+}
+
+.no-trips-message svg {
+  color: #ccc;
+  margin-bottom: 15px;
+}
+
+.dark-mode .no-trips-message svg {
+  color: #666;
+}
+
+.no-trips-message p {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.trips-hint {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.dark-mode .trips-hint {
+  color: #999;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-page-container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .profile-page-header h1 {
+    font-size: 1.1rem;
+  }
+  
+  .profile-avatar-lg {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .avatar-initials-lg {
+    font-size: 35px;
+  }
+  
+  .btn-update-profile {
+    padding: 12px 15px;
+  }
+
+  .vehicle-details,
+  .trip-card {
+    padding: 12px;
+  }
 } 
