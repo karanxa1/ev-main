@@ -1,0 +1,19 @@
+/* Cluster Marker Styling */
+.cluster-marker {
+  background: #0C5F2C;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 0 0 3px white;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 5;
+}
+
+.cluster-marker:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px white, 0 0 10px rgba(0, 0, 0, 0.3);
+} 

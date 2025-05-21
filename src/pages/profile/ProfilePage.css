@@ -123,19 +123,21 @@
 
 .profile-dropdown-menu {
   position: absolute;
+  top: 100%;
   right: 0;
-  top: 40px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-  min-width: 150px;
-  z-index: 1001;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  min-width: 200px;
+  z-index: 100;
   overflow: hidden;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform-origin: top right;
 }
 
 .dark-mode .profile-dropdown-menu {
-  background: #333;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  background-color: #2d2d2d;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .profile-dropdown-menu button {
@@ -152,7 +154,7 @@
 }
 
 .dark-mode .profile-dropdown-menu button {
-  color: #f0f0f0;
+  color: #f5f5f5;
 }
 
 .profile-dropdown-menu button:hover {
@@ -786,4 +788,45 @@
   .trip-card {
     padding: 12px;
   }
+}
+
+/* Theme toggle button styling */
+.theme-toggle-button {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  transition: background-color 0.3s;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.theme-toggle-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode .theme-toggle-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.dark-mode .theme-icon {
+  color: #ffeb3b; /* Yellow color for sun/moon icons in dark mode */
+}
+
+/* Animation for theme transition */
+.profile-page-container {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.profile-page-container * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 } 

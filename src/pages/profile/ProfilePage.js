@@ -5,6 +5,7 @@ import {
   FaHistory, FaCamera, FaMoon, FaSun, FaMapMarkedAlt 
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import './ProfilePage.css';
 
 // Placeholder for a flag icon, you might use an actual SVG or an icon library
@@ -18,6 +19,7 @@ const FlagIcon = () => (
 
 const ProfilePage = () => {
   const { currentUser, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   // Initialize state with more relevant fields based on the image
@@ -33,7 +35,6 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
-  const [darkMode, setDarkMode] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Mock data for trips
@@ -117,14 +118,8 @@ const ProfilePage = () => {
     navigate('/change-vehicle');
   };
 
-  const handleToggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    // In a real app, you would save this preference
-    document.body.classList.toggle('dark-mode');
-  };
-
   return (
-    <div className={`profile-page-container ${darkMode ? 'dark-mode' : ''}`}>
+    <div className={`profile-page-container ${theme === 'dark' ? 'dark-mode' : ''}`}>
       <div className="profile-page-header">
         <button onClick={handleBack} className="back-button-bio">
           <FaArrowLeft />
@@ -139,8 +134,9 @@ const ProfilePage = () => {
           </button>
           {showProfileMenu && (
             <div className="profile-dropdown-menu">
-              <button onClick={handleToggleDarkMode}>
-                {darkMode ? <FaSun /> : <FaMoon />} {darkMode ? 'Light Mode' : 'Dark Mode'}
+              <button onClick={toggleTheme} className="theme-toggle-button">
+                {theme === 'dark' ? <FaSun className="theme-icon" /> : <FaMoon className="theme-icon" />} 
+                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
               </button>
               <button onClick={handleLogout}>
                 Logout

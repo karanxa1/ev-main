@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Map, { Marker, NavigationControl, Popup } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './DriverDashboard.css';
+import './ClusterMarkers.css';
 import { getAllStations } from '../../services/dataService';
 import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
+import Supercluster from 'supercluster';
 import { 
   FaMapMarkedAlt, FaWallet, FaBullhorn, FaRoute, FaShoppingBag, FaUserCircle, 
   FaFilter, FaCrosshairs, FaListAlt, FaSearch, FaChevronDown, FaCheck,
   FaTimes, FaDirections, FaBatteryHalf, FaSortAmountDown, FaSort,
-  FaCar, FaCircle
+  FaCar, FaCircle, FaExclamationTriangle, FaSync
 } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -45,6 +47,14 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
+
+// Skeleton card component for loading states
+const SkeletonCard = () => (
+  <div className="skeleton-station-card">
+    <div className="skeleton-header"></div>
+    <div className="skeleton-content"></div>
+  </div>
+);
 
 // StationMarker component - separating UI logic
 const StationMarker = ({ station, onClick }) => {
@@ -149,6 +159,8 @@ const DriverDashboard = () => {
   const [activeBottomNav, setActiveBottomNav] = useState('Map');
   const [viewMode, setViewMode] = useState('map'); // 'map' or 'list' view
   const [nearbyStations, setNearbyStations] = useState([]); // For closest station suggestions
+  const [clusters, setClusters] = useState([]);
+  const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
   
   // User vehicle state
   const [userVehicle, setUserVehicle] = useState(state?.vehicle || null);
@@ -165,6 +177,15 @@ const DriverDashboard = () => {
   const [selectedChargerType, setSelectedChargerType] = useState('all');
   const [photoIndex, setPhotoIndex] = useState(0);
   const [isMobileDetailsOpen, setIsMobileDetailsOpen] = useState(false);
+  
+  // UI Enhancement State Variables
+  const [isImageZoomed, setIsImageZoomed] = useState(false);
+  const [isPullToRefreshActive, setIsPullToRefreshActive] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [actionError, setActionError] = useState(null);
+  const [viewTransition, setViewTransition] = useState('');
+  const pullStartY = useRef(0);
+  const listRef = useRef(null);
 
   const [viewport, setViewport] = useState({
     longitude: 78.9629, // India's approximate longitude
@@ -176,12 +197,115 @@ const DriverDashboard = () => {
 
   const mapRef = useRef();
 
+  // Create a supercluster index for marker clustering
+  const superclusterIndex = useMemo(() => {
+    return new Supercluster({
+      radius: 40,
+      maxZoom: 16
+    });
+  }, []);
+
   // New state variables for search functionality
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const searchTimeoutRef = useRef(null);
+
+  // Haptic feedback function for interactive elements
+  const triggerHapticFeedback = useCallback(() => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10); // Short vibration for touch feedback
+    }
+  }, []);
+
+  // Image zoom toggle handler
+  const toggleImageZoom = useCallback(() => {
+    setIsImageZoomed(!isImageZoomed);
+    triggerHapticFeedback();
+  }, [isImageZoomed, triggerHapticFeedback]);
+
+  // Pull to refresh logic
+  const handleTouchStart = useCallback((e) => {
+    pullStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (!listRef.current || listRef.current.scrollTop > 0) return;
+    
+    const pullMoveY = e.touches[0].clientY;
+    const pullDistance = pullMoveY - pullStartY.current;
+    
+    if (pullDistance > 40) {
+      setIsPullToRefreshActive(true);
+    } else {
+      setIsPullToRefreshActive(false);
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (isPullToRefreshActive && !refreshing) {
+      setRefreshing(true);
+      triggerHapticFeedback();
+      
+      // Perform refresh
+      fetchStations().finally(() => {
+        setTimeout(() => {
+          setRefreshing(false);
+          setIsPullToRefreshActive(false);
+        }, 1000);
+      });
+    } else {
+      setIsPullToRefreshActive(false);
+    }
+  }, [isPullToRefreshActive, refreshing, triggerHapticFeedback]);
+
+  // Enhanced error handling
+  const showErrorFeedback = (message) => {
+    setActionError(message);
+    triggerHapticFeedback();
+    
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+      setActionError(null);
+    }, 3000);
+  };
+
+  // Fetch stations function (moved to its own function for reusability)
+  const fetchStations = async () => {
+    try {
+      setLoading(true);
+      const stationData = await getAllStations();
+      setRawStations(stationData); // Set raw stations
+      console.log('DriverDashboard: Raw stations fetched:', stationData); // ADDED_LOG
+      setError(null);
+      return stationData;
+    } catch (err) {
+      console.error("Error fetching stations:", err);
+      setError('Failed to load stations.');
+      setRawStations([]);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // View mode toggle with transition effect
+  const handleToggleViewMode = () => {
+    triggerHapticFeedback();
+    setViewTransition('view-exit');
+    
+    // Short delay to allow exit animation
+    setTimeout(() => {
+      setViewMode(prevMode => prevMode === 'map' ? 'list' : 'map');
+      setViewTransition('view-enter');
+      
+      // Remove enter class after animation completes
+      setTimeout(() => {
+        setViewTransition('');
+      }, 300);
+    }, 300);
+  };
 
   // Fetch user vehicle if not passed in location state
   useEffect(() => {
@@ -320,6 +444,30 @@ const DriverDashboard = () => {
   const flyToUserLocation = () => {
     if (userLocation && mapRef.current) {
       mapRef.current.flyTo({ center: [userLocation.longitude, userLocation.latitude], zoom: 14, duration: 1500 });
+    } else if (locationPermissionDenied) {
+      requestLocationPermission();
+    }
+  };
+
+  const requestLocationPermission = () => {
+    triggerHapticFeedback();
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ latitude, longitude });
+          setLocationPermissionDenied(false);
+          if (mapRef.current) {
+            setViewport(prev => ({ ...prev, latitude, longitude, zoom: 14 }));
+            mapRef.current.flyTo({ center: [longitude, latitude], zoom: 14, duration: 1500 });
+          }
+        },
+        (err) => {
+          console.warn("Permission denied again:", err.message);
+          setActionError("Location access is required for best experience. Please enable it in your browser settings.");
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
     }
   };
 
@@ -329,34 +477,78 @@ const DriverDashboard = () => {
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ latitude, longitude });
+          setLocationPermissionDenied(false);
           if (mapRef.current && !selectedStationPopup) {
             setViewport(prev => ({ ...prev, latitude, longitude, zoom: 12 }));
             mapRef.current.flyTo({ center: [longitude, latitude], zoom: 12, duration: 1000 });
           }
         },
-        (err) => console.warn("Error getting user location:", err.message)
+        (err) => {
+          console.warn("Error getting user location:", err.message);
+          setLocationPermissionDenied(true);
+          // Set fallback location to center of India if no user location
+          if (mapRef.current) {
+            setViewport(prev => ({ ...prev, latitude: 20.5937, longitude: 78.9629, zoom: 5 }));
+            mapRef.current.flyTo({ center: [78.9629, 20.5937], zoom: 5, duration: 1000 });
+          }
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
       );
+    } else {
+      setLocationPermissionDenied(true);
     }
 
-    const fetchStations = async () => {
-      try {
-        setLoading(true);
-        const stationData = await getAllStations();
-        setRawStations(stationData); // Set raw stations
-        console.log('DriverDashboard: Raw stations fetched:', stationData); // ADDED_LOG
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching stations:", err);
-        setError('Failed to load stations.');
-        setRawStations([]);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchStations();
   }, [selectedStationPopup]);
 
+  // Update clusters when filteredStations or viewport changes
+  useEffect(() => {
+    if (filteredStations.length === 0 || !mapRef.current) return;
+    
+    try {
+      // Add stations to the supercluster index
+      const points = filteredStations.map(station => ({
+        type: 'Feature',
+        properties: { 
+          cluster: false,
+          stationId: station.id,
+          station: station
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [station.longitude, station.latitude]
+        }
+      }));
+      
+      superclusterIndex.load(points);
+      
+      // Get clusters based on current viewport
+      const map = mapRef.current.getMap();
+      if (!map) return;
+      
+      const bounds = map.getBounds();
+      if (!bounds) return;
+      
+      const bbox = [
+        bounds.getWest(), 
+        bounds.getSouth(), 
+        bounds.getEast(), 
+        bounds.getNorth()
+      ];
+      
+      const zoom = Math.floor(map.getZoom());
+      const clustersData = superclusterIndex.getClusters(bbox, zoom);
+      setClusters(clustersData);
+    } catch (err) {
+      console.error("Error generating clusters:", err);
+      // Fallback: just show all stations without clustering
+      setClusters([]);
+    }
+  }, [filteredStations, viewport.zoom, viewport.latitude, viewport.longitude, superclusterIndex]);
+
+  // Modified handleMarkerClick to include haptic feedback
   const handleMarkerClick = (station) => {
+    triggerHapticFeedback();
     setSelectedStationPopup(station);
     
     // Add to recently viewed if not already there
@@ -405,10 +597,6 @@ const DriverDashboard = () => {
   const handleSelectVehicle = () => {
     console.log('handleSelectVehicle called. Navigating to /change-vehicle...'); // Updated diagnostic log
     navigate('/change-vehicle'); // Changed navigation path
-  };
-
-  const handleToggleViewMode = () => {
-    setViewMode(prevMode => prevMode === 'map' ? 'list' : 'map');
   };
 
   // New handler functions for enhanced features
@@ -569,6 +757,14 @@ const DriverDashboard = () => {
 
   return (
     <div className="driver-dashboard-mobile enhanced-driver-dashboard">
+      {/* Show action error feedback if present */}
+      {actionError && (
+        <div className="error-action-indicator">
+          <FaExclamationTriangle />
+          <span>{actionError}</span>
+        </div>
+      )}
+      
       <main className="map-view-full-container">
         {/* Search and filter UI matching the image */}
         <div className="map-search-container">
@@ -586,6 +782,7 @@ const DriverDashboard = () => {
                 onClick={() => {
                   setSearchTerm('');
                   setShowSearchResults(false);
+                  triggerHapticFeedback();
                 }}
               >
                 <FaTimes size={14} />
@@ -603,7 +800,10 @@ const DriverDashboard = () => {
                       <div 
                         key={result.id} 
                         className="search-result-item"
-                        onClick={() => handleSearchResultSelect(result)}
+                        onClick={() => {
+                          handleSearchResultSelect(result);
+                          triggerHapticFeedback();
+                        }}
                       >
                         <span className="search-result-icon">📍</span>
                         <span className="search-result-name">{result.name}</span>
@@ -620,7 +820,10 @@ const DriverDashboard = () => {
             {/* Vehicle Chip */}
             <button 
               className="filter-chip vehicle-chip"
-              onClick={handleSelectVehicle}
+              onClick={() => {
+                handleSelectVehicle();
+                triggerHapticFeedback();
+              }}
             >
               <FaCar className="vehicle-chip-icon" />
               {/* Use Tata Nexon EV text as in the image */}
@@ -631,7 +834,10 @@ const DriverDashboard = () => {
             {/* All Chargers Filter */}
             <button 
               className={`filter-chip ${!showCompatibleOnly ? 'active' : ''}`}
-              onClick={toggleCompatibleFilter}
+              onClick={() => {
+                toggleCompatibleFilter();
+                triggerHapticFeedback();
+              }}
             >
               All Chargers
             </button>
@@ -639,7 +845,10 @@ const DriverDashboard = () => {
             {/* Available Filter with circle icon */}
             <button 
               className={`filter-chip available-toggle ${showAvailableOnly ? 'active' : ''}`}
-              onClick={toggleAvailableFilter}
+              onClick={() => {
+                toggleAvailableFilter();
+                triggerHapticFeedback();
+              }}
             >
               {showAvailableOnly && <span className="toggle-circle"></span>}
               Available
@@ -647,24 +856,10 @@ const DriverDashboard = () => {
           </div>
         </div>
         
-        {/* Map Layers Button - top right corner */}
-        {/* Removing this button as it has no functionality */}
-
-        {/* Map Control Icons */}
-        <div className="map-control-buttons">
-          {/* Recenter Map Button */}
-          <button className="map-control-button" onClick={flyToUserLocation} aria-label="Recenter map">
-            <FaCrosshairs />
-          </button>
-          
-          {/* Toggle list view button */}
-          <button className="map-control-button" onClick={handleToggleViewMode} aria-label="Toggle list view">
-            <FaListAlt />
-          </button>
-        </div>
+{/* Removed top map control buttons as they're duplicated in the bottom right */}
 
         {/* Main Map or List View Area */}
-        <div className="main-view-area">
+        <div className={`main-view-area ${viewTransition}`}>
           {/* Map View */}
           {viewMode === 'map' && (
             <>
@@ -676,23 +871,27 @@ const DriverDashboard = () => {
                 </div>
               )}
               
+              {/* Location Permission Warning */}
+              {locationPermissionDenied && (
+                <div className="location-permission-warning">
+                  <div className="warning-icon"><FaExclamationTriangle /></div>
+                  <div className="warning-content">
+                    <h3>Location Access Required</h3>
+                    <p>Enable location access to find nearby charging stations and get accurate directions</p>
+                    <button className="enable-location-btn" onClick={requestLocationPermission}>
+                      <FaCrosshairs /> Enable Location
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               {/* Error Overlay */}
               {error && (
                 <div className="error-message">
                   <p>{error}</p>
                   <button onClick={() => {
-                    setLoading(true);
-                    setError(null);
-                    getAllStations()
-                      .then(data => {
-                        setRawStations(data);
-                        setLoading(false);
-                      })
-                      .catch(err => {
-                        console.error("Error fetching stations:", err);
-                        setError('Failed to load stations. Please try again.');
-                        setLoading(false);
-                      });
+                    triggerHapticFeedback();
+                    fetchStations();
                   }}>
                     Retry
                   </button>
@@ -706,24 +905,104 @@ const DriverDashboard = () => {
                   mapboxAccessToken={MAPBOX_TOKEN}
                   initialViewState={viewport}
                   onMove={evt => setViewport(evt.viewState)}
+                  onMoveEnd={() => {
+                    if (!mapRef.current || filteredStations.length === 0) return;
+                    
+                    try {
+                      const map = mapRef.current.getMap();
+                      const bounds = map.getBounds();
+                      const bbox = [
+                        bounds.getWest(), 
+                        bounds.getSouth(), 
+                        bounds.getEast(), 
+                        bounds.getNorth()
+                      ];
+                      
+                      const zoom = Math.floor(map.getZoom());
+                      const clustersData = superclusterIndex.getClusters(bbox, zoom);
+                      setClusters(clustersData);
+                    } catch (err) {
+                      console.error("Error updating clusters:", err);
+                    }
+                  }}
                   style={{ width: '100%', height: '100%' }}
                   mapStyle="mapbox://styles/mapbox/streets-v11"
+                  renderWorldCopies={false}
+                  maxPitch={0} 
+                  attributionControl={false}
                 >
                   <NavigationControl position="bottom-right" style={{ marginBottom: '80px' }} />
 
-                  {/* Markers for stations */}
-                  {filteredStations.map(station => (
-                    <StationMarker
-                      key={station.id}
-                      station={{...station, userVehicle}}
-                      onClick={handleMarkerClick}
-                    />
-                  ))}
+                  {/* Clustered Markers */}
+                  {clusters.length > 0 ? (
+                    clusters.map(cluster => {
+                      const [longitude, latitude] = cluster.geometry.coordinates;
+                      const { cluster: isCluster, point_count: pointCount, cluster_id } = cluster.properties;
+                      
+                      if (isCluster) {
+                        return (
+                          <Marker
+                            key={`cluster-${cluster_id}`}
+                            longitude={longitude}
+                            latitude={latitude}
+                          >
+                            <div
+                              className="cluster-marker"
+                              style={{
+                                width: `${30 + (pointCount / filteredStations.length) * 20}px`,
+                                height: `${30 + (pointCount / filteredStations.length) * 20}px`,
+                              }}
+                              onClick={() => {
+                                const expansionZoom = Math.min(
+                                  superclusterIndex.getClusterExpansionZoom(cluster_id),
+                                  20
+                                );
+                                
+                                mapRef.current.getMap().flyTo({
+                                  center: [longitude, latitude],
+                                  zoom: expansionZoom,
+                                  duration: 500
+                                });
+                                
+                                triggerHapticFeedback();
+                              }}
+                            >
+                              {pointCount}
+                            </div>
+                          </Marker>
+                        );
+                      }
+                      
+                      // Individual station marker
+                      const station = cluster.properties.station;
+                      return (
+                        <StationMarker
+                          key={`station-${station.id}`}
+                          station={{...station, userVehicle}}
+                          onClick={handleMarkerClick}
+                        />
+                      );
+                    })
+                  ) : (
+                    // Fallback to regular markers if clustering fails
+                    filteredStations.map(station => (
+                      <StationMarker
+                        key={station.id}
+                        station={{...station, userVehicle}}
+                        onClick={handleMarkerClick}
+                      />
+                    ))
+                  )}
                   
-                  {/* User Location Marker */}
+                  {/* Custom User Location Marker */}
                   {userLocation && (
                     <Marker longitude={userLocation.longitude} latitude={userLocation.latitude}>
-                      <div className="user-location-dot"></div>
+                      <div className="user-location-marker">
+                        <div className="user-location-pulse"></div>
+                        <div className="user-location-dot">
+                          <div className="car-icon"></div>
+                        </div>
+                      </div>
                     </Marker>
                   )}
 
@@ -742,7 +1021,10 @@ const DriverDashboard = () => {
                     {/* Live location button */}
                     <button 
                       className="driver-map-control-btn live-location-btn"
-                      onClick={flyToUserLocation}
+                      onClick={() => {
+                        flyToUserLocation();
+                        triggerHapticFeedback();
+                      }}
                       title="Go to my location"
                     >
                       <span className="btn-icon"><FaCrosshairs /></span>
@@ -755,7 +1037,10 @@ const DriverDashboard = () => {
                     <Popup
                       longitude={selectedStationPopup.originalLng !== undefined ? selectedStationPopup.originalLng : selectedStationPopup.longitude}
                       latitude={selectedStationPopup.originalLat !== undefined ? selectedStationPopup.originalLat : selectedStationPopup.latitude}
-                      onClose={() => setSelectedStationPopup(null)}
+                      onClose={() => {
+                        setSelectedStationPopup(null);
+                        triggerHapticFeedback();
+                      }}
                       closeButton={true}
                       closeOnClick={false}
                       anchor="bottom"
@@ -810,9 +1095,12 @@ const DriverDashboard = () => {
                           className="popup-directions-button"
                           onClick={(e) => {
                             e.stopPropagation(); // Prevent the popup from closing
+                            triggerHapticFeedback();
                             if (userLocation) {
                               const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${selectedStationPopup.latitude},${selectedStationPopup.longitude}`;
                               window.open(url, '_blank');
+                            } else {
+                              showErrorFeedback("Unable to get directions: Location access required");
                             }
                           }}
                           disabled={!userLocation}
@@ -828,7 +1116,10 @@ const DriverDashboard = () => {
                     <div className="enhanced-station-details">
                       <div className="details-header">
                         <h2>{selectedStationPopup.name}</h2>
-                        <button className="close-details" onClick={() => setSelectedStationPopup(null)}>×</button>
+                        <button className="close-details" onClick={() => {
+                          setSelectedStationPopup(null);
+                          triggerHapticFeedback();
+                        }}>×</button>
                       </div>
                       <div className="details-content">
                         {/* Station photos carousel - use dummy image if no photos available */}
@@ -838,11 +1129,21 @@ const DriverDashboard = () => {
                               ? selectedStationPopup.photos[photoIndex] 
                               : `https://via.placeholder.com/400x200?text=${encodeURIComponent(selectedStationPopup.name)}`} 
                             alt={selectedStationPopup.name}
+                            className={isImageZoomed ? 'zoomed' : ''}
+                            onClick={toggleImageZoom}
                           />
                           {selectedStationPopup.photos && selectedStationPopup.photos.length > 1 && (
                             <div className="photo-nav">
-                              <button onClick={handlePrevPhoto} aria-label="Previous photo">&#10094;</button>
-                              <button onClick={handleNextPhoto} aria-label="Next photo">&#10095;</button>
+                              <button onClick={(e) => {
+                                e.stopPropagation();
+                                handlePrevPhoto();
+                                triggerHapticFeedback();
+                              }} aria-label="Previous photo">&#10094;</button>
+                              <button onClick={(e) => {
+                                e.stopPropagation();
+                                handleNextPhoto();
+                                triggerHapticFeedback();
+                              }} aria-label="Next photo">&#10095;</button>
                             </div>
                           )}
                         </div>
@@ -886,9 +1187,27 @@ const DriverDashboard = () => {
                           <button 
                             className="btn-action btn-directions"
                             onClick={() => {
-                              if (userLocation) {
-                                const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${selectedStationPopup.latitude},${selectedStationPopup.longitude}`;
-                                window.open(url, '_blank');
+                              triggerHapticFeedback();
+                              try {
+                                if (userLocation) {
+                                  // Make sure coordinates are valid numbers
+                                  const originLat = parseFloat(userLocation.latitude);
+                                  const originLng = parseFloat(userLocation.longitude);
+                                  const destLat = parseFloat(selectedStationPopup.latitude);
+                                  const destLng = parseFloat(selectedStationPopup.longitude);
+                                  
+                                  if (isNaN(originLat) || isNaN(originLng) || isNaN(destLat) || isNaN(destLng)) {
+                                    throw new Error("Invalid coordinates");
+                                  }
+                                  
+                                  const url = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${destLat},${destLng}&travelmode=driving`;
+                                  window.open(url, '_blank', 'noopener,noreferrer');
+                                } else {
+                                  showErrorFeedback("Unable to get directions: Location access required");
+                                }
+                              } catch (error) {
+                                console.error("Directions error:", error);
+                                showErrorFeedback("Could not open directions: " + error.message);
                               }
                             }}
                             disabled={!userLocation}
@@ -898,7 +1217,14 @@ const DriverDashboard = () => {
                           
                           <button 
                             className="booking-cta"
-                            onClick={() => handleBookStation(selectedStationPopup)}
+                            onClick={() => {
+                              triggerHapticFeedback();
+                              if (selectedStationPopup.status === 'Available') {
+                                handleBookStation(selectedStationPopup);
+                              } else {
+                                showErrorFeedback("This station is currently unavailable for booking");
+                              }
+                            }}
                             disabled={selectedStationPopup.status !== 'Available'}
                           >
                             {selectedStationPopup.status === 'Available' ? 'Book Now' : 'Currently Unavailable'}
@@ -941,26 +1267,77 @@ const DriverDashboard = () => {
           )}
 
           {viewMode === 'list' && (
-            <div className="stations-list-view-container mobile-optimized-list">
+            <div 
+              className="stations-list-view-container mobile-optimized-list"
+              ref={listRef}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {/* Return to Map Button */}
+              <button 
+                className="return-to-map-btn"
+                onClick={() => {
+                  handleToggleViewMode();
+                  triggerHapticFeedback();
+                }}
+              >
+                <FaMapMarkedAlt /> Return to Map
+              </button>
+              
+              {/* Location Permission Warning for List View */}
+              {locationPermissionDenied && (
+                <div className="location-permission-warning list-view-warning">
+                  <div className="warning-icon"><FaExclamationTriangle /></div>
+                  <div className="warning-content">
+                    <h3>Location Access Required</h3>
+                    <p>Enable location access to see stations near you</p>
+                    <button className="enable-location-btn" onClick={requestLocationPermission}>
+                      <FaCrosshairs /> Enable Location
+                    </button>
+                  </div>
+                </div>
+              )}
+              {/* Pull-to-refresh indicator */}
+              {isPullToRefreshActive && (
+                <div className="pull-to-refresh-indicator">
+                  {refreshing ? (
+                    <div className="refresh-spinner"><FaSync className="rotating" /></div>
+                  ) : (
+                    <div className="pull-arrow">↓</div>
+                  )}
+                  <span>{refreshing ? 'Refreshing...' : 'Pull down to refresh'}</span>
+                </div>
+              )}
+              
               {/* Mobile optimized filters */}
               <div className="enhanced-filter-bar mobile-optimized">
                 <button 
                   className={`enhanced-filter-button ${showCompatibleOnly ? 'active' : ''}`}
-                  onClick={toggleCompatibleFilter}
+                  onClick={() => {
+                    toggleCompatibleFilter();
+                    triggerHapticFeedback();
+                  }}
                 >
                   {showCompatibleOnly ? 'Compatible' : 'All Chargers'}
                 </button>
                 
                 <button 
                   className={`enhanced-filter-button ${showAvailableOnly ? 'active' : ''}`}
-                  onClick={toggleAvailableFilter}
+                  onClick={() => {
+                    toggleAvailableFilter();
+                    triggerHapticFeedback();
+                  }}
                 >
                   {showAvailableOnly ? 'Available' : 'All Status'}
                 </button>
                 
                 <button 
                   className={`enhanced-filter-button ${batteryRangeFilter ? 'active' : ''}`}
-                  onClick={toggleBatteryRangeFilter}
+                  onClick={() => {
+                    toggleBatteryRangeFilter();
+                    triggerHapticFeedback();
+                  }}
                   disabled={!userVehicle || !userLocation}
                 >
                   <FaBatteryHalf /> {estimatedRange} km
@@ -968,14 +1345,20 @@ const DriverDashboard = () => {
                 
                 <button 
                   className="enhanced-filter-button"
-                  onClick={toggleFilterDropdown}
+                  onClick={() => {
+                    toggleFilterDropdown();
+                    triggerHapticFeedback();
+                  }}
                 >
                   Charger Type
                 </button>
                 
                 <button 
                   className="enhanced-filter-button"
-                  onClick={toggleSortDropdown}
+                  onClick={() => {
+                    toggleSortDropdown();
+                    triggerHapticFeedback();
+                  }}
                 >
                   <FaSort /> Sort
                 </button>
@@ -985,10 +1368,7 @@ const DriverDashboard = () => {
               {loading && (
                 <div className="enhanced-loading-state mobile-optimized">
                   {[1,2,3,4].map(i => (
-                    <div key={i} className="skeleton-station-card">
-                      <div className="skeleton-header"></div>
-                      <div className="skeleton-content"></div>
-                    </div>
+                    <SkeletonCard key={i} />
                   ))}
                 </div>
               )}
@@ -999,18 +1379,8 @@ const DriverDashboard = () => {
                   <h3>Unable to Load Stations</h3>
                   <p>{error}</p>
                   <button onClick={() => {
-                    setLoading(true);
-                    setError(null);
-                    getAllStations()
-                      .then(data => {
-                        setRawStations(data);
-                        setLoading(false);
-                      })
-                      .catch(err => {
-                        console.error("Error fetching stations:", err);
-                        setError('Failed to load stations. Please try again.');
-                        setLoading(false);
-                      });
+                    triggerHapticFeedback();
+                    fetchStations();
                   }}>Try Again</button>
                 </div>
               )}
@@ -1026,7 +1396,10 @@ const DriverDashboard = () => {
                           <StationCard 
                             key={`recent-${station.id}`} 
                             station={station} 
-                            onClick={handleMarkerClick}
+                            onClick={(station) => {
+                              handleMarkerClick(station);
+                              triggerHapticFeedback();
+                            }}
                             isMobile={true}
                           />
                         ))}
@@ -1066,7 +1439,10 @@ const DriverDashboard = () => {
                                   <StationCard
                                     key={station.id}
                                     station={station}
-                                    onClick={handleMarkerClick}
+                                    onClick={(station) => {
+                                      handleMarkerClick(station);
+                                      triggerHapticFeedback();
+                                    }}
                                     isMobile={true}
                                   />
                                 ))}
@@ -1081,6 +1457,7 @@ const DriverDashboard = () => {
                       <button 
                         className="reset-filters-button mobile-optimized" 
                         onClick={() => {
+                          triggerHapticFeedback();
                           setShowCompatibleOnly(false);
                           setShowAvailableOnly(false);
                           setBatteryRangeFilter(false);
@@ -1218,7 +1595,11 @@ const DriverDashboard = () => {
         <div className={`enhanced-station-details mobile-sheet ${isMobileDetailsOpen ? 'open' : ''}`}>
           <div className="details-header">
             <h2>{selectedStationPopup.name}</h2>
-            <button className="close-details" onClick={() => {setIsMobileDetailsOpen(false); setSelectedStationPopup(null);}}>×</button>
+            <button className="close-details" onClick={() => {
+              setIsMobileDetailsOpen(false); 
+              setSelectedStationPopup(null);
+              triggerHapticFeedback();
+            }}>×</button>
           </div>
           <div className="details-content">
             {/* Station photos carousel - use dummy image if no photos available */}
@@ -1226,13 +1607,23 @@ const DriverDashboard = () => {
               <img 
                 src={selectedStationPopup.photos && selectedStationPopup.photos.length > 0 
                   ? selectedStationPopup.photos[photoIndex] 
-                  : `https://via.placeholder.com/400x200?text=${encodeURIComponent(selectedStationPopup.name)}`} 
+                  : `https://via.placeholder.com/400x200?text=${encodeURIComponent(selectedStationPopup.name)}`}
                 alt={selectedStationPopup.name}
+                className={isImageZoomed ? 'zoomed' : ''}
+                onClick={toggleImageZoom}
               />
               {selectedStationPopup.photos && selectedStationPopup.photos.length > 1 && (
                 <div className="photo-nav">
-                  <button onClick={handlePrevPhoto} aria-label="Previous photo">&#10094;</button>
-                  <button onClick={handleNextPhoto} aria-label="Next photo">&#10095;</button>
+                  <button onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevPhoto();
+                    triggerHapticFeedback();
+                  }} aria-label="Previous photo">&#10094;</button>
+                  <button onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextPhoto();
+                    triggerHapticFeedback();
+                  }} aria-label="Next photo">&#10095;</button>
                 </div>
               )}
             </div>
@@ -1276,9 +1667,12 @@ const DriverDashboard = () => {
               <button 
                 className="btn-action btn-directions"
                 onClick={() => {
+                  triggerHapticFeedback();
                   if (userLocation) {
                     const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${selectedStationPopup.latitude},${selectedStationPopup.longitude}`;
                     window.open(url, '_blank');
+                  } else {
+                    showErrorFeedback("Unable to get directions: Location access required");
                   }
                 }}
                 disabled={!userLocation}
@@ -1288,7 +1682,14 @@ const DriverDashboard = () => {
               
               <button 
                 className="booking-cta"
-                onClick={() => handleBookStation(selectedStationPopup)}
+                onClick={() => {
+                  triggerHapticFeedback();
+                  if (selectedStationPopup.status === 'Available') {
+                    handleBookStation(selectedStationPopup);
+                  } else {
+                    showErrorFeedback("This station is currently unavailable for booking");
+                  }
+                }}
                 disabled={selectedStationPopup.status !== 'Available'}
               >
                 {selectedStationPopup.status === 'Available' ? 'Book Now' : 'Currently Unavailable'}
