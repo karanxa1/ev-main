@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FaRoute, FaMapMarkerAlt, FaChargingStation, FaCar, FaSearch, FaTimes } from 'react-icons/fa';
+import { FaRoute, FaMapMarkerAlt, FaChargingStation, FaCar, FaSearch, FaTimes, FaRegClock, FaRegLightbulb } from 'react-icons/fa';
+import { Source, Layer } from 'react-map-gl';
 import './TripPlanner.css';
+import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
 
 const TripPlanner = ({ 
   userLocation, 
@@ -8,7 +10,9 @@ const TripPlanner = ({
   userVehicle, 
   onRouteCalculated, 
   mapRef, 
-  onClose 
+  onClose,
+  initialOrigin,
+  initialDestination
 }) => {
   const [origin, setOrigin] = useState({
     name: userLocation ? 'Your Location' : '',
@@ -28,16 +32,30 @@ const TripPlanner = ({
   const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [routeGeoJSON, setRouteGeoJSON] = useState(null);
+  const [directionsSteps, setDirectionsSteps] = useState([]);
+  const [showDirections, setShowDirections] = useState(false);
+  
+  // Initialize with provided values if available
+  useEffect(() => {
+    if (initialOrigin && initialOrigin.coordinates) {
+      setOrigin(initialOrigin);
+    }
+    
+    if (initialDestination && initialDestination.coordinates) {
+      setDestination(initialDestination);
+    }
+  }, [initialOrigin, initialDestination]);
   
   // Set user's current location as origin when available
   useEffect(() => {
-    if (userLocation) {
+    if (userLocation && !initialOrigin) {
       setOrigin({
         name: 'Your Location',
         coordinates: userLocation
       });
     }
-  }, [userLocation]);
+  }, [userLocation, initialOrigin]);
   
   // Get vehicle range from user's vehicle data
   const vehicleRange = userVehicle?.range || 200; // Default 200 km if not specified
@@ -49,6 +67,19 @@ const TripPlanner = ({
     }
   }, [origin, destination]);
   
+  // Auto-calculate route if both origin and destination are provided
+  useEffect(() => {
+    if (initialOrigin && initialDestination && 
+        initialOrigin.coordinates && initialDestination.coordinates) {
+      // Small delay to ensure state is updated properly
+      const timer = setTimeout(() => {
+        calculateRoute();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialOrigin, initialDestination]);
+  
   // Search for locations using Mapbox geocoding API
   const searchLocation = async (query, isOrigin = false) => {
     if (!query.trim()) return;
@@ -59,7 +90,7 @@ const TripPlanner = ({
       // Using mapbox geocoding API
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`;
       const params = new URLSearchParams({
-        access_token: process.env.REACT_APP_MAPBOX_TOKEN || 'pk.eyJ1IjoiZXYtY2hhcmdlciIsImEiOiJjazVvYm9zd2owNjVxM2xtanJvdHBobHB1In0.L9q3zsKhECnAYYKj3guTTg',
+        access_token: MAPBOX_TOKEN,
         country: 'in',
         types: 'place,locality,neighborhood,address,poi',
         limit: 5
@@ -87,7 +118,7 @@ const TripPlanner = ({
     }
   };
   
-  // Calculate optimal route with charging stops
+  // Calculate optimal route with charging stops using MapBox Directions API
   const calculateRoute = async () => {
     if (!origin.coordinates || !destination.coordinates) {
       setError('Please provide both origin and destination');
@@ -98,32 +129,68 @@ const TripPlanner = ({
     setError(null);
     
     try {
-      // First, calculate the direct distance using Haversine formula
-      const directDistance = getDistanceBetweenPoints(
-        origin.coordinates.latitude,
-        origin.coordinates.longitude,
-        destination.coordinates.latitude,
-        destination.coordinates.longitude
-      );
+      // Use Mapbox Directions API to get the actual route
+      const originCoord = `${origin.coordinates.longitude},${origin.coordinates.latitude}`;
+      const destCoord = `${destination.coordinates.longitude},${destination.coordinates.latitude}`;
       
-      setTravelDistance(Math.round(directDistance * 10) / 10); // Round to 1 decimal place
+      const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoord};${destCoord}`;
       
-      // Estimate driving time (assumes average 60 km/h speed)
-      const estimatedHours = (directDistance / 60);
-      setEstimatedDuration(estimatedHours);
+      const params = new URLSearchParams({
+        access_token: MAPBOX_TOKEN,
+        geometries: 'geojson',
+        overview: 'full',
+        steps: true,
+        annotations: 'distance,duration'
+      });
+      
+      const response = await fetch(`${directionsUrl}?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to get directions');
+      
+      const data = await response.json();
+      
+      if (!data.routes || data.routes.length === 0) {
+        throw new Error('No route found between these locations');
+      }
+      
+      const route = data.routes[0];
+      const routeDistance = route.distance / 1000; // Convert meters to kilometers
+      const routeDuration = route.duration / 60 / 60; // Convert seconds to hours
+      
+      setTravelDistance(Math.round(routeDistance * 10) / 10); // Round to 1 decimal place
+      setEstimatedDuration(routeDuration);
+      
+      // Create GeoJSON for the route
+      const routeGeoJSON = {
+        type: 'Feature',
+        properties: {},
+        geometry: route.geometry
+      };
+      
+      setRouteGeoJSON(routeGeoJSON);
+      
+      // Extract directions steps
+      if (route.legs && route.legs[0] && route.legs[0].steps) {
+        const steps = route.legs[0].steps.map(step => ({
+          instruction: step.maneuver.instruction,
+          distance: (step.distance / 1000).toFixed(1), // km
+          duration: Math.round(step.duration / 60) // minutes
+        }));
+        setDirectionsSteps(steps);
+      }
       
       // Determine if charging stops are needed
-      if (directDistance <= vehicleRange * 0.8) {
+      if (routeDistance <= vehicleRange * 0.8) {
         // No stops needed - 80% of vehicle range as a safety margin
         setSuggestedStops([]);
         setTotalChargeTime(0);
       } else {
-        // Need charging stops
+        // Need charging stops - use our algorithm to find stations along the route
         const stops = calculateOptimalChargingStops(
           origin.coordinates,
           destination.coordinates,
           stations,
-          vehicleRange
+          vehicleRange,
+          route.geometry.coordinates
         );
         
         setSuggestedStops(stops);
@@ -141,12 +208,13 @@ const TripPlanner = ({
             longitude: stop.longitude,
             latitude: stop.latitude
           })),
-          distance: directDistance,
-          duration: estimatedHours
+          distance: routeDistance,
+          duration: routeDuration,
+          routeGeoJSON
         });
       }
       
-      // Fly to show the entire route
+      // Show the route on the map
       if (mapRef && mapRef.current) {
         showRouteOnMap();
       }
@@ -190,7 +258,7 @@ const TripPlanner = ({
   };
   
   // Calculate optimal charging stops for the route
-  const calculateOptimalChargingStops = (start, end, availableStations, maxRange) => {
+  const calculateOptimalChargingStops = (start, end, availableStations, maxRange, routeCoordinates) => {
     // Filter stations to only available ones
     const availableOnly = availableStations.filter(station => station.status === 'Available');
     
@@ -199,11 +267,8 @@ const TripPlanner = ({
       return [];
     }
     
-    // Calculate direct distance
-    const totalDistance = getDistanceBetweenPoints(
-      start.latitude, start.longitude,
-      end.latitude, end.longitude
-    );
+    // Calculate direct distance using route distance not just haversine
+    const totalDistance = travelDistance;
     
     // Simple case: no stops needed
     if (totalDistance <= maxRange * 0.8) { // Using 80% of max range as safety buffer
@@ -217,40 +282,117 @@ const TripPlanner = ({
       return [];
     }
     
-    // Ideal stop locations would be evenly spaced along the route
-    const idealStopDistance = totalDistance / (numStopsNeeded + 1);
-    
     const selectedStops = [];
     let currentPoint = { ...start };
     
-    // For each needed stop, find the best station near the ideal point
-    for (let i = 0; i < numStopsNeeded; i++) {
-      // Calculate the ideal next stop coordinates (simplified linear interpolation)
-      const segmentProgress = (i + 1) / (numStopsNeeded + 1);
-      const idealLat = start.latitude + segmentProgress * (end.latitude - start.latitude);
-      const idealLng = start.longitude + segmentProgress * (end.longitude - start.longitude);
+    // Use route coordinates to find stations along the actual route
+    // This is more accurate than just straight line interpolation
+    if (routeCoordinates && routeCoordinates.length > 0) {
+      // For each needed stop, find stations near route coordinates at appropriate distances
+      const stopIntervals = totalDistance / (numStopsNeeded + 1);
+      let distanceCovered = 0;
+      let lastCoordIndex = 0;
       
-      // Find closest available station to this ideal point
-      const closestStation = findClosestStation(
-        { latitude: idealLat, longitude: idealLng },
-        availableOnly,
-        currentPoint,
-        maxRange * 0.8 // Maximum allowed distance from current point
-      );
-      
-      if (closestStation) {
-        selectedStops.push(closestStation);
-        currentPoint = {
-          latitude: closestStation.latitude,
-          longitude: closestStation.longitude
-        };
-      } else {
-        // Couldn't find suitable station - this is a gap in coverage
-        setError('Warning: Route may have gaps in charging coverage');
+      for (let i = 0; i < numStopsNeeded; i++) {
+        const targetDistance = stopIntervals * (i + 1);
+        let coordIndex = lastCoordIndex;
+        let accDistance = distanceCovered;
+        
+        // Find the coordinate that's closest to our target distance
+        while (coordIndex < routeCoordinates.length - 1 && accDistance < targetDistance) {
+          coordIndex++;
+          const prevCoord = routeCoordinates[coordIndex - 1];
+          const currCoord = routeCoordinates[coordIndex];
+          accDistance += getDistanceBetweenPoints(
+            prevCoord[1], prevCoord[0], // lat, lng for previous point
+            currCoord[1], currCoord[0]  // lat, lng for current point
+          );
+        }
+        
+        lastCoordIndex = coordIndex;
+        distanceCovered = accDistance;
+        
+        // Get coordinates around this point
+        const nearbyCoord = routeCoordinates[coordIndex];
+        
+        // Find closest available station to this point
+        const closestStation = findClosestStationToRoutePoint(
+          nearbyCoord,
+          availableOnly,
+          currentPoint,
+          maxRange * 0.8 // Maximum allowed distance from current point
+        );
+        
+        if (closestStation) {
+          selectedStops.push(closestStation);
+          currentPoint = {
+            latitude: closestStation.latitude,
+            longitude: closestStation.longitude
+          };
+        } else {
+          // Couldn't find suitable station - this is a gap in coverage
+          setError('Warning: Route may have gaps in charging coverage');
+        }
+      }
+    } else {
+      // Fallback to the original algorithm if route coordinates are not available
+      for (let i = 0; i < numStopsNeeded; i++) {
+        // Calculate the ideal next stop coordinates (simplified linear interpolation)
+        const segmentProgress = (i + 1) / (numStopsNeeded + 1);
+        const idealLat = start.latitude + segmentProgress * (end.latitude - start.latitude);
+        const idealLng = start.longitude + segmentProgress * (end.longitude - start.longitude);
+        
+        // Find closest available station to this ideal point
+        const closestStation = findClosestStation(
+          { latitude: idealLat, longitude: idealLng },
+          availableOnly,
+          currentPoint,
+          maxRange * 0.8 // Maximum allowed distance from current point
+        );
+        
+        if (closestStation) {
+          selectedStops.push(closestStation);
+          currentPoint = {
+            latitude: closestStation.latitude,
+            longitude: closestStation.longitude
+          };
+        } else {
+          // Couldn't find suitable station - this is a gap in coverage
+          setError('Warning: Route may have gaps in charging coverage');
+        }
       }
     }
     
     return selectedStops;
+  };
+  
+  // Find the closest station to a route point
+  const findClosestStationToRoutePoint = (routePoint, stations, currentPosition, maxRangeFromCurrent) => {
+    // Filter stations that are within reach from current position
+    const reachableStations = stations.filter(station => {
+      const distanceFromCurrent = getDistanceBetweenPoints(
+        currentPosition.latitude, currentPosition.longitude,
+        station.latitude, station.longitude
+      );
+      return distanceFromCurrent <= maxRangeFromCurrent;
+    });
+    
+    if (reachableStations.length === 0) {
+      return null;
+    }
+    
+    // Find the station closest to route point
+    return reachableStations.reduce((closest, station) => {
+      const distanceToRoutePoint = getDistanceBetweenPoints(
+        routePoint[1], routePoint[0], // lat, lng from route point
+        station.latitude, station.longitude
+      );
+      
+      if (!closest || distanceToRoutePoint < closest.distanceToRoutePoint) {
+        return { ...station, distanceToRoutePoint };
+      }
+      return closest;
+    }, null);
   };
   
   // Find the closest station to an ideal point that is reachable from current position
@@ -329,6 +471,36 @@ const TripPlanner = ({
     
     // Open in new tab
     window.open(url, '_blank');
+  };
+  
+  // Begin navigation with MapBox Navigation
+  const startNavigation = () => {
+    if (!origin.coordinates || !destination.coordinates) {
+      setError('Please provide both origin and destination');
+      return;
+    }
+    
+    // For mobile devices, open in native maps app
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      openInGoogleMaps();
+      return;
+    }
+    
+    setShowDirections(true);
+    
+    // For desktop, enhance the map view with directions
+    if (mapRef && mapRef.current && routeGeoJSON) {
+      // Fit the map to the route
+      showRouteOnMap();
+    }
+    
+    // If we have directions, make sure they're visible
+    if (directionsSteps && directionsSteps.length > 0) {
+      setShowDirections(true);
+    } else {
+      // If no directions yet, try to calculate the route first
+      calculateRoute();
+    }
   };
   
   return (
@@ -488,6 +660,16 @@ const TripPlanner = ({
             )}
           </div>
           
+          {/* Navigation buttons */}
+          <div className="navigation-actions">
+            <button className="start-navigation-button" onClick={startNavigation}>
+              Start Navigation
+            </button>
+            <button className="google-maps-button" onClick={openInGoogleMaps}>
+              Open in Google Maps
+            </button>
+          </div>
+          
           {/* Suggested charging stops */}
           {suggestedStops.length > 0 && (
             <div className="charging-stops">
@@ -524,10 +706,34 @@ const TripPlanner = ({
             </div>
           )}
           
-          {/* Open in Google Maps button */}
-          <button className="google-maps-button" onClick={openInGoogleMaps}>
-            Open in Google Maps
-          </button>
+          {/* Direction steps */}
+          {showDirections && directionsSteps.length > 0 && (
+            <div className="directions-container">
+              <h3>
+                <FaRegLightbulb /> Turn-by-Turn Directions
+                <button 
+                  className="collapse-button"
+                  onClick={() => setShowDirections(!showDirections)}
+                >
+                  {showDirections ? '-' : '+'}
+                </button>
+              </h3>
+              <div className="directions-steps">
+                {directionsSteps.map((step, index) => (
+                  <div key={index} className="direction-step">
+                    <div className="step-number">{index + 1}</div>
+                    <div className="step-details">
+                      <div className="step-instruction" dangerouslySetInnerHTML={{ __html: step.instruction }} />
+                      <div className="step-distance">
+                        <FaRegClock style={{ marginRight: '5px' }} />
+                        {step.duration} min ({step.distance} km)
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
