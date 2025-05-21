@@ -250,7 +250,7 @@ html {
   --secondary-color: #23AD55;
   --accent-color: #FFD700;
   --light-bg: #F5F7FA;
-  --dark-text: #333;
+  /* Removed dark-text variable */
   --medium-text: #666;
   --light-text: #999;
   --border-radius: 12px;
@@ -287,7 +287,7 @@ html {
 
 .enhanced-station-card .station-name {
   font-weight: 600;
-  color: var(--dark-text);
+  color: #333; /* Replaced dark-text variable */
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -336,7 +336,7 @@ html {
 .enhanced-station-card .detail-value {
   font-size: 14px;
   font-weight: 600;
-  color: var(--dark-text);
+  color: #333; /* Replaced dark-text variable */
 }
 
 .enhanced-station-card .card-footer {
@@ -404,7 +404,7 @@ html {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--dark-text);
+  color: #333; /* Replaced dark-text variable */
   cursor: pointer;
   transition: var(--hover-transition);
 }
@@ -568,7 +568,7 @@ html {
 
 .enhanced-station-details .details-section h3 {
   font-size: 16px;
-  color: var(--dark-text);
+  color: #333; /* Replaced dark-text variable */
   margin-bottom: 10px;
   font-weight: 600;
 }
@@ -591,7 +591,7 @@ html {
 
 .enhanced-station-details .charge-type-name {
   font-weight: 600;
-  color: var(--dark-text);
+  color: #333; /* Replaced dark-text variable */
 }
 
 .enhanced-station-details .charge-type-details {
@@ -2050,7 +2050,7 @@ section.section-highlight::before {
   --text-color: #333;
   --light-gray: #f4f4f4;
   --medium-gray: #ccc;
-  --dark-gray: #555;
+  /* Removing dark-gray variable */
   --white: #fff;
   --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   --border-radius: 8px;
@@ -2170,7 +2170,7 @@ button, .btn-primary, .btn-secondary, .btn-login, .btn-signup, .btn-book, .btn-l
 
 .nav-item {
   margin-left: 20px;
-  color: var(--dark-gray);
+  color: #555; /* Replaced var(--dark-gray) with direct color */
   font-weight: 500;
 }
 .nav-item:hover {
@@ -2590,7 +2590,8 @@ section {
 }
 
 .station-content h3 {
-  margin-top: 0;
+  color: #333; /* Replaced var(--dark-text) with direct color */
+  margin-bottom: 5px;
 }
 
 .station-content .address {
@@ -2623,7 +2624,8 @@ section {
 }
 
 .detail-value {
-  text-align: right;
+  color: #333; /* Replaced var(--dark-text) with direct color */
+  font-weight: 500;
 }
 
 .connectors, .station-amenities {
@@ -2638,11 +2640,14 @@ section {
 }
 
 .connector-tag, .amenity-tag {
-  background-color: var(--light-gray);
-  color: var(--dark-gray);
+  display: inline-block;
   padding: 3px 8px;
+  margin-right: 5px;
+  margin-bottom: 5px;
   border-radius: 12px;
   font-size: 0.8rem;
+  color: #555; /* Replaced var(--dark-gray) with direct color */
+  background-color: var(--light-gray);
 }
 
 .station-cta {
@@ -2764,11 +2769,10 @@ section {
 
 .copyright {
   text-align: center;
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--dark-gray);
-  font-size: 0.8rem;
-  color: var(--medium-gray);
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #555; /* Replaced var(--dark-gray) with direct color */
+  font-size: 14px;
 }
 
 /* --- Responsiveness --- */

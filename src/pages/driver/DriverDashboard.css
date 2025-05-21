@@ -1,3 +1,6 @@
+/* Import CSS variables */
+@import '../../styles/variables.css';
+
 /* Loading and Error Overlays */
 .loading-overlay {
   position: absolute;
@@ -2912,7 +2915,7 @@
 }
 
 /* Dark Mode Support */
-@media (prefers-color-scheme: dark), [data-theme="dark"] {
+@media (prefers-color-scheme: dark) {
   .driver-dashboard-mobile {
     background-color: var(--background-color);
     color: var(--text-color);
@@ -2956,6 +2959,60 @@
   .mapboxgl-popup-tip {
     border-bottom-color: var(--surface-color);
   }
+}
+
+/* Data theme dark mode */
+[data-theme="dark"] .driver-dashboard-mobile {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+[data-theme="dark"] .station-list-card-item,
+[data-theme="dark"] .nearby-station-card, 
+[data-theme="dark"] .enhanced-station-details {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .filter-chip,
+[data-theme="dark"] .enhanced-filter-button {
+  background-color: var(--surface-color);
+  color: var(--text-secondary-color);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .filter-chip.active,
+[data-theme="dark"] .enhanced-filter-button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+[data-theme="dark"] .skeleton-station-card,
+[data-theme="dark"] .skeleton-header, 
+[data-theme="dark"] .skeleton-content {
+  background-color: #2a2a2a;
+}
+
+[data-theme="dark"] .skeleton-station-card::after,
+[data-theme="dark"] .skeleton-header::after,
+[data-theme="dark"] .skeleton-content::after {
+  background: linear-gradient(90deg, transparent, rgba(50, 50, 50, 0.5), transparent);
+}
+
+[data-theme="dark"] .station-address-line,
+[data-theme="dark"] .station-address {
+  color: var(--text-secondary-color);
+}
+
+[data-theme="dark"] .mapboxgl-popup-content {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+[data-theme="dark"] .mapboxgl-popup-tip {
+  border-bottom-color: var(--surface-color);
+}
   
 
   /* Additional styles for data-theme dark mode */
@@ -3119,14 +3176,19 @@
       color: #e0e0e0;
     }
   }
-}
+
 
 /* Dark mode pull to refresh */
-@media (prefers-color-scheme: dark), [data-theme="dark"] {
+@media (prefers-color-scheme: dark) {
   .pull-to-refresh-indicator {
     background-color: #2a2a2a;
     color: #e0e0e0;
   }
+}
+
+[data-theme="dark"] .pull-to-refresh-indicator {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
 }
 
 /* Improved Touch Targets for Mobile */
@@ -3315,7 +3377,7 @@
 }
 
 /* Dark mode support for location warning */
-@media (prefers-color-scheme: dark), [data-theme="dark"] {
+@media (prefers-color-scheme: dark) {
   .location-permission-warning {
     background-color: rgba(30, 30, 30, 0.95);
   }
@@ -3327,6 +3389,18 @@
   .location-permission-warning p {
     color: #ccc;
   }
+}
+
+[data-theme="dark"] .location-permission-warning {
+  background-color: rgba(30, 30, 30, 0.95);
+}
+
+[data-theme="dark"] .location-permission-warning h3 {
+  color: #f0f0f0;
+}
+
+[data-theme="dark"] .location-permission-warning p {
+  color: #ccc;
 }
 
 /* Return to map button */
@@ -3415,4 +3489,48 @@
     transform: translate(-50%, -50%) scale(0.8);
     opacity: 0;
   }
+}
+
+/* Trip Planner Route Markers */
+.route-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.origin-marker {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.destination-marker {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.stop-marker {
+  background-color: #ff9800;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.stop-number {
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Dark mode support for trip planner markers */
+@media (prefers-color-scheme: dark) {
+  .stop-marker {
+    border-color: #333;
+  }
+}
+
+[data-theme="dark"] .stop-marker {
+  border-color: #333;
 }

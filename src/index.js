@@ -4,6 +4,7 @@ import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import './index.css';
+import * as serviceWorker from './serviceWorker';
 
 // Better error handling for Firebase
 const handleError = (error) => {
@@ -78,3 +79,6 @@ try {
 } catch (error) {
   handleError(error);
 }
+
+// Register service worker for offline functionality
+serviceWorker.register();

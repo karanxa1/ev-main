@@ -1,0 +1,57 @@
+:root {
+  /* Color scheme */
+  --background-color: #ffffff;
+  --surface-color: #ffffff;
+  --text-color: #333333;
+  --text-secondary-color: #666666;
+  --border-color: #e0e0e0;
+  --primary-color: #0C5F2C;
+  --primary-dark-color: #094523;
+  --accent-color: #4a90e2;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --error-color: #dc3545;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  
+  /* Animations */
+  --transition-speed: 0.3s;
+  --transition-function: ease;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #121212;
+    --surface-color: #1e1e1e;
+    --text-color: #f0f0f0;
+    --text-secondary-color: #cccccc;
+    --border-color: #333333;
+    --primary-color: #2e8b57;
+    --primary-dark-color: #3cb371;
+    
+    /* Adjust shadow colors for dark mode */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Class-based dark theme (for manual toggle) */
+[data-theme="dark"] {
+  --background-color: #121212;
+  --surface-color: #1e1e1e;
+  --text-color: #f0f0f0;
+  --text-secondary-color: #cccccc;
+  --border-color: #333333;
+  --primary-color: #2e8b57;
+  --primary-dark-color: #3cb371;
+  
+  /* Adjust shadow colors for dark mode */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+} 

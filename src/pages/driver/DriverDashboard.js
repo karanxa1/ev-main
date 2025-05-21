@@ -6,11 +6,13 @@ import './ClusterMarkers.css';
 import { getAllStations } from '../../services/dataService';
 import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
 import Supercluster from 'supercluster';
+import OfflineIndicator from '../../components/ui/OfflineIndicator';
+import TripPlanner from '../../components/TripPlanner/TripPlanner';
 import { 
   FaMapMarkedAlt, FaWallet, FaBullhorn, FaRoute, FaShoppingBag, FaUserCircle, 
   FaFilter, FaCrosshairs, FaListAlt, FaSearch, FaChevronDown, FaCheck,
   FaTimes, FaDirections, FaBatteryHalf, FaSortAmountDown, FaSort,
-  FaCar, FaCircle, FaExclamationTriangle, FaSync
+  FaCar, FaCircle, FaExclamationTriangle, FaSync, FaWifi, FaMapMarkerAlt
 } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -184,6 +186,9 @@ const DriverDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [viewTransition, setViewTransition] = useState('');
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [showTripPlanner, setShowTripPlanner] = useState(false);
+  const [tripRoute, setTripRoute] = useState(null);
   const pullStartY = useRef(0);
   const listRef = useRef(null);
 
@@ -275,10 +280,38 @@ const DriverDashboard = () => {
   const fetchStations = async () => {
     try {
       setLoading(true);
+      
+      // Check if we're offline
+      if (!navigator.onLine) {
+        // Try to get cached stations from localStorage
+        const cachedStationsJson = localStorage.getItem('cached_stations');
+        if (cachedStationsJson) {
+          const cachedStations = JSON.parse(cachedStationsJson);
+          console.log('Using cached stations data from offline storage:', cachedStations);
+          setRawStations(cachedStations);
+          setError(null);
+          return cachedStations;
+        } else {
+          setError('You are offline and no cached station data is available.');
+          setRawStations([]);
+          throw new Error('Offline with no cached data');
+        }
+      }
+      
+      // Online fetch
       const stationData = await getAllStations();
       setRawStations(stationData); // Set raw stations
-      console.log('DriverDashboard: Raw stations fetched:', stationData); // ADDED_LOG
+      console.log('DriverDashboard: Raw stations fetched:', stationData);
       setError(null);
+      
+      // Cache the stations for offline use
+      try {
+        localStorage.setItem('cached_stations', JSON.stringify(stationData));
+        localStorage.setItem('stations_cache_timestamp', new Date().toISOString());
+      } catch (cacheError) {
+        console.warn('Failed to cache stations data:', cacheError);
+      }
+      
       return stationData;
     } catch (err) {
       console.error("Error fetching stations:", err);
@@ -499,6 +532,27 @@ const DriverDashboard = () => {
     }
 
     fetchStations();
+    
+    // Online/Offline event listeners
+    const handleOnline = () => {
+      console.log("App is back online! Refreshing data...");
+      setIsOffline(false);
+      // Re-fetch data when going back online
+      fetchStations();
+    };
+    
+    const handleOffline = () => {
+      console.log("App is offline. Using cached data if available.");
+      setIsOffline(true);
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [selectedStationPopup]);
 
   // Update clusters when filteredStations or viewport changes
@@ -583,6 +637,12 @@ const DriverDashboard = () => {
       if (reactRouterLocation.pathname !== '/driver') {
         navigate('/driver');
       }
+    } else if (navItem === 'Route') {
+      // Toggle trip planner
+      setShowTripPlanner(prev => !prev);
+      if (showTripPlanner) {
+        setTripRoute(null); // Reset route when closing
+      }
     }
   };
 
@@ -647,6 +707,16 @@ const DriverDashboard = () => {
     setShowSortDropdown(!showSortDropdown);
     // Close other dropdown if open
     if (showFilterDropdown) setShowFilterDropdown(false);
+  };
+  
+  // Handle route calculation from TripPlanner
+  const handleRouteCalculated = (routeData) => {
+    console.log('Route calculated:', routeData);
+    setTripRoute(routeData);
+    // Close trip planner after calculation if on mobile
+    if (window.innerWidth < 768) {
+      setShowTripPlanner(false);
+    }
   };
 
   // Geocoding search function
@@ -763,6 +833,21 @@ const DriverDashboard = () => {
           <FaExclamationTriangle />
           <span>{actionError}</span>
         </div>
+      )}
+      
+      {/* Offline Indicator */}
+      <OfflineIndicator />
+      
+      {/* Trip Planner */}
+      {showTripPlanner && (
+        <TripPlanner
+          userLocation={userLocation}
+          stations={filteredStations}
+          userVehicle={userVehicle}
+          onRouteCalculated={handleRouteCalculated}
+          mapRef={mapRef}
+          onClose={() => setShowTripPlanner(false)}
+        />
       )}
       
       <main className="map-view-full-container">
@@ -905,6 +990,7 @@ const DriverDashboard = () => {
                   mapboxAccessToken={MAPBOX_TOKEN}
                   initialViewState={viewport}
                   onMove={evt => setViewport(evt.viewState)}
+                  mapStyle="mapbox://styles/mapbox/streets-v12"
                   onMoveEnd={() => {
                     if (!mapRef.current || filteredStations.length === 0) return;
                     
@@ -926,7 +1012,6 @@ const DriverDashboard = () => {
                     }
                   }}
                   style={{ width: '100%', height: '100%' }}
-                  mapStyle="mapbox://styles/mapbox/streets-v11"
                   renderWorldCopies={false}
                   maxPitch={0} 
                   attributionControl={false}
@@ -1005,6 +1090,45 @@ const DriverDashboard = () => {
                       </div>
                     </Marker>
                   )}
+                  
+                  {/* Trip route markers */}
+                  {tripRoute && tripRoute.origin && (
+                    <Marker
+                      longitude={tripRoute.origin.longitude}
+                      latitude={tripRoute.origin.latitude}
+                      anchor="bottom"
+                    >
+                      <div className="route-marker origin-marker">
+                        <FaMapMarkerAlt style={{ color: '#0C5F2C', fontSize: '24px' }} />
+                      </div>
+                    </Marker>
+                  )}
+                  
+                  {tripRoute && tripRoute.destination && (
+                    <Marker
+                      longitude={tripRoute.destination.longitude}
+                      latitude={tripRoute.destination.latitude}
+                      anchor="bottom"
+                    >
+                      <div className="route-marker destination-marker">
+                        <FaMapMarkerAlt style={{ color: '#d32f2f', fontSize: '24px' }} />
+                      </div>
+                    </Marker>
+                  )}
+                  
+                  {/* Trip route charging stops */}
+                  {tripRoute && tripRoute.stops && tripRoute.stops.map((stop, index) => (
+                    <Marker
+                      key={`stop-${index}`}
+                      longitude={stop.longitude}
+                      latitude={stop.latitude}
+                      anchor="bottom"
+                    >
+                      <div className="route-marker stop-marker">
+                        <div className="stop-number">{index + 1}</div>
+                      </div>
+                    </Marker>
+                  ))}
 
                   {/* Map control buttons - Add the new buttons here */}
                   <div className="driver-map-control-buttons">
@@ -1576,7 +1700,8 @@ const DriverDashboard = () => {
       <nav className="bottom-navigation">
         {[ 
           { name: 'Map', icon: <FaMapMarkedAlt size={22} /> },
-          { name: 'Trips', icon: <FaRoute size={22} /> },
+          { name: 'Route', icon: <FaRoute size={22} />, label: 'Plan Trip' },
+          { name: 'Trips', icon: <FaWallet size={22} /> },
           { name: 'Profile', icon: <FaUserCircle size={22} /> },
         ].map(item => (
           <button 
@@ -1585,7 +1710,7 @@ const DriverDashboard = () => {
             onClick={() => handleBottomNavClick(item.name)}
           >
             {item.icon}
-            <span>{item.name}</span>
+            <span>{item.label || item.name}</span>
           </button>
         ))}
       </nav>

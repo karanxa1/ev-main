@@ -1,0 +1,109 @@
+.offline-indicator {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  bottom: 75px; /* Position above bottom nav */
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 90%;
+  width: auto;
+  animation: slide-up 0.3s ease-in-out;
+  transition: all 0.3s ease;
+}
+
+.offline-indicator.offline {
+  background-color: #feeceb;
+  color: #d32f2f;
+  border-left: 4px solid #d32f2f;
+}
+
+.offline-indicator.online {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-left: 4px solid #2e7d32;
+}
+
+.status-icon {
+  font-size: 20px;
+}
+
+.offline-icon {
+  color: #d32f2f;
+}
+
+.online-icon {
+  color: #2e7d32;
+}
+
+.offline-indicator p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.offline-indicator small {
+  font-size: 12px;
+  opacity: 0.8;
+  display: block;
+  margin-top: 2px;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .offline-indicator.offline {
+    background-color: rgba(211, 47, 47, 0.15);
+    color: #ff8a80;
+    border-left: 4px solid #ff8a80;
+  }
+  
+  .offline-indicator.online {
+    background-color: rgba(46, 125, 50, 0.15);
+    color: #b9f6ca;
+    border-left: 4px solid #b9f6ca;
+  }
+  
+  .offline-icon {
+    color: #ff8a80;
+  }
+  
+  .online-icon {
+    color: #b9f6ca;
+  }
+}
+
+/* Support for data-theme="dark" */
+[data-theme="dark"] .offline-indicator.offline {
+  background-color: rgba(211, 47, 47, 0.15);
+  color: #ff8a80;
+  border-left: 4px solid #ff8a80;
+}
+
+[data-theme="dark"] .offline-indicator.online {
+  background-color: rgba(46, 125, 50, 0.15);
+  color: #b9f6ca;
+  border-left: 4px solid #b9f6ca;
+}
+
+[data-theme="dark"] .offline-icon {
+  color: #ff8a80;
+}
+
+[data-theme="dark"] .online-icon {
+  color: #b9f6ca;
+} 
