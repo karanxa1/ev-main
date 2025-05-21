@@ -3218,15 +3218,97 @@
 
 /* Enhanced Transitions for Mobile Details Sheet */
 .enhanced-station-details.mobile-sheet {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-radius: 20px 20px 0 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, border-radius 0.3s ease;
   transform: translateY(100%);
   opacity: 0;
   z-index: 1000;
+  max-height: 90vh;
+  overflow-y: auto;
+  overscroll-behavior: contain; /* Prevent scroll bleed */
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  will-change: transform, opacity, border-radius; /* Optimize animations */
+}
+
+.enhanced-station-details.mobile-sheet::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 4px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  z-index: 1;
 }
 
 .enhanced-station-details.mobile-sheet.open {
   transform: translateY(0);
   opacity: 1;
+}
+
+/* Backdrop overlay when sheet is open */
+.enhanced-station-details.mobile-sheet.open::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: -1;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Animation for overlay fade in */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Expandable states for sheet - future enhancement */
+.enhanced-station-details.mobile-sheet.expanded {
+  max-height: 100vh;
+  border-radius: 0;
+}
+
+/* Touch feedback on details areas */
+.enhanced-station-details.mobile-sheet .details-section:active {
+  background-color: rgba(0, 0, 0, 0.03);
+  transition: background-color 0.15s ease;
+}
+
+/* Dark mode support for mobile sheet */
+@media (prefers-color-scheme: dark) {
+  .enhanced-station-details.mobile-sheet {
+    background-color: #1e1e1e;
+  }
+  
+  .enhanced-station-details.mobile-sheet::before {
+    background-color: #555;
+  }
+  
+  .enhanced-station-details.mobile-sheet .details-section:active {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet {
+  background-color: #1e1e1e;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet::before {
+  background-color: #555;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .details-section:active {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Responsive Breakpoints for Tablet */
@@ -3574,4 +3656,374 @@
     height: 20px;
     font-size: 12px;
   }
+}
+
+/* Enhanced Mobile Sheet Content */
+.enhanced-station-details.mobile-sheet .details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0;
+  padding: 5px 15px 15px;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+
+.enhanced-station-details.mobile-sheet .details-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0C5F2C;
+  width: 100%;
+  text-align: center;
+  padding: 0 30px; /* Space for the close button */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.enhanced-station-details.mobile-sheet .close-details {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 22px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.enhanced-station-details.mobile-sheet .close-details:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.enhanced-station-details.mobile-sheet .details-content {
+  padding: 0 15px 20px;
+}
+
+.enhanced-station-details.mobile-sheet .station-photos {
+  margin: 0 -15px 15px;
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.enhanced-station-details.mobile-sheet .station-photos img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.enhanced-station-details.mobile-sheet .photo-nav {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 15px;
+  z-index: 1;
+}
+
+.enhanced-station-details.mobile-sheet .photo-nav button {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.enhanced-station-details.mobile-sheet .photo-nav button:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.enhanced-station-details.mobile-sheet .station-address {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.enhanced-station-details.mobile-sheet .compatibility-status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.enhanced-station-details.mobile-sheet .compatible-text {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.enhanced-station-details.mobile-sheet .not-compatible-text {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #ef6c00;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.enhanced-station-details.mobile-sheet .details-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.enhanced-station-details.mobile-sheet .details-section h3 {
+  font-size: 16px;
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.enhanced-station-details.mobile-sheet .charges-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.enhanced-station-details.mobile-sheet .charge-type {
+  background-color: white;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.enhanced-station-details.mobile-sheet .charge-type-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.enhanced-station-details.mobile-sheet .charge-type-details {
+  font-size: 13px;
+  color: #666;
+}
+
+.enhanced-station-details.mobile-sheet .amenities-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.enhanced-station-details.mobile-sheet .amenity-tag {
+  padding: 5px 10px;
+  background-color: white;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #555;
+}
+
+.enhanced-station-details.mobile-sheet .action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.enhanced-station-details.mobile-sheet .btn-action {
+  flex: 0 0 auto;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.enhanced-station-details.mobile-sheet .btn-directions {
+  background-color: #f5f5f5;
+  color: #333;
+  border: none;
+}
+
+.enhanced-station-details.mobile-sheet .booking-cta {
+  flex: 1;
+  background-color: #0C5F2C;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 15px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.enhanced-station-details.mobile-sheet .booking-cta:hover {
+  background-color: #094523;
+}
+
+.enhanced-station-details.mobile-sheet .booking-cta:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Swipe gesture indicator animation */
+.enhanced-station-details.mobile-sheet .swipe-indicator {
+  margin: 10px auto;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: #ddd;
+  position: relative;
+}
+
+.enhanced-station-details.mobile-sheet.open .swipe-indicator::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+  left: 0;
+  top: 0;
+  animation: swipe-hint 2s infinite;
+}
+
+@keyframes swipe-hint {
+  0% { left: 0; }
+  50% { left: 20px; }
+  100% { left: 0; }
+}
+
+/* Dark mode styling for mobile details sheet */
+@media (prefers-color-scheme: dark) {
+  .enhanced-station-details.mobile-sheet .details-header {
+    border-bottom-color: #333;
+  }
+  
+  .enhanced-station-details.mobile-sheet .details-header h2 {
+    color: #4CAF50;
+  }
+  
+  .enhanced-station-details.mobile-sheet .close-details {
+    color: #aaa;
+  }
+  
+  .enhanced-station-details.mobile-sheet .close-details:hover {
+    background-color: #333;
+    color: #fff;
+  }
+  
+  .enhanced-station-details.mobile-sheet .station-address {
+    color: #bbb;
+  }
+  
+  .enhanced-station-details.mobile-sheet .details-section {
+    background-color: #222;
+  }
+  
+  .enhanced-station-details.mobile-sheet .details-section h3 {
+    color: #ddd;
+  }
+  
+  .enhanced-station-details.mobile-sheet .charge-type {
+    background-color: #333;
+  }
+  
+  .enhanced-station-details.mobile-sheet .charge-type-name {
+    color: #eee;
+  }
+  
+  .enhanced-station-details.mobile-sheet .charge-type-details {
+    color: #aaa;
+  }
+  
+  .enhanced-station-details.mobile-sheet .amenity-tag {
+    background-color: #333;
+    color: #ddd;
+  }
+  
+  .enhanced-station-details.mobile-sheet .btn-directions {
+    background-color: #333;
+    color: #eee;
+  }
+  
+  .enhanced-station-details.mobile-sheet .swipe-indicator {
+    background-color: #444;
+  }
+  
+  .enhanced-station-details.mobile-sheet .swipe-indicator::after {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Data theme dark mode styling */
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .details-header {
+  border-bottom-color: #333;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .details-header h2 {
+  color: #4CAF50;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .close-details {
+  color: #aaa;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .close-details:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .station-address {
+  color: #bbb;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .details-section {
+  background-color: #222;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .details-section h3 {
+  color: #ddd;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .charge-type {
+  background-color: #333;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .charge-type-name {
+  color: #eee;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .charge-type-details {
+  color: #aaa;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .amenity-tag {
+  background-color: #333;
+  color: #ddd;
+}
+
+[data-theme="dark"] .enhanced-station-details.mobile-sheet .btn-directions {
+  background-color: #333;
+  color: #eee;
 }

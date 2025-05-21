@@ -825,6 +825,58 @@ const DriverDashboard = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showSearchResults]);
 
+  const [swipeStartY, setSwipeStartY] = useState(0);
+  const [swipeDistance, setSwipeDistance] = useState(0);
+  const bottomSheetRef = useRef(null);
+  
+  // Handle bottom sheet swipe gestures
+  const handleSheetTouchStart = (e) => {
+    setSwipeStartY(e.touches[0].clientY);
+  };
+  
+  const handleSheetTouchMove = (e) => {
+    const currentY = e.touches[0].clientY;
+    const distance = currentY - swipeStartY;
+    
+    // Only allow swiping down, not up
+    if (distance > 0) {
+      // Apply transform to the sheet directly
+      if (bottomSheetRef.current) {
+        bottomSheetRef.current.style.transform = `translateY(${distance}px)`;
+        setSwipeDistance(distance);
+      }
+    }
+  };
+  
+  const handleSheetTouchEnd = () => {
+    // If swiped down more than 100px, close the sheet
+    if (swipeDistance > 100) {
+      setIsMobileDetailsOpen(false);
+      setTimeout(() => {
+        setSelectedStationPopup(null);
+        triggerHapticFeedback();
+      }, 300); // Match the duration of the closing animation
+    } else {
+      // Reset the transform if the swipe wasn't enough to dismiss
+      if (bottomSheetRef.current) {
+        bottomSheetRef.current.style.transform = '';
+      }
+    }
+    setSwipeDistance(0);
+  };
+  
+  // Handle sheet scroll to determine if it should expand to full screen
+  const handleSheetScroll = (e) => {
+    if (bottomSheetRef.current) {
+      // If scrolled more than 50px, add expanded class
+      if (e.target.scrollTop > 50) {
+        bottomSheetRef.current.classList.add('expanded');
+      } else {
+        bottomSheetRef.current.classList.remove('expanded');
+      }
+    }
+  };
+
   return (
     <div className="driver-dashboard-mobile enhanced-driver-dashboard">
       {/* Show action error feedback if present */}
@@ -1773,7 +1825,15 @@ const DriverDashboard = () => {
       
       {/* Mobile Station Details Bottom Sheet */}
       {selectedStationPopup && (
-        <div className={`enhanced-station-details mobile-sheet ${isMobileDetailsOpen ? 'open' : ''}`}>
+        <div 
+          className={`enhanced-station-details mobile-sheet ${isMobileDetailsOpen ? 'open' : ''}`}
+          ref={bottomSheetRef}
+          onTouchStart={handleSheetTouchStart}
+          onTouchMove={handleSheetTouchMove}
+          onTouchEnd={handleSheetTouchEnd}
+          onScroll={handleSheetScroll}
+        >
+          <div className="swipe-indicator"></div>
           <div className="details-header">
             <h2>{selectedStationPopup.name}</h2>
             <button className="close-details" onClick={() => {
