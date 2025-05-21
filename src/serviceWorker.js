@@ -42,6 +42,7 @@ self.addEventListener('activate', event => {
             console.log('Service Worker: Removing old cache', key);
             return caches.delete(key);
           }
+          return Promise.resolve(); // Return a resolved Promise when no action is taken
         })
       );
     })
