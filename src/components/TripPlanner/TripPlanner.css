@@ -467,6 +467,55 @@
   position: relative;
 }
 
+/* Marker styling */
+.marker-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  position: relative;
+}
+
+.origin-pin .origin-marker {
+  color: #0C5F2C;
+  font-size: 36px;
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+.destination-pin .destination-marker {
+  color: #d32f2f;
+  font-size: 36px;
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+.stop-pin .stop-marker {
+  color: #0066ff;
+  background-color: white;
+  border-radius: 50%;
+  padding: 6px;
+  font-size: 18px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsiveness for map markers */
+@media (max-width: 768px) {
+  .marker-pin {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .origin-pin .origin-marker,
+  .destination-pin .destination-marker {
+    font-size: 24px;
+  }
+  
+  .stop-pin .stop-marker {
+    font-size: 14px;
+    padding: 4px;
+  }
+}
+
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
   .trip-planner {

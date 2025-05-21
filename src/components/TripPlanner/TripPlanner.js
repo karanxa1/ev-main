@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaRoute, FaMapMarkerAlt, FaChargingStation, FaCar, FaSearch, FaTimes, FaRegClock, FaRegLightbulb } from 'react-icons/fa';
-import { Source, Layer } from 'react-map-gl';
+import { Source, Layer, Marker } from 'react-map-gl';
 import './TripPlanner.css';
 import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
 
@@ -547,6 +547,101 @@ const TripPlanner = ({
               </button>
             )}
           </div>
+          
+          {/* Map rendering for the route */}
+          {routeGeoJSON && mapRef && mapRef.current && (
+            <>
+              <Source id="route-source" type="geojson" data={routeGeoJSON}>
+                <Layer
+                  id="route-line"
+                  type="line"
+                  source="route-source"
+                  layout={{
+                    "line-join": "round",
+                    "line-cap": "round"
+                  }}
+                  paint={{
+                    "line-color": "#4285F4", // Google Maps blue
+                    "line-width": 4,
+                    "line-opacity": 0.8
+                  }}
+                />
+                <Layer
+                  id="route-casing"
+                  type="line"
+                  source="route-source"
+                  layout={{
+                    "line-join": "round",
+                    "line-cap": "round"
+                  }}
+                  paint={{
+                    "line-color": "#1A73E8", // Darker blue for casing
+                    "line-width": 8,
+                    "line-opacity": 0.5,
+                    "line-blur": 1
+                  }}
+                  beforeId="route-line"
+                />
+                <Layer
+                  id="route-arrows"
+                  type="symbol"
+                  source="route-source"
+                  layout={{
+                    "symbol-placement": "line",
+                    "text-field": "▶",
+                    "text-size": 12,
+                    "text-keep-upright": true,
+                    "symbol-spacing": 80,
+                    "text-pitch-alignment": "viewport",
+                    "text-rotation-alignment": "map"
+                  }}
+                  paint={{
+                    "text-color": "#FFF",
+                    "text-halo-color": "#1A73E8",
+                    "text-halo-width": 1
+                  }}
+                />
+              </Source>
+              
+              {/* Add markers for origin and destination */}
+              {origin.coordinates && (
+                <Marker
+                  key="origin-marker"
+                  longitude={origin.coordinates.longitude}
+                  latitude={origin.coordinates.latitude}
+                >
+                  <div className="marker-pin origin-pin">
+                    <FaMapMarkerAlt className="origin-marker" />
+                  </div>
+                </Marker>
+              )}
+              
+              {destination.coordinates && (
+                <Marker
+                  key="destination-marker"
+                  longitude={destination.coordinates.longitude}
+                  latitude={destination.coordinates.latitude}
+                >
+                  <div className="marker-pin destination-pin">
+                    <FaMapMarkerAlt className="destination-marker" />
+                  </div>
+                </Marker>
+              )}
+              
+              {/* Add markers for charging stops */}
+              {suggestedStops.map((stop, index) => (
+                <Marker
+                  key={`stop-${index}`}
+                  longitude={stop.longitude}
+                  latitude={stop.latitude}
+                >
+                  <div className="marker-pin stop-pin">
+                    <FaChargingStation className="stop-marker" />
+                  </div>
+                </Marker>
+              ))}
+            </>
+          )}
           
           {/* Search results dropdown for origin */}
           {searchResults.length > 0 && !origin.coordinates && (

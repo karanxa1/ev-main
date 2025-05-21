@@ -3534,3 +3534,44 @@
 [data-theme="dark"] .stop-marker {
   border-color: #333;
 }
+
+/* Route marker styling */
+.route-marker.origin-marker {
+  font-size: 32px;
+  color: #0C5F2C; /* Green for origin */
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+.route-marker.destination-marker {
+  font-size: 32px;
+  color: #d32f2f; /* Red for destination */
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+.route-marker.stop-marker {
+  width: 26px;
+  height: 26px;
+  background-color: white;
+  border: 2px solid #0066ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0066ff;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile responsiveness for route markers */
+@media (max-width: 768px) {
+  .route-marker.origin-marker,
+  .route-marker.destination-marker {
+    font-size: 24px;
+  }
+  
+  .route-marker.stop-marker {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
+}

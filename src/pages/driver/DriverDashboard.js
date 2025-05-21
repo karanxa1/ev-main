@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import Map, { Marker, NavigationControl, Popup } from 'react-map-gl';
+import Map, { Marker, NavigationControl, Popup, Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './DriverDashboard.css';
 import './ClusterMarkers.css';
@@ -1089,6 +1089,62 @@ const DriverDashboard = () => {
                         </div>
                       </div>
                     </Marker>
+                  )}
+                  
+                  {/* Trip route visualization */}
+                  {tripRoute && tripRoute.routeGeoJSON && (
+                    <>
+                      <Source id="route-source" type="geojson" data={tripRoute.routeGeoJSON}>
+                        <Layer
+                          id="route-casing"
+                          type="line"
+                          source="route-source"
+                          layout={{
+                            "line-join": "round",
+                            "line-cap": "round"
+                          }}
+                          paint={{
+                            "line-color": "#1A73E8", // Darker blue for casing
+                            "line-width": 8,
+                            "line-opacity": 0.5,
+                            "line-blur": 1
+                          }}
+                        />
+                        <Layer
+                          id="route-line"
+                          type="line"
+                          source="route-source"
+                          layout={{
+                            "line-join": "round",
+                            "line-cap": "round"
+                          }}
+                          paint={{
+                            "line-color": "#4285F4", // Google Maps blue
+                            "line-width": 4,
+                            "line-opacity": 0.8
+                          }}
+                        />
+                        <Layer
+                          id="route-arrows"
+                          type="symbol"
+                          source="route-source"
+                          layout={{
+                            "symbol-placement": "line",
+                            "text-field": "▶",
+                            "text-size": 12,
+                            "text-keep-upright": true,
+                            "symbol-spacing": 80,
+                            "text-pitch-alignment": "viewport",
+                            "text-rotation-alignment": "map"
+                          }}
+                          paint={{
+                            "text-color": "#FFF",
+                            "text-halo-color": "#1A73E8",
+                            "text-halo-width": 1
+                          }}
+                        />
+                      </Source>
+                    </>
                   )}
                   
                   {/* Trip route markers */}
