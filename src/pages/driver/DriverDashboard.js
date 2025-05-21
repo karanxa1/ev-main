@@ -1218,7 +1218,7 @@ const DriverDashboard = () => {
         <div className={`enhanced-station-details mobile-sheet ${isMobileDetailsOpen ? 'open' : ''}`}>
           <div className="details-header">
             <h2>{selectedStationPopup.name}</h2>
-            <button className="close-details" onClick={() => setIsMobileDetailsOpen(false)}>×</button>
+            <button className="close-details" onClick={() => {setIsMobileDetailsOpen(false); setSelectedStationPopup(null);}}>×</button>
           </div>
           <div className="details-content">
             {/* Station photos carousel - use dummy image if no photos available */}

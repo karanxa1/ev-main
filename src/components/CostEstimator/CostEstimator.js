@@ -24,7 +24,6 @@ export const EV_MODELS = {
 
   'Mahindra XUV400 EC': { capacity: 34.5 },
   'Mahindra XUV400 EL': { capacity: 39.4 },
-  
   'Mahindra BE 6e': { capacity: 59 }, // New model
   'Mahindra XEV 9e': { capacity: 79 }, // New model
   
