@@ -222,24 +222,37 @@ html {
 @media (max-width: 768px) {
   .ai-assistant-chat-container {
     width: calc(100% - 20px);
-    height: 60vh;
-    bottom: 80px;
+    height: 65vh;
+    bottom: 90px;
     right: 10px;
+    max-height: calc(100vh - 140px);
   }
   
   .chat-message {
     max-width: 85%;
-    font-size: 13px;
+    font-size: 14px;
+    padding: 10px 12px;
   }
   
   .chat-input {
-    font-size: 13px;
-    padding: 8px 12px;
+    font-size: 14px;
+    padding: 12px 16px;
   }
   
   .send-button {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px; /* Ensure touch target size */
+  }
+  
+  .ai-chat-header {
+    padding: 16px;
+  }
+  
+  .chat-close-button {
+    padding: 8px;
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 
@@ -1516,79 +1529,135 @@ section.section-highlight::before {
 
 @media (max-width: 768px) {
   .hamburger-menu {
-    display: flex; /* Make it visible */
-    /* Other styles like z-index, position might be needed if it's not appearing on top */
+    display: flex;
+    position: relative;
+    z-index: 1001;
+    width: 1.8rem;
+    height: 1.8rem;
+    padding: 4px;
   }
 
   .nav-links {
-    display: none; /* Initially hidden */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
-    width: 280px; /* Adjust as needed */
+    width: 280px;
     height: 100vh;
-    background-color: white; /* Ensure it has a background */
-    box-shadow: 2px 0 5px rgba(0,0,0,0.2); /* Add shadow for visibility */
+    background-color: white;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.1);
     flex-direction: column;
-    align-items: flex-start; /* Or center, stretch, etc. */
-    padding: 70px 20px 20px; /* Add top padding to clear the fixed header */
+    align-items: flex-start;
+    padding: 70px 0 20px 0;
     transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 1000; /* Ensure it's above content but potentially below an overlay or hamburger */
-    /* list-style: none; remove bullets if they are ul/li */
-    /* margin: 0; */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    overflow-y: auto;
   }
 
   .nav-links.open {
-    display: flex !important; /* Force display to flex */
-    transform: translateX(0) !important; /* Force slide in */
-    /* visibility: visible !important; /* Adding for good measure */
-    /* opacity: 1 !important; */
+    display: flex !important;
+    transform: translateX(0) !important;
+  }
+
+  .nav-item {
+    width: 100%;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+
+  .nav-item:hover {
+    background-color: #f8f9fa;
+  }
+
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .mobile-menu-overlay.open {
+    opacity: 1;
+    visibility: visible;
   }
 
   .logo-text {
     font-size: 1.1rem;
     margin-right: auto;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .home-header {
+    padding: 8px 0;
+    position: fixed;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    min-height: 60px;
+  }
+
+  .home-header .container, 
+  .header-container {
+    padding: 0 16px;
+    min-height: 44px;
+    align-items: center;
   }
   
   .hero-banner {
-    padding: 20px 0;
-    margin-top: 40px;
+    padding: 120px 20px 60px;
+    margin-top: 0;
+    text-align: center;
   }
+
+  .hero-content {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
   .hero-content h1 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+    line-height: 1.2;
+    font-weight: 700;
   }
+
   .hero-content p {
-    font-size: 0.85rem;
-    margin-bottom: 15px;
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+    line-height: 1.5;
+    opacity: 0.95;
   }
+
   .hero-cta {
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
     align-items: center;
+    margin-top: 32px;
   }
-  .hero-cta .btn-primary, .hero-cta .btn-secondary {
-    width: 85%;
-    max-width: 280px;
-    padding: 10px 15px;
-    font-size: 0.9rem;
+
+  .hero-cta .btn-primary, 
+  .hero-cta .btn-secondary {
+    width: 100%;
+    max-width: 300px;
+    padding: 16px 24px;
+    font-size: 1rem;
+    font-weight: 600;
     margin: 0;
-  }
-  .home-header {
-    padding: 10px 0;
-  }
-  .hero-banner {
-    padding: 25px 0;
-    margin-top: 40px;
-  }
-  .hero-content h1 {
-    font-size: 1.8rem;
-    margin-bottom: 12px;
-  }
-  .hero-content p {
-    font-size: 0.9rem;
-    margin-bottom: 20px;
+    border-radius: 12px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .about-section,
@@ -1703,6 +1772,198 @@ section.section-highlight::before {
   .copyright {
     font-size: 0.75rem;
     margin-top: 20px;
+  }
+
+  /* Enhanced mobile sections */
+  .about-section,
+  .map-section,
+  .stations-list-section,
+  .how-it-works,
+  .explore-more {
+    padding: 60px 20px;
+  }
+
+  .about-section h2,
+  .map-section h2,
+  .stations-list-section h2,
+  .how-it-works h2 {
+    font-size: 1.8rem;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .section-intro {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 32px;
+    padding: 0 10px;
+  }
+
+  .features-grid, .steps {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-top: 32px;
+  }
+
+  .feature, .step {
+    padding: 32px 24px;
+    border-radius: 16px;
+    text-align: center;
+  }
+
+  .feature-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .feature h3, .step h3 {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+  }
+
+  .city-option { 
+    font-size: 1rem; 
+    padding: 16px 20px;
+    border-radius: 12px;
+    min-width: 120px;
+  }
+
+  .city-name { 
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .city-icon {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+  }
+
+  .map-container {
+    height: 350px;
+    border-radius: 16px;
+    margin: 24px 0;
+  }
+
+  .station-card {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 0;
+  }
+
+  .station-image {
+    height: 200px;
+  }
+
+  .station-content {
+    padding: 20px;
+  }
+
+  .station-content h3 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .address {
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    color: #666;
+  }
+
+  .station-details {
+    margin-bottom: 20px;
+  }
+
+  .detail {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .detail-label {
+    font-size: 0.9rem;
+  }
+
+  .detail-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .station-cta {
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .station-cta button {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    min-height: 48px;
+  }
+
+  /* Touch-friendly interactions */
+  .btn-primary, 
+  .btn-secondary, 
+  .btn-book, 
+  .btn-locate, 
+  .city-option,
+  .nav-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Improved search bar for mobile */
+  .search-bar-container {
+    width: calc(100% - 40px);
+    margin: 20px auto;
+    padding: 6px;
+    border-radius: 25px;
+  }
+
+  .search-input {
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .search-button {
+    padding: 12px 20px;
+    font-size: 1rem;
+    min-height: 44px;
+  }
+
+  /* Better spacing for mobile */
+  .container {
+    padding: 0 20px;
+    width: 100%;
+  }
+
+  /* Improved mobile typography */
+  h1 { 
+    font-size: 1.8rem; 
+    line-height: 1.2;
+  }
+  
+  h2 { 
+    font-size: 1.5rem; 
+    line-height: 1.3;
+  }
+  
+  h3 { 
+    font-size: 1.2rem; 
+    line-height: 1.3;
+  }
+
+  p {
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .footer {
+    padding: 40px 20px 20px;
   }
 
   .mobile-menu-overlay {
@@ -1857,18 +2118,20 @@ section.section-highlight::before {
 .search-bar-container {
   display: flex;
   align-items: center;
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.8); /* Changed to semi-transparent white */
   border-radius: 50px; /* More rounded for modern look */
   padding: 8px 8px 8px 20px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(255, 255, 255, 0.05); /* Reduced shadow opacity */
   max-width: 600px;
   margin: 30px auto 0; /* Added top margin */
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; /* For focus effect */
   position: relative; /* For suggestions positioning */
+  backdrop-filter: blur(5px); /* Add slight blur effect for better readability */
 }
 
 .search-bar-container:focus-within {
   transform: scale(1.02);
+  background-color: rgba(255, 255, 255, 0.95); /* More opaque when focused */
   box-shadow: 0 8px 20px rgba(var(--primary-color-rgb), 0.2), 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
 }
 
@@ -2866,11 +3129,13 @@ section {
     display: flex;
     margin-left: 0;
     order: 2;
-    gap: 8px;
+    gap: 6px;
   }
   .btn-login, .btn-signup {
-    padding: 6px 10px;
-    font-size: 0.85rem;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    min-height: 36px;
+    border-radius: 6px;
   }
 
   .hero-banner {
@@ -3459,12 +3724,22 @@ section {
   display: inline-block;
   transform: translateY(20px);
   opacity: 0;
-  transition: transform 1s ease, opacity 1s ease;
+  transition: transform 1.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 1.5s ease;
 }
 
 .counter-animation.visible {
   transform: translateY(0);
   opacity: 1;
+}
+
+.counter-animation.counting {
+  animation: counterPulse 0.6s ease-in-out;
+}
+
+@keyframes counterPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
 /* Feature Card Hover Effect */
@@ -3738,12 +4013,33 @@ section {
   display: inline-block;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .counting-animation.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Smooth number increment animation */
+.number-increment {
+  animation: numberIncrement 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes numberIncrement {
+  0% { 
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Rotating icons on hover */
@@ -3809,6 +4105,8 @@ section.in-view {
   display: block;
   margin-bottom: 10px;
   line-height: 1;
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: center;
 }
 
 .stat-item h3 {
@@ -3831,9 +4129,247 @@ section.in-view {
 
   .counter-value {
     font-size: 36px;
+    transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  /* Slower animations for mobile */
+  .counter-animation {
+    transition: transform 2s cubic-bezier(0.23, 1, 0.32, 1), opacity 2s ease;
+  }
+  
+  .counting-animation {
+    transition: opacity 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  .number-increment {
+    animation: numberIncrement 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   }
 
   .stat-icon {
     font-size: 32px;
+  }
+  
+  /* Enhanced mobile AI assistant */
+  .ai-assistant-fab {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    font-size: 24px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Mobile performance optimizations */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-touch-callout: none;
+  }
+  
+  /* Smooth scrolling for mobile */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Improved focus states for accessibility */
+  .nav-item:focus,
+  .btn-primary:focus,
+  .btn-secondary:focus,
+  .search-input:focus,
+  .city-option:focus {
+    outline: 2px solid #0C5F2C;
+    outline-offset: 2px;
+  }
+  
+  /* Better mobile animations */
+  .feature,
+  .station-card,
+  .step {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .feature:active,
+  .station-card:active,
+  .city-option:active {
+    transform: scale(0.98);
+  }
+  
+  /* Loading states */
+  .loading {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+  
+  /* Error states */
+  .error {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+  }
+}
+
+/* Additional Mobile Enhancements */
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .hero-content h1 {
+    font-size: 1.6rem;
+  }
+  
+  .hero-content p {
+    font-size: 0.95rem;
+  }
+  
+  .hero-cta .btn-primary,
+  .hero-cta .btn-secondary {
+    padding: 14px 20px;
+    font-size: 0.95rem;
+  }
+  
+  .container {
+    padding: 0 16px;
+  }
+  
+  .about-section,
+  .map-section,
+  .stations-list-section,
+  .how-it-works {
+    padding: 50px 16px;
+  }
+  
+  .section-intro {
+    padding: 0 8px;
+  }
+  
+  .feature, .step {
+    padding: 24px 20px;
+  }
+  
+  .station-content {
+    padding: 16px;
+  }
+}
+
+/* Mobile landscape orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+  .hero-banner {
+    padding: 100px 20px 40px;
+  }
+  
+  .hero-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .about-section,
+  .map-section,
+  .stations-list-section,
+  .how-it-works {
+    padding: 40px 20px;
+  }
+}
+
+/* Mobile-specific utilities */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .show-mobile {
+    display: block !important;
+  }
+  
+  .text-center-mobile {
+    text-align: center !important;
+  }
+  
+  .full-width-mobile {
+    width: 100% !important;
+  }
+  
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Improve touch targets */
+  .clickable-mobile {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Better form inputs on mobile */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  
+  /* Mobile-optimized modals */
+  .modal-mobile {
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+  
+  /* Sticky elements positioning */
+  .sticky-mobile {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 70px; /* Account for header height */
+    z-index: 100;
+  }
+}
+
+/* High DPI displays */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+  .station-image,
+  .feature-icon,
+  .city-icon {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Dark mode support for mobile */
+@media (max-width: 768px) and (prefers-color-scheme: dark) {
+  .mobile-menu-overlay {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+  
+  .nav-links {
+    background-color: #1a1a1a;
+    color: white;
+  }
+  
+  .nav-item {
+    color: white;
+    border-bottom-color: #333;
+  }
+  
+  .nav-item:hover {
+    background-color: #333;
+  }
+}
+
+/* Reduced motion preferences */
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .hero-banner::before {
+    animation: none;
+  }
+  
+  .floating-animation {
+    animation: none;
   }
 }
