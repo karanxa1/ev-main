@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './Login.css';
-
 /**
  * Login Component:
  * A modern card-based login form with clean design and Google authentication option

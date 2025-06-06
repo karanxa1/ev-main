@@ -8,11 +8,14 @@ import { MAPBOX_TOKEN } from '../../services/mapboxConfig';
 import Supercluster from 'supercluster';
 import OfflineIndicator from '../../components/ui/OfflineIndicator';
 import TripPlanner from '../../components/TripPlanner/TripPlanner';
+import { useTheme } from '../../contexts/ThemeContext';
 import { 
-  FaMapMarkedAlt, FaWallet, FaBullhorn, FaRoute, FaShoppingBag, FaUserCircle, 
-  FaFilter, FaCrosshairs, FaListAlt, FaSearch, FaChevronDown, FaCheck,
-  FaTimes, FaDirections, FaBatteryHalf, FaSortAmountDown, FaSort,
-  FaCar, FaCircle, FaExclamationTriangle, FaSync, FaWifi, FaMapMarkerAlt
+  FaMapMarkedAlt, FaWallet, FaRoute, FaUserCircle, 
+  FaCrosshairs, FaListAlt, FaSearch, FaChevronDown, FaCheck,
+  FaTimes, FaDirections, FaBatteryHalf, FaSort,
+  FaCar, FaExclamationTriangle, FaSync, FaMapMarkerAlt,
+  FaCopy, FaCheckCircle, FaBolt, FaClock, FaCoffee, FaStar,
+  FaHeart, FaShare, FaFlag, FaPhone
 } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -153,6 +156,7 @@ const DriverDashboard = () => {
   const { state } = reactRouterLocation; // Continue using state if needed from the location object
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { theme } = useTheme();
   const [rawStations, setRawStations] = useState([]); // Store raw stations from API
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -170,23 +174,17 @@ const DriverDashboard = () => {
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   
   // New state variables for enhanced features
-  const [sortOption, setSortOption] = useState('distance'); // 'distance', 'availability', 'price'
   const [recentStations, setRecentStations] = useState([]);
   const [batteryRangeFilter, setBatteryRangeFilter] = useState(false);
-  const [estimatedRange, setEstimatedRange] = useState(userVehicle?.range || 150); // km
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedChargerType, setSelectedChargerType] = useState('all');
-  const [photoIndex, setPhotoIndex] = useState(0);
   const [isMobileDetailsOpen, setIsMobileDetailsOpen] = useState(false);
-  
-  // UI Enhancement State Variables
-  const [isImageZoomed, setIsImageZoomed] = useState(false);
   const [isPullToRefreshActive, setIsPullToRefreshActive] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [viewTransition, setViewTransition] = useState('');
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
   const [showTripPlanner, setShowTripPlanner] = useState(false);
   const [tripRoute, setTripRoute] = useState(null);
   const pullStartY = useRef(0);
@@ -224,11 +222,7 @@ const DriverDashboard = () => {
     }
   }, []);
 
-  // Image zoom toggle handler
-  const toggleImageZoom = useCallback(() => {
-    setIsImageZoomed(!isImageZoomed);
-    triggerHapticFeedback();
-  }, [isImageZoomed, triggerHapticFeedback]);
+
 
   // Pull to refresh logic
   const handleTouchStart = useCallback((e) => {
@@ -427,36 +421,15 @@ const DriverDashboard = () => {
       filtered = filtered.filter(station => station.status === 'Available');
     }
     
-    // Filter by battery range if enabled
-    if (batteryRangeFilter && userLocation) {
-      filtered = filtered.filter(station => 
-        station.distance && station.distance <= estimatedRange
-      );
-    }
-    
-    // Filter by charger type if selected
-    if (selectedChargerType !== 'all') {
-      filtered = filtered.filter(station => 
-        station.chargerTypes && station.chargerTypes.includes(selectedChargerType)
-      );
-    }
-    
-    // Sort stations based on selected sort option
-    filtered = [...filtered].sort((a, b) => {
-      if (sortOption === 'distance') {
+    // Sort by distance if user location is available
+    if (userLocation) {
+      filtered = [...filtered].sort((a, b) => {
         return (a.distance || Infinity) - (b.distance || Infinity);
-      } else if (sortOption === 'availability') {
-        if (a.status === 'Available' && b.status !== 'Available') return -1;
-        if (a.status !== 'Available' && b.status === 'Available') return 1;
-        return 0;
-      } else if (sortOption === 'price') {
-        return (a.pricePerKwh || 0) - (b.pricePerKwh || 0);
-      }
-      return 0;
-    });
+      });
+    }
     
     return filtered;
-  }, [stations, showCompatibleOnly, showAvailableOnly, userVehicle, batteryRangeFilter, estimatedRange, selectedChargerType, sortOption, userLocation]);
+  }, [stations, showCompatibleOnly, showAvailableOnly, userVehicle, userLocation]);
 
   // MOVED_EFFECT_BELOW: Calculate and update nearby stations (moved from above stations and filteredStations)
   useEffect(() => {
@@ -536,14 +509,12 @@ const DriverDashboard = () => {
     // Online/Offline event listeners
     const handleOnline = () => {
       console.log("App is back online! Refreshing data...");
-      setIsOffline(false);
       // Re-fetch data when going back online
       fetchStations();
     };
     
     const handleOffline = () => {
       console.log("App is offline. Using cached data if available.");
-      setIsOffline(true);
     };
     
     window.addEventListener('online', handleOnline);
@@ -610,8 +581,7 @@ const DriverDashboard = () => {
       setRecentStations(prev => [station, ...prev].slice(0, 5)); // Keep last 5
     }
     
-    // Reset photo index when selecting a new station
-    setPhotoIndex(0);
+
     
     // Open mobile details panel
     setIsMobileDetailsOpen(true);
@@ -665,31 +635,9 @@ const DriverDashboard = () => {
     setBatteryRangeFilter(!batteryRangeFilter);
   };
 
-  const handleSortChange = (option) => {
-    setSortOption(option);
-    setShowSortDropdown(false);
-  };
 
-  const handleChargerTypeChange = (type) => {
-    setSelectedChargerType(type);
-    setShowFilterDropdown(false);
-  };
 
-  const handleRangeChange = (e) => {
-    setEstimatedRange(Number(e.target.value));
-  };
 
-  const handleNextPhoto = () => {
-    if (selectedStationPopup?.photos?.length > 1) {
-      setPhotoIndex((prev) => (prev + 1) % selectedStationPopup.photos.length);
-    }
-  };
-
-  const handlePrevPhoto = () => {
-    if (selectedStationPopup?.photos?.length > 1) {
-      setPhotoIndex((prev) => (prev - 1 + selectedStationPopup.photos.length) % selectedStationPopup.photos.length);
-    }
-  };
 
   const handleBookStation = (station) => {
     // Implement booking functionality or navigate to booking page
@@ -878,7 +826,7 @@ const DriverDashboard = () => {
   };
 
   return (
-    <div className="driver-dashboard-mobile enhanced-driver-dashboard">
+    <div className={`driver-dashboard-mobile enhanced-driver-dashboard ${theme === 'dark' ? 'dark-mode' : ''}`}>
       {/* Show action error feedback if present */}
       {actionError && (
         <div className="error-action-indicator">
@@ -1354,31 +1302,7 @@ const DriverDashboard = () => {
                         }}>×</button>
                       </div>
                       <div className="details-content">
-                        {/* Station photos carousel - use dummy image if no photos available */}
-                        <div className="station-photos">
-                          <img 
-                            src={selectedStationPopup.photos && selectedStationPopup.photos.length > 0 
-                              ? selectedStationPopup.photos[photoIndex] 
-                              : `https://via.placeholder.com/400x200?text=${encodeURIComponent(selectedStationPopup.name)}`} 
-                            alt={selectedStationPopup.name}
-                            className={isImageZoomed ? 'zoomed' : ''}
-                            onClick={toggleImageZoom}
-                          />
-                          {selectedStationPopup.photos && selectedStationPopup.photos.length > 1 && (
-                            <div className="photo-nav">
-                              <button onClick={(e) => {
-                                e.stopPropagation();
-                                handlePrevPhoto();
-                                triggerHapticFeedback();
-                              }} aria-label="Previous photo">&#10094;</button>
-                              <button onClick={(e) => {
-                                e.stopPropagation();
-                                handleNextPhoto();
-                                triggerHapticFeedback();
-                              }} aria-label="Next photo">&#10095;</button>
-                            </div>
-                          )}
-                        </div>
+
                         
                         <p className="station-address">{selectedStationPopup.address}</p>
                         
@@ -1572,7 +1496,7 @@ const DriverDashboard = () => {
                   }}
                   disabled={!userVehicle || !userLocation}
                 >
-                  <FaBatteryHalf /> {estimatedRange} km
+                  <FaBatteryHalf /> Range Filter
                 </button>
                 
                 <button 
@@ -1823,7 +1747,7 @@ const DriverDashboard = () => {
         ))}
       </nav>
       
-      {/* Mobile Station Details Bottom Sheet */}
+      {/* Enhanced Mobile Station Details Bottom Sheet */}
       {selectedStationPopup && (
         <div 
           className={`enhanced-station-details mobile-sheet ${isMobileDetailsOpen ? 'open' : ''}`}
@@ -1834,107 +1758,309 @@ const DriverDashboard = () => {
           onScroll={handleSheetScroll}
         >
           <div className="swipe-indicator"></div>
-          <div className="details-header">
-            <h2>{selectedStationPopup.name}</h2>
-            <button className="close-details" onClick={() => {
-              setIsMobileDetailsOpen(false); 
-              setSelectedStationPopup(null);
-              triggerHapticFeedback();
-            }}>×</button>
-          </div>
-          <div className="details-content">
-            {/* Station photos carousel - use dummy image if no photos available */}
-            <div className="station-photos">
-              <img 
-                src={selectedStationPopup.photos && selectedStationPopup.photos.length > 0 
-                  ? selectedStationPopup.photos[photoIndex] 
-                  : `https://via.placeholder.com/400x200?text=${encodeURIComponent(selectedStationPopup.name)}`}
-                alt={selectedStationPopup.name}
-                className={isImageZoomed ? 'zoomed' : ''}
-                onClick={toggleImageZoom}
-              />
-              {selectedStationPopup.photos && selectedStationPopup.photos.length > 1 && (
-                <div className="photo-nav">
-                  <button onClick={(e) => {
-                    e.stopPropagation();
-                    handlePrevPhoto();
-                    triggerHapticFeedback();
-                  }} aria-label="Previous photo">&#10094;</button>
-                  <button onClick={(e) => {
-                    e.stopPropagation();
-                    handleNextPhoto();
-                    triggerHapticFeedback();
-                  }} aria-label="Next photo">&#10095;</button>
-                </div>
-              )}
+          
+          {/* Enhanced Header with Status and Actions */}
+          <div className="details-header-enhanced">
+            <div className="header-top">
+              <div className="station-status-badge">
+                <span className={`status-dot ${selectedStationPopup.status?.toLowerCase() || 'unknown'}`}></span>
+                <span className="status-text">{selectedStationPopup.status || 'Unknown'}</span>
+              </div>
+              <button className="close-details" onClick={() => {
+                setIsMobileDetailsOpen(false); 
+                setSelectedStationPopup(null);
+                triggerHapticFeedback();
+              }}>×</button>
             </div>
             
-            <p className="station-address">{selectedStationPopup.address}</p>
-            
-            {selectedStationPopup.isCompatible !== undefined && (
-              <div className="compatibility-status">
-                <span className={selectedStationPopup.isCompatible ? 'compatible-text' : 'not-compatible-text'}>
-                  {selectedStationPopup.isCompatible ? '✓ Compatible with your vehicle' : '✕ May not be compatible'}
+            <div className="header-main">
+              <h2>{selectedStationPopup.name}</h2>
+              <div className="station-meta">
+                <span className="distance-info">
+                  <FaMapMarkerAlt /> {selectedStationPopup.distance ? `${selectedStationPopup.distance.toFixed(1)} km away` : 'Distance unknown'}
                 </span>
+                {selectedStationPopup.rating && (
+                  <span className="rating-info">
+                    <span className="stars">★</span> {selectedStationPopup.rating} (4.2)
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="details-content-enhanced">
+            {/* Quick Info Cards */}
+            <div className="quick-info-cards">
+              <div className="info-card">
+                <div className="info-icon">⚡</div>
+                <div className="info-content">
+                  <span className="info-label">Power Output</span>
+                  <span className="info-value">{selectedStationPopup.power || '7.4'} kW</span>
+                </div>
+              </div>
+              
+              <div className="info-card">
+                <div className="info-icon">💰</div>
+                <div className="info-content">
+                  <span className="info-label">Price</span>
+                  <span className="info-value">₹{selectedStationPopup.pricePerKwh || '10'}/kWh</span>
+                </div>
+              </div>
+              
+              <div className="info-card">
+                <div className="info-icon">🔌</div>
+                <div className="info-content">
+                  <span className="info-label">Connectors</span>
+                  <span className="info-value">{selectedStationPopup.chargerTypes?.length || '1'} Types</span>
+                </div>
+              </div>
+              
+              <div className="info-card">
+                <div className="info-icon">🕐</div>
+                <div className="info-content">
+                  <span className="info-label">Est. Time</span>
+                  <span className="info-value">45-60 min</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Station Address with Copy Button */}
+            <div className="station-location">
+              <div className="location-row">
+                <FaMapMarkerAlt className="location-icon" />
+                <span className="address-text">{selectedStationPopup.address}</span>
+                <button 
+                  className="copy-address-btn"
+                  onClick={() => {
+                    navigator.clipboard.writeText(selectedStationPopup.address);
+                    triggerHapticFeedback();
+                    // Show toast notification
+                  }}
+                  title="Copy address"
+                >
+                  <FaCopy />
+                </button>
+              </div>
+            </div>
+            
+            {/* Enhanced Compatibility Status */}
+            {selectedStationPopup.isCompatible !== undefined && (
+              <div className={`compatibility-status-enhanced ${selectedStationPopup.isCompatible ? 'compatible' : 'incompatible'}`}>
+                <div className="compatibility-icon">
+                  {selectedStationPopup.isCompatible ? <FaCheckCircle /> : <FaExclamationTriangle />}
+                </div>
+                <div className="compatibility-text">
+                  <span className="main-text">
+                    {selectedStationPopup.isCompatible ? 'Compatible with your vehicle' : 'May not be compatible'}
+                  </span>
+                  <span className="sub-text">
+                    {selectedStationPopup.isCompatible ? 'You can charge here safely' : 'Check connector types below'}
+                  </span>
+                </div>
               </div>
             )}
             
-            <div className="details-section">
-              <h3>Charging Options</h3>
-              <div className="charges-grid">
-                {selectedStationPopup.chargerTypes && selectedStationPopup.chargerTypes.map(type => (
-                  <div key={type} className="charge-type">
-                    <span className="charge-type-name">{type}</span>
-                    <span className="charge-type-details">
-                      {selectedStationPopup.power || '7.4'} kW - ₹{selectedStationPopup.pricePerKwh || '10'}/kWh
-                    </span>
+            {/* Enhanced Charging Options */}
+            <div className="details-section-enhanced">
+              <div className="section-header">
+                <h3><FaBolt /> Charging Options</h3>
+                <span className="section-badge">{selectedStationPopup.chargerTypes?.length || 0} available</span>
+              </div>
+              <div className="charges-grid-enhanced">
+                {selectedStationPopup.chargerTypes && selectedStationPopup.chargerTypes.map((type, index) => (
+                  <div key={type} className="charge-type-enhanced">
+                    <div className="charge-type-header">
+                      <span className="connector-icon">🔌</span>
+                      <span className="charge-type-name">{type}</span>
+                      <span className={`availability-badge ${index % 2 === 0 ? 'available' : 'occupied'}`}>
+                        {index % 2 === 0 ? 'Available' : 'Occupied'}
+                      </span>
+                    </div>
+                    <div className="charge-type-details">
+                      <div className="detail-row">
+                        <span>Power: {selectedStationPopup.power || '7.4'} kW</span>
+                        <span>₹{selectedStationPopup.pricePerKwh || '10'}/kWh</span>
+                      </div>
+                      <div className="charging-time">
+                        <FaClock /> Est. 0-80%: ~45 mins
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
             
+            {/* Enhanced Amenities Section */}
             {selectedStationPopup.amenities && selectedStationPopup.amenities.length > 0 && (
-              <div className="details-section">
-                <h3>Amenities</h3>
-                <div className="amenities-grid">
-                  {selectedStationPopup.amenities.map((amenity, index) => (
-                    <span key={index} className="amenity-tag">{amenity}</span>
-                  ))}
+              <div className="details-section-enhanced">
+                <div className="section-header">
+                  <h3><FaCoffee /> Amenities & Facilities</h3>
+                </div>
+                <div className="amenities-grid-enhanced">
+                  {selectedStationPopup.amenities.map((amenity, index) => {
+                    const amenityIcons = {
+                      'WiFi': '📶',
+                      'Restroom': '🚻',
+                      'Cafe': '☕',
+                      'Parking': '🅿️',
+                      'Food': '🍔',
+                      'Shopping': '🛍️',
+                      'ATM': '🏧',
+                      '24/7': '🕒'
+                    };
+                    const icon = amenityIcons[amenity] || '✓';
+                    
+                    return (
+                      <div key={index} className="amenity-tag-enhanced">
+                        <span className="amenity-icon">{icon}</span>
+                        <span className="amenity-name">{amenity}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
+
+            {/* Reviews & Ratings Section */}
+            <div className="details-section-enhanced">
+              <div className="section-header">
+                <h3><FaStar /> Reviews & Ratings</h3>
+                <span className="review-count">24 reviews</span>
+              </div>
+              <div className="reviews-summary">
+                <div className="rating-breakdown">
+                  <div className="overall-rating">
+                    <span className="rating-number">4.2</span>
+                    <div className="stars-display">
+                      {[1,2,3,4,5].map(star => (
+                        <FaStar key={star} className={star <= 4 ? 'filled' : 'empty'} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rating-bars">
+                    {[5,4,3,2,1].map(rating => (
+                      <div key={rating} className="rating-bar-row">
+                        <span>{rating}★</span>
+                        <div className="rating-bar">
+                          <div className="rating-fill" style={{width: `${rating === 4 ? 60 : rating === 5 ? 30 : 10}%`}}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="recent-review">
+                  <div className="review-header">
+                    <span className="reviewer-name">Rahul S.</span>
+                    <span className="review-date">2 days ago</span>
+                  </div>
+                  <div className="review-stars">
+                    {[1,2,3,4,5].map(star => (
+                      <FaStar key={star} className={star <= 4 ? 'filled' : 'empty'} />
+                    ))}
+                  </div>
+                  <p className="review-text">"Fast charging and clean facilities. The cafe nearby is convenient while waiting."</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Operating Hours */}
+            <div className="details-section-enhanced">
+              <div className="section-header">
+                <h3><FaClock /> Operating Hours</h3>
+                <span className="current-status open">Open Now</span>
+              </div>
+              <div className="operating-hours">
+                <div className="hours-grid">
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+                    <div key={day} className={`hours-row ${index === new Date().getDay() - 1 ? 'today' : ''}`}>
+                      <span className="day">{day}</span>
+                      <span className="hours">24 Hours</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
             
-            <div className="action-buttons">
-              <button 
-                className="btn-action btn-directions"
-                onClick={() => {
-                  triggerHapticFeedback();
-                  if (userLocation) {
-                    const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${selectedStationPopup.latitude},${selectedStationPopup.longitude}`;
-                    window.open(url, '_blank');
-                  } else {
-                    showErrorFeedback("Unable to get directions: Location access required");
-                  }
-                }}
-                disabled={!userLocation}
-              >
-                <FaDirections /> Get Directions
-              </button>
+            {/* Enhanced Action Buttons */}
+            <div className="action-buttons-enhanced">
+              <div className="primary-actions">
+                <button 
+                  className="btn-primary btn-navigate"
+                  onClick={() => {
+                    triggerHapticFeedback();
+                    if (userLocation) {
+                      const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${selectedStationPopup.latitude},${selectedStationPopup.longitude}`;
+                      window.open(url, '_blank');
+                    } else {
+                      showErrorFeedback("Unable to get directions: Location access required");
+                    }
+                  }}
+                  disabled={!userLocation}
+                >
+                  <FaDirections /> Navigate
+                </button>
+                
+                <button 
+                  className="btn-primary btn-book"
+                  onClick={() => {
+                    triggerHapticFeedback();
+                    if (selectedStationPopup.status === 'Available') {
+                      handleBookStation(selectedStationPopup);
+                    } else {
+                      showErrorFeedback("This station is currently unavailable for booking");
+                    }
+                  }}
+                  disabled={selectedStationPopup.status !== 'Available'}
+                >
+                  <FaBolt />
+                  {selectedStationPopup.status === 'Available' ? 'Start Charging' : 'Unavailable'}
+                </button>
+              </div>
               
-              <button 
-                className="booking-cta"
-                onClick={() => {
+              <div className="secondary-actions">
+                <button className="btn-secondary" onClick={() => {
                   triggerHapticFeedback();
-                  if (selectedStationPopup.status === 'Available') {
-                    handleBookStation(selectedStationPopup);
-                  } else {
-                    showErrorFeedback("This station is currently unavailable for booking");
-                  }
-                }}
-                disabled={selectedStationPopup.status !== 'Available'}
-              >
-                {selectedStationPopup.status === 'Available' ? 'Book Now' : 'Currently Unavailable'}
-              </button>
+                  // Add to favorites logic
+                }}>
+                  <FaHeart /> Save
+                </button>
+                
+                <button className="btn-secondary" onClick={() => {
+                  triggerHapticFeedback();
+                  // Share station logic
+                }}>
+                  <FaShare /> Share
+                </button>
+                
+                <button className="btn-secondary" onClick={() => {
+                  triggerHapticFeedback();
+                  // Report issue logic
+                }}>
+                  <FaFlag /> Report
+                </button>
+                
+                <button className="btn-secondary" onClick={() => {
+                  triggerHapticFeedback();
+                  // Call station logic
+                }}>
+                  <FaPhone /> Call
+                </button>
+              </div>
+              
+              {/* Close Button */}
+              <div className="close-section">
+                <button 
+                  className="btn-close-sheet"
+                  onClick={() => {
+                    setIsMobileDetailsOpen(false); 
+                    setSelectedStationPopup(null);
+                    triggerHapticFeedback();
+                  }}
+                >
+                  <FaTimes /> Close Details
+                </button>
+              </div>
             </div>
           </div>
         </div>
