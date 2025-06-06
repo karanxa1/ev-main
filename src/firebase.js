@@ -7,7 +7,9 @@ import {
   signOut, 
   GoogleAuthProvider, 
   signInWithPopup, 
-  sendPasswordResetEmail 
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  verifyPasswordResetCode 
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
@@ -44,6 +46,8 @@ export {
   signOut,
   signInWithPopup,
   sendPasswordResetEmail,
+  confirmPasswordReset,
+  verifyPasswordResetCode,
   GoogleAuthProvider // Re-export the GoogleAuthProvider class
 };
 

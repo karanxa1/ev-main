@@ -12,6 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || '/driver';
+  const successMessage = location.state?.message;
   
   // Auth context
   const { login, signInWithGoogle, sendPasswordReset, currentUser, authError, setAuthError } = useAuth();
@@ -117,13 +118,13 @@ const Login = () => {
           <p className="card-description">Enter your email and password to login to your account</p>
         </div>
         
-        {resetSent && (
+        {(resetSent || successMessage) && (
           <div className="auth-success">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
               <polyline points="22 4 12 14.01 2,6"></polyline>
             </svg>
-            <span>Password reset email sent! Check your inbox.</span>
+            <span>{successMessage || "Password reset email sent! Check your inbox."}</span>
           </div>
         )}
         

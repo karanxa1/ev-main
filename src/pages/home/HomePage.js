@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Map, { NavigationControl, Marker, Popup } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { indianCities } from '../../utils/formatters';
@@ -27,7 +27,19 @@ console.log("Mapbox token directly imported:", MAPBOX_TOKEN ? "Yes" : "No");
 const HomePage = () => {
   // First initialize all hooks that don't depend on others
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { currentUser, logout } = useAuth();
+
+  // Check for Firebase Auth action URLs and redirect to password reset page
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    const oobCode = searchParams.get('oobCode');
+    
+    if ((mode === 'resetPassword' || mode === 'action') && oobCode) {
+      // Redirect to password reset page with the URL parameters
+      navigate(`/reset-password?mode=${mode}&oobCode=${oobCode}`, { replace: true });
+    }
+  }, [searchParams, navigate]);
   const parallaxHeroContentRef = useParallax({ speed: 0.3, disableOnMobile: true });
 
   // State for page load animations
