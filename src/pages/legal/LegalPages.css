@@ -1,0 +1,114 @@
+.legal-page {
+  padding: 80px 0;
+  min-height: 100vh;
+  background-color: var(--background-off-white);
+}
+
+.legal-page .container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.legal-page h1 {
+  font-size: 2.5rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.legal-page .last-updated {
+  text-align: center;
+  color: var(--text-light);
+  margin-bottom: 2rem;
+  font-style: italic;
+}
+
+.legal-page section {
+  margin-bottom: 2.5rem;
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.legal-page h2 {
+  font-size: 1.8rem;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.legal-page h3 {
+  font-size: 1.4rem;
+  color: var(--text-medium);
+  margin: 1.5rem 0 1rem;
+}
+
+.legal-page p {
+  color: var(--text-medium);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.legal-page ul {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.legal-page li {
+  color: var(--text-medium);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .legal-page {
+    padding: 60px 0;
+  }
+
+  .legal-page h1 {
+    font-size: 2rem;
+  }
+
+  .legal-page h2 {
+    font-size: 1.5rem;
+  }
+
+  .legal-page h3 {
+    font-size: 1.2rem;
+  }
+
+  .legal-page section {
+    padding: 1.5rem;
+  }
+}
+
+/* Animation for page load */
+.legal-page section {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.legal-page section:nth-child(1) { animation-delay: 0.1s; }
+.legal-page section:nth-child(2) { animation-delay: 0.2s; }
+.legal-page section:nth-child(3) { animation-delay: 0.3s; }
+.legal-page section:nth-child(4) { animation-delay: 0.4s; }
+.legal-page section:nth-child(5) { animation-delay: 0.5s; }
+.legal-page section:nth-child(6) { animation-delay: 0.6s; }
+.legal-page section:nth-child(7) { animation-delay: 0.7s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 

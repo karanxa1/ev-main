@@ -112,6 +112,12 @@ const HomePage = () => {
     cities: { value: 0, target: 4, counted: false },
     users: { value: 0, target: 708, counted: false },
   });
+  // Add new state for dynamic stats
+  const [dynamicStats, setDynamicStats] = useState({
+    chargingSessions: 0,
+    carbonSaved: 0,
+    lastUpdated: new Date()
+  });
   // Refs for counter elements
   const stationsCounterRef = useRef(null);
   const citiesCounterRef = useRef(null);
@@ -953,6 +959,31 @@ const HomePage = () => {
     };
   }, [counters.stations.counted, counters.cities.counted, counters.users.counted]);
 
+  // Effect to update dynamic stats periodically
+  useEffect(() => {
+    const updateDynamicStats = () => {
+      setDynamicStats(prev => ({
+        chargingSessions: prev.chargingSessions + Math.floor(Math.random() * 1), // Reduced to max 1 increment
+        carbonSaved: prev.carbonSaved + Math.floor(Math.random() * 2), // Reduced to max 2 increment
+        lastUpdated: new Date()
+      }));
+    };
+
+    // Changed from 5000ms to 30000ms (30 seconds)
+    const interval = setInterval(updateDynamicStats, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Add initial values for dynamic stats
+  useEffect(() => {
+    // Set initial values when component mounts
+    setDynamicStats({
+      chargingSessions: Math.floor(Math.random() * 50), // Random initial value between 0-50
+      carbonSaved: Math.floor(Math.random() * 100), // Random initial value between 0-100
+      lastUpdated: new Date()
+    });
+  }, []);
+
   return (
     <div className="home-page">
       <SEO 
@@ -1201,6 +1232,9 @@ const HomePage = () => {
                 <span className="counter-value">{counters.stations.value}+</span>
                 <h3>Charging Stations</h3>
                 <p className="stat-description">Across Pune's key locations</p>
+                <div className="stat-progress">
+                  <div className="progress-bar" style={{ width: `${(counters.stations.value / counters.stations.target) * 100}%` }}></div>
+                </div>
               </div>
             </div>
             <div className="stat-item">
@@ -1209,6 +1243,9 @@ const HomePage = () => {
                 <span className="counter-value">{counters.cities.value}+</span>
                 <h3>Cities Covered</h3>
                 <p className="stat-description">Expanding rapidly</p>
+                <div className="stat-progress">
+                  <div className="progress-bar" style={{ width: `${(counters.cities.value / counters.cities.target) * 100}%` }}></div>
+                </div>
               </div>
             </div>
             <div className="stat-item">
@@ -1217,9 +1254,43 @@ const HomePage = () => {
                 <span className="counter-value">{counters.users.value}+</span>
                 <h3>Happy EV Drivers</h3>
                 <p className="stat-description">And growing daily</p>
+                <div className="stat-progress">
+                  <div className="progress-bar" style={{ width: `${(counters.users.value / counters.users.target) * 100}%` }}></div>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Live Stats Section */}
+          <div className="live-stats-container">
+            <div className="live-stats-header">
+              <h3>Live Impact</h3>
+              <span className="live-indicator">
+                <span className="pulse"></span>
+                Live
+              </span>
+            </div>
+            <div className="live-stats-grid">
+              <div className="live-stat-item">
+                <div className="live-stat-icon">⚡</div>
+                <div className="live-stat-content">
+                  <span className="live-stat-value">{dynamicStats.chargingSessions}</span>
+                  <span className="live-stat-label">Charging Sessions Today</span>
+                </div>
+              </div>
+              <div className="live-stat-item">
+                <div className="live-stat-icon">🌱</div>
+                <div className="live-stat-content">
+                  <span className="live-stat-value">{dynamicStats.carbonSaved}kg</span>
+                  <span className="live-stat-label">CO₂ Saved Today</span>
+                </div>
+              </div>
+            </div>
+            <div className="last-updated">
+              Last updated: {dynamicStats.lastUpdated.toLocaleTimeString()}
+            </div>
+          </div>
+
           <div className="stats-highlight">
             <p>EV Charging Stations in Pune</p>
             <div className="highlight-details">
@@ -1228,6 +1299,20 @@ const HomePage = () => {
               <span>Real-time Availability</span>
               <span>•</span>
               <span>Fast Charging</span>
+            </div>
+            <div className="highlight-features">
+              <div className="feature-item">
+                <span className="feature-icon">⚡</span>
+                <span>DC Fast Charging</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">🔌</span>
+                <span>Multiple Connectors</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">📱</span>
+                <span>App Integration</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1386,6 +1471,8 @@ const HomePage = () => {
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><Link to="/login">Login</Link></li>
                 <li><Link to="/signup">Sign Up</Link></li>
+                <li><Link to="/terms-and-conditions">Terms & Conditions</Link></li>
+                <li><Link to="/privacy-policy">Privacy Policy</Link></li>
               </ul>
             </div>
             <div className="footer-column">

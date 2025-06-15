@@ -13,6 +13,8 @@ import SelectVehiclePage from './pages/vehicle-selection/SelectVehiclePage'; // 
 import ChangeVehiclePage from './pages/change-vehicle/ChangeVehiclePage'; // Added import for ChangeVehiclePage
 import ProfilePage from './pages/profile/ProfilePage'; // Profile page component
 import TripsPage from './pages/trips/TripsPage'; // Import for TripsPage
+import PrivacyPolicy from './pages/legal/PrivacyPolicy'; // Import for Privacy Policy page
+import TermsAndConditions from './pages/legal/TermsAndConditions'; // Import for Terms & Conditions page
 import './App.css'; // Main application styles
 
 /**
@@ -52,6 +54,10 @@ function App() {
 
             {/* Public route for password reset confirmation */}
             <Route path="/reset-password" element={<PasswordReset />} /> {/* Route for password reset */}
+
+            {/* Public routes for legal pages */}
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
 
             {/* Protected route for selecting a vehicle, accessible only to authenticated users */}
             <Route

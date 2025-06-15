@@ -13,7 +13,7 @@ const OptimizedImage = ({
   loading = 'lazy',
   ...props
 }) => {
-  const [imgSrc, setImgSrc] = useState('');
+  const [imgSrc, setImgSrc] = useState(src || fallbackSrc || '');
   const [isWebPSupported, setIsWebPSupported] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -35,7 +35,10 @@ const OptimizedImage = ({
 
   // Convert image URL to WebP if supported
   useEffect(() => {
-    if (!src) return;
+    if (!src) {
+      setImgSrc(fallbackSrc || '');
+      return;
+    }
 
     const convertToWebP = async () => {
       try {
@@ -60,7 +63,7 @@ const OptimizedImage = ({
     };
 
     convertToWebP();
-  }, [src, isWebPSupported]);
+  }, [src, isWebPSupported, fallbackSrc]);
 
   const handleLoad = (e) => {
     setIsLoading(false);
@@ -74,6 +77,19 @@ const OptimizedImage = ({
     }
     if (onError) onError(e);
   };
+
+  if (!imgSrc) {
+    return (
+      <div 
+        className={`optimized-image-container ${className || ''} loading`}
+        style={{ width, height }}
+      >
+        <div className="image-placeholder">
+          <div className="loading-spinner"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
