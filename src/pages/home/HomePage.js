@@ -405,10 +405,10 @@ const HomePage = React.memo(() => {
 
   const handleSocialLink = useCallback((platform) => {
     const socialUrls = {
-      facebook: 'https://facebook.com/evchargingnetwork',
-      twitter: 'https://twitter.com/evchargingnetwork',
-      instagram: 'https://instagram.com/evchargingnetwork',
-      linkedin: 'https://linkedin.com/company/evchargingnetwork'
+      facebook: 'https://instagram.com/karrannrajput',
+      twitter: 'https://x.com/KaranRa60411739',
+      instagram: 'https://instagram.com/karrannrajput',
+      linkedin: 'https://www.linkedin.com/in/karanrrajput'
     };
     
     if (socialUrls[platform]) {
