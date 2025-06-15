@@ -108,9 +108,9 @@ const HomePage = () => {
   const [cursorType, setCursorType] = useState('default'); // For different cursor states
   // Stats counters state
   const [counters, setCounters] = useState({
-    stations: { value: 0, target: 1000, counted: false },
-    cities: { value: 0, target: 25, counted: false },
-    users: { value: 0, target: 5000, counted: false },
+    stations: { value: 0, target: 150, counted: false },
+    cities: { value: 0, target: 4, counted: false },
+    users: { value: 0, target: 708, counted: false },
   });
   // Refs for counter elements
   const stationsCounterRef = useRef(null);
@@ -1200,6 +1200,7 @@ const HomePage = () => {
               <div ref={stationsCounterRef} className="counter-animation">
                 <span className="counter-value">{counters.stations.value}+</span>
                 <h3>Charging Stations</h3>
+                <p className="stat-description">Across Pune's key locations</p>
               </div>
             </div>
             <div className="stat-item">
@@ -1207,6 +1208,7 @@ const HomePage = () => {
               <div ref={citiesCounterRef} className="counter-animation">
                 <span className="counter-value">{counters.cities.value}+</span>
                 <h3>Cities Covered</h3>
+                <p className="stat-description">Expanding rapidly</p>
               </div>
             </div>
             <div className="stat-item">
@@ -1214,7 +1216,18 @@ const HomePage = () => {
               <div ref={usersCounterRef} className="counter-animation">
                 <span className="counter-value">{counters.users.value}+</span>
                 <h3>Happy EV Drivers</h3>
+                <p className="stat-description">And growing daily</p>
               </div>
+            </div>
+          </div>
+          <div className="stats-highlight">
+            <p>EV Charging Stations in Pune</p>
+            <div className="highlight-details">
+              <span>24/7 Support</span>
+              <span>•</span>
+              <span>Real-time Availability</span>
+              <span>•</span>
+              <span>Fast Charging</span>
             </div>
           </div>
         </div>
