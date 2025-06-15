@@ -12,6 +12,7 @@ import useParallax from '../../hooks/useParallax';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import CostEstimator from '../../components/CostEstimator/CostEstimator';
 import AiAssistantChat from '../../components/AiAssistantChat/AiAssistantChat';
+import SEO from '../../components/SEO/SEO';
 import './HomePage.css';
 
 // Lazy load MapSection
@@ -954,6 +955,14 @@ const HomePage = () => {
 
   return (
     <div className="home-page">
+      <SEO 
+        title="Find & Book EV Charging Stations"
+        description="India's largest network of EV charging stations. Find, book, and pay for charging sessions across major cities. Real-time availability and seamless booking experience."
+        keywords="EV charging, electric vehicle, charging stations, India, booking, real-time availability, Pune, Mumbai, Delhi, Bangalore"
+        ogImage="/images/og-image.jpg"
+        canonicalUrl={window.location.href}
+      />
+      
       {/* Scroll Progress Indicator */}
       <div className="scroll-progress-container">
         <div 
@@ -1075,15 +1084,15 @@ const HomePage = () => {
           <div className="hero-content" ref={parallaxHeroContentRef}>
             <h1 
               className={pageLoaded ? 'animate-on-load-slide-down' : 'initially-hidden'} 
-              style={{ animationDelay: '0.2s' }} // Title slides down
+              style={{ animationDelay: '0.2s' }}
             >
-              Find EV Charging Stations Near You
+              Find & Book EV Charging Stations
             </h1>
             <p 
               className={pageLoaded ? 'animate-on-load-slide-left' : 'initially-hidden'} 
-              style={{ animationDelay: '0.4s' }} // Paragraph slides from left
+              style={{ animationDelay: '0.4s' }}
             >
-              Discover convenient and reliable charging stations for your electric vehicle across Pune and beyond.
+              India's largest network of EV charging stations. Find, book, and pay for charging sessions across major cities.
             </p>
             
             <form 
@@ -1160,7 +1169,7 @@ const HomePage = () => {
       {/* About Section */}
       <section id="about" ref={aboutRef} className={`about-section animated-bg-section ${aboutSectionRef[1] ? 'is-visible' : ''}`}>
         <div className="container" ref={aboutSectionRef[0]}>
-          <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">India's Leading EV Charging Network</h2>
+          <h2 className="initially-hidden animate-slide-up" data-scroll="slide-up">India's Largest EV Charging Network</h2>
           <div className="features-grid stagger-children">
             <div className="feature initially-hidden stagger-child-1" data-scroll="stagger-item">
               <div className="feature-icon floating-animation">🔌</div>

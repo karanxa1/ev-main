@@ -1,5 +1,6 @@
 import React from 'react';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver'; // Import the hook
+import OptimizedImage from '../OptimizedImage/OptimizedImage';
 import './StationCard.css'; // We'll create this for specific styles if needed
 
 // Helper function to safely handle array or null values (can be moved to a utils file later)
@@ -61,56 +62,61 @@ const StationCard = ({
       id={`station-${station.id}`} 
       className={`station-card ${isVisible ? 'is-visible' : ''}`}
       style={cardStyle}
+      role="article"
+      aria-labelledby={`station-title-${station.id}`}
     >
       <div className="station-image">
-        <img
+        <OptimizedImage
           src={imageUrl}
-          alt={station.name || 'Charging Station'}
+          alt={`${station.name || 'Charging Station'} - ${station.address || 'Location'}`}
+          fallbackSrc={commonFallbackImage}
+          width={300}
+          height={200}
           onError={() => onImageError(station.id)}
           onLoad={() => onImageLoad(station.id)}
           loading="lazy"
         />
         {station.rating && (
-          <div className="station-rating">
-            <span className="star-icon">★</span>
-            {station.rating}
+          <div className="station-rating" aria-label={`Rating: ${station.rating} out of 5`}>
+            <span className="star-icon" aria-hidden="true">★</span>
+            <span>{station.rating}</span>
           </div>
         )}
       </div>
       <div className="station-content">
-        <h3>{station.name || 'EV Station'}</h3>
-        <p className="address">{station.address || 'Address not available'}</p>
+        <h3 id={`station-title-${station.id}`}>{station.name || 'EV Station'}</h3>
+        <p className="address" aria-label="Station address">{station.address || 'Address not available'}</p>
         {station.distance !== undefined && (
-          <p className="distance-info">
+          <p className="distance-info" aria-label={`Distance: ${station.distance.toFixed(1)} kilometers away`}>
             <strong>Distance:</strong> {station.distance.toFixed(1)} km away
           </p>
         )}
-        <div className="station-details">
-          <div className="detail">
+        <div className="station-details" role="list">
+          <div className="detail" role="listitem">
             <span className="detail-label">Type:</span>
             <span className="detail-value">{station.type || 'Standard'}</span>
           </div>
-          <div className="detail">
+          <div className="detail" role="listitem">
             <span className="detail-label">Power:</span>
             <span className="detail-value">{station.power ? `${station.power} kW` : 'N/A'}</span>
           </div>
-          <div className="detail">
+          <div className="detail" role="listitem">
             <span className="detail-label">Price:</span>
             <span className="detail-value">
               {station.pricePerKwh ? `₹${station.pricePerKwh}/kWh` : 'Contact station'}
             </span>
           </div>
-          <div className="detail">
+          <div className="detail" role="listitem">
             <span className="detail-label">Hours:</span>
             <span className="detail-value">{station.hours || '24 hours'}</span>
           </div>
         </div>
         <div className="station-amenities">
           <span className="detail-label">Amenities:</span>
-          <div className="amenity-tags">
+          <div className="amenity-tags" role="list">
             {safeArray(station.amenities).length > 0 ? (
               safeArray(station.amenities).map((amenity, idx) => (
-                <span key={idx} className="amenity-tag">{amenity}</span>
+                <span key={idx} className="amenity-tag" role="listitem">{amenity}</span>
               ))
             ) : (
               <span>Not available</span>
@@ -121,12 +127,14 @@ const StationCard = ({
           <button
             onClick={() => onBookNow(station.id)}
             className="btn-book"
+            aria-label={`Book charging session at ${station.name}`}
           >
             Book Now
           </button>
           <button
             onClick={() => onLocateOnMap(station)}
             className="btn-locate"
+            aria-label={`View details and location of ${station.name}`}
           >
             {station.distance !== undefined ? 'Details & Map' : 'Locate on Map'}
           </button>
