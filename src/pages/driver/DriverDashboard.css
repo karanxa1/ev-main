@@ -129,6 +129,20 @@
   height: 100vh;
 }
 
+/* Dark mode base styles */
+.driver-dashboard.dark-mode,
+.driver-dashboard-mobile.dark-mode,
+[data-theme="dark"] .driver-dashboard,
+[data-theme="dark"] .driver-dashboard-mobile {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.dark-mode {
+  background-color: #1a1a1a !important;
+  color: #e0e0e0 !important;
+}
+
 /* Header styles - simplified for mobile */
 .app-header {
   background-color: #fff;
@@ -138,6 +152,14 @@
   top: 0;
   width: 100%;
   z-index: 1000;
+}
+
+/* Dark mode header */
+.dark-mode .app-header,
+[data-theme="dark"] .app-header {
+  background-color: #2d2d2d;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  color: #e0e0e0;
 }
 
 .header-container {
@@ -272,6 +294,33 @@
   justify-content: center;
 }
 
+/* Dark mode search components */
+.dark-mode .search-box,
+[data-theme="dark"] .search-box {
+  background-color: #3d3d3d;
+  border-color: #555;
+}
+
+.dark-mode .search-input,
+[data-theme="dark"] .search-input {
+  color: #e0e0e0;
+}
+
+.dark-mode .search-input::placeholder,
+[data-theme="dark"] .search-input::placeholder {
+  color: #999;
+}
+
+.dark-mode .search-button,
+[data-theme="dark"] .search-button {
+  background-color: #5a9ff2;
+}
+
+.dark-mode .search-button:hover,
+[data-theme="dark"] .search-button:hover {
+  background-color: #4a90e2;
+}
+
 /* Mobile filter panel */
 .mobile-filter-panel {
   position: fixed;
@@ -284,6 +333,28 @@
   box-shadow: -2px 0 10px rgba(0,0,0,0.1);
   transition: right 0.3s ease;
   overflow-y: auto;
+}
+
+/* Dark mode filter panel */
+.dark-mode .mobile-filter-panel,
+[data-theme="dark"] .mobile-filter-panel {
+  background: #2d2d2d;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+}
+
+.dark-mode .mobile-filter-header,
+[data-theme="dark"] .mobile-filter-header {
+  border-bottom-color: #444;
+}
+
+.dark-mode .mobile-filter-header h3,
+[data-theme="dark"] .mobile-filter-header h3 {
+  color: #e0e0e0;
+}
+
+.dark-mode .close-filter-btn,
+[data-theme="dark"] .close-filter-btn {
+  color: #e0e0e0;
 }
 
 .mobile-filter-panel.open {
@@ -358,6 +429,20 @@
   border-color: #4a90e2;
 }
 
+/* Dark mode city tabs */
+.dark-mode .city-tab,
+[data-theme="dark"] .city-tab {
+  background: #3d3d3d;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-mode .city-tab.active,
+[data-theme="dark"] .city-tab.active {
+  background-color: #5a9ff2;
+  border-color: #5a9ff2;
+}
+
 /* Vehicle selector for mobile */
 .vehicle-selector {
   margin-bottom: 20px;
@@ -395,6 +480,20 @@
 .vehicle-option.active {
   border-color: #4a90e2;
   background-color: rgba(74, 144, 226, 0.05);
+}
+
+/* Dark mode vehicle options */
+.dark-mode .vehicle-option,
+[data-theme="dark"] .vehicle-option {
+  background: #3d3d3d;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-mode .vehicle-option.active,
+[data-theme="dark"] .vehicle-option.active {
+  border-color: #5a9ff2;
+  background-color: rgba(90, 159, 242, 0.1);
 }
 
 .vehicle-icon {
@@ -458,6 +557,18 @@
 .apply-filters-button {
   background-color: #4a90e2;
   color: white;
+}
+
+/* Dark mode filter buttons */
+.dark-mode .clear-filters-button,
+[data-theme="dark"] .clear-filters-button {
+  background-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .apply-filters-button,
+[data-theme="dark"] .apply-filters-button {
+  background-color: #5a9ff2;
 }
 
 /* Main content container - positioned below header and search bar */
@@ -549,6 +660,28 @@
   flex-direction: column;
 }
 
+/* Dark mode bottom sheet */
+.dark-mode .bottom-sheet,
+[data-theme="dark"] .bottom-sheet {
+  background: #2d2d2d;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+}
+
+.dark-mode .bottom-sheet-header,
+[data-theme="dark"] .bottom-sheet-header {
+  border-bottom-color: #444;
+}
+
+.dark-mode .bottom-sheet-header h3,
+[data-theme="dark"] .bottom-sheet-header h3 {
+  color: #e0e0e0;
+}
+
+.dark-mode .bottom-sheet-handle,
+[data-theme="dark"] .bottom-sheet-handle {
+  background-color: #555;
+}
+
 .bottom-sheet.open {
   transform: translateY(0);
 }
@@ -595,6 +728,23 @@
   background-color: white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   cursor: pointer;
+}
+
+/* Dark mode station cards */
+.dark-mode .bottom-sheet-station-card,
+[data-theme="dark"] .bottom-sheet-station-card {
+  background-color: #3d3d3d;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.dark-mode .station-info h4,
+[data-theme="dark"] .station-info h4 {
+  color: #e0e0e0;
+}
+
+.dark-mode .station-info p,
+[data-theme="dark"] .station-info p {
+  color: #999;
 }
 
 .station-status-dot {
@@ -703,6 +853,46 @@
 .mobile-station-card.selected {
   box-shadow: 0 2px 12px rgba(74, 144, 226, 0.2);
   border-color: #4a90e2;
+}
+
+/* Dark mode mobile station cards */
+.dark-mode .mobile-station-card,
+[data-theme="dark"] .mobile-station-card {
+  background-color: #3d3d3d;
+  border-color: #555;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.dark-mode .mobile-station-card.selected,
+[data-theme="dark"] .mobile-station-card.selected {
+  border-color: #5a9ff2;
+  box-shadow: 0 2px 12px rgba(90, 159, 242, 0.2);
+}
+
+.dark-mode .station-header h4,
+[data-theme="dark"] .station-header h4 {
+  color: #e0e0e0;
+}
+
+.dark-mode .station-address,
+[data-theme="dark"] .station-address {
+  color: #999;
+}
+
+.dark-mode .feature,
+[data-theme="dark"] .feature {
+  color: #ccc;
+}
+
+.dark-mode .direction-btn,
+[data-theme="dark"] .direction-btn {
+  background-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-mode .view-button,
+[data-theme="dark"] .view-button {
+  background-color: #5a9ff2;
 }
 
 .station-status-indicator {
@@ -996,6 +1186,23 @@
 
 .mobile-footer-btn.active {
   color: #4a90e2;
+}
+
+/* Dark mode mobile footer */
+.dark-mode .mobile-footer-nav,
+[data-theme="dark"] .mobile-footer-nav {
+  background-color: #2d2d2d;
+  border-top-color: #444;
+}
+
+.dark-mode .mobile-footer-btn,
+[data-theme="dark"] .mobile-footer-btn {
+  color: #999;
+}
+
+.dark-mode .mobile-footer-btn.active,
+[data-theme="dark"] .mobile-footer-btn.active {
+  color: #5a9ff2;
 }
 
 /* Desktop styles */
@@ -2165,6 +2372,20 @@
   margin-bottom: 8px; /* Add space below card to match image */
 }
 
+/* Dark mode nearby station cards - High specificity */
+html[data-theme="dark"] .nearby-station-card,
+html .dark-mode .nearby-station-card,
+[data-theme="dark"] .nearby-station-card {
+  background-color: #3d3d3d !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+}
+
+html[data-theme="dark"] .nearby-station-card:hover,
+html .dark-mode .nearby-station-card:hover,
+[data-theme="dark"] .nearby-station-card:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;
+}
+
 .nearby-station-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 16px rgba(0,0,0,0.12);
@@ -2196,6 +2417,13 @@
   /* .shell-station & { background-color: #FFD700; color: #D92A1D; } */
 }
 
+html[data-theme="dark"] .station-brand-icon-placeholder,
+html .dark-mode .station-brand-icon-placeholder,
+[data-theme="dark"] .station-brand-icon-placeholder {
+  background-color: #555 !important;
+  color: #ccc !important;
+}
+
 .card-main-details {
   flex-grow: 1;
   display: flex;
@@ -2214,6 +2442,13 @@
   text-overflow: ellipsis;
 }
 
+/* Dark mode card text */
+html[data-theme="dark"] .card-main-details h3,
+html .dark-mode .card-main-details h3,
+[data-theme="dark"] .card-main-details h3 {
+  color: #e0e0e0 !important;
+}
+
 .station-address-line {
   font-size: 0.8rem;
   color: #666;
@@ -2221,6 +2456,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+html[data-theme="dark"] .station-address-line,
+html .dark-mode .station-address-line,
+[data-theme="dark"] .station-address-line {
+  color: #999 !important;
 }
 
 .station-availability {
@@ -2264,6 +2505,13 @@
   margin-bottom: 4px;
 }
 
+html[data-theme="dark"] .station-rating-placeholder,
+html .dark-mode .station-rating-placeholder,
+[data-theme="dark"] .station-rating-placeholder {
+  background-color: #555 !important;
+  color: #e0e0e0 !important;
+}
+
 .station-rating-placeholder.actual-rating {
     background-color: #4CAF50; /* Green like in the image */
     color: white;
@@ -2280,6 +2528,12 @@
   margin-bottom: 6px;
 }
 
+html[data-theme="dark"] .station-distance,
+html .dark-mode .station-distance,
+[data-theme="dark"] .station-distance {
+  color: #aaa !important;
+}
+
 .station-charger-types {
   display: flex;
   gap: 4px;
@@ -2294,6 +2548,13 @@
   font-size: 0.7rem;
   font-weight: 500;
   text-transform: uppercase;
+}
+
+html[data-theme="dark"] .charger-type-badge,
+html .dark-mode .charger-type-badge,
+[data-theme="dark"] .charger-type-badge {
+  background-color: #4a5568 !important;
+  color: #90cdf4 !important;
 }
 
 /* Remove or adapt old .nearby-stations-bar styles if they conflict */
@@ -2921,7 +3182,7 @@
     color: var(--text-color);
   }
   
-  .station-list-card-item, .nearby-station-card, .enhanced-station-details {
+  .station-list-card-item, .enhanced-station-details {
     background-color: var(--surface-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
@@ -2968,7 +3229,6 @@
 }
 
 [data-theme="dark"] .station-list-card-item,
-[data-theme="dark"] .nearby-station-card, 
 [data-theme="dark"] .enhanced-station-details {
   background-color: var(--surface-color);
   color: var(--text-color);
@@ -3022,7 +3282,6 @@
   }
 
   [data-theme="dark"] .station-list-card-item,
-  [data-theme="dark"] .nearby-station-card, 
   [data-theme="dark"] .enhanced-station-details {
     background-color: var(--surface-color);
     color: var(--text-color);

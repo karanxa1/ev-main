@@ -999,8 +999,28 @@ const HomePage = React.memo(() => {
               </div>
             ) : (
               <div className="auth-buttons">
-                <Link to="/login" className="btn-login" onClick={(e) => { e.preventDefault(); if(uiState.mobileMenuOpen) setUiState(prev => ({ ...prev, mobileMenuOpen: false })); }}>Login</Link>
-                <Link to="/signup" className="btn-signup" onClick={(e) => { e.preventDefault(); if(uiState.mobileMenuOpen) setUiState(prev => ({ ...prev, mobileMenuOpen: false })); }}>Sign Up</Link>
+                <Link 
+                  to="/login" 
+                  className="btn-login" 
+                  onClick={(e) => { 
+                    if(uiState.mobileMenuOpen) {
+                      setUiState(prev => ({ ...prev, mobileMenuOpen: false }));
+                    }
+                  }}
+                >
+                  Login
+                </Link>
+                <Link 
+                  to="/signup" 
+                  className="btn-signup" 
+                  onClick={(e) => { 
+                    if(uiState.mobileMenuOpen) {
+                      setUiState(prev => ({ ...prev, mobileMenuOpen: false }));
+                    }
+                  }}
+                >
+                  Sign Up
+                </Link>
               </div>
             )}
           </nav>

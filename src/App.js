@@ -2,6 +2,7 @@ import React from 'react';
 // Fix the Navigate import error
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext'; // Provides authentication context to the app
+import { ThemeProvider } from './contexts/ThemeContext'; // Provides theme context to the app
 import Login from './pages/auth/Login'; // Login page component
 import Signup from './pages/auth/Signup'; // Signup page component
 import PasswordReset from './pages/auth/PasswordReset'; // Password reset page component
@@ -37,10 +38,12 @@ function App() {
 
   return (
     <Router>
-      {/* AuthProvider makes authentication state (currentUser, login, logout, etc.) available to all child components */}
-      <AuthProvider>
-        {/* Main application container */}
-        <div className="app">
+      {/* ThemeProvider makes theme state available to all child components */}
+      <ThemeProvider>
+        {/* AuthProvider makes authentication state (currentUser, login, logout, etc.) available to all child components */}
+        <AuthProvider>
+          {/* Main application container */}
+          <div className="app">
           {/* Routes define the mapping between URL paths and components */}
           <Routes>
             {/* Public route for the Home page, accessible to all users */}
@@ -128,6 +131,7 @@ function App() {
           </Routes>
         </div>
       </AuthProvider>
+    </ThemeProvider>
     </Router>
   );
 }

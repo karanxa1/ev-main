@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Map, { Marker, NavigationControl, Popup, Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import mapboxgl from 'mapbox-gl';
 import './DriverDashboard.css';
 import './ClusterMarkers.css';
 import { getAllStations } from '../../services/dataService';
@@ -21,6 +22,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import '../../utils/mapboxErrorHandler'; // Import to initialize error handling
 
 // Default coordinates for fallback if station has no valid geo-data
 const DEFAULT_FALLBACK_COORDS = { latitude: 18.5204, longitude: 73.8567 }; // Pune
@@ -157,6 +159,37 @@ const DriverDashboard = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { theme } = useTheme();
+
+  // Apply theme to the dashboard container
+  useEffect(() => {
+    const dashboardElement = document.querySelector('.driver-dashboard');
+    if (dashboardElement) {
+      dashboardElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') {
+        dashboardElement.classList.add('dark-mode');
+      } else {
+        dashboardElement.classList.remove('dark-mode');
+      }
+    }
+  }, [theme]);
+
+  // Fix Mapbox GL fog-related errors
+  useEffect(() => {
+    // Disable fog to prevent the opacity errors
+    if (typeof window !== 'undefined' && window.mapboxgl) {
+      // Override the fog property to prevent errors
+      const originalSetFog = mapboxgl.Map.prototype.setFog;
+      mapboxgl.Map.prototype.setFog = function(fog) {
+        try {
+          if (originalSetFog && fog) {
+            return originalSetFog.call(this, fog);
+          }
+        } catch (error) {
+          console.warn('Mapbox fog error suppressed:', error);
+        }
+      };
+    }
+  }, []);
   const [rawStations, setRawStations] = useState([]); // Store raw stations from API
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -990,7 +1023,23 @@ const DriverDashboard = () => {
                   mapboxAccessToken={MAPBOX_TOKEN}
                   initialViewState={viewport}
                   onMove={evt => setViewport(evt.viewState)}
-                  mapStyle="mapbox://styles/mapbox/streets-v12"
+                  mapStyle={theme === 'dark' ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/streets-v11"}
+                  onLoad={() => {
+                    // Disable fog to prevent opacity errors
+                    if (mapRef.current) {
+                      try {
+                        const map = mapRef.current.getMap();
+                        if (map.setFog) {
+                          map.setFog(null);
+                        }
+                      } catch (error) {
+                        console.warn('Error disabling fog:', error);
+                      }
+                    }
+                  }}
+                  onError={(error) => {
+                    console.warn('Mapbox error suppressed:', error);
+                  }}
                   onMoveEnd={() => {
                     if (!mapRef.current || filteredStations.length === 0) return;
                     
