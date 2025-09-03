@@ -679,14 +679,7 @@ const HomePage = () => {
                         ))}
                       </div>
                     </div>
-                    <div className="station-cta">
-                      <button onClick={() => navigate('/login')} className="btn-book">Book Now</button>
-                      <button onClick={() => {
-                        setSelectedStation(station);
-                        const mapSection = document.getElementById('stations');
-                        mapSection?.scrollIntoView({ behavior: 'smooth' });
-                      }} className="btn-locate">Locate on Map</button>
-                    </div>
+
                   </div>
                 </div>
               ))}
