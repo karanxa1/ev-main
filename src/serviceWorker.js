@@ -152,7 +152,7 @@ export function register(config) {
     }
 
     window.addEventListener('load', () => {
-      const swUrl = `${process.env.PUBLIC_URL}/sw.js`;
+      const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
 
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
@@ -163,7 +163,7 @@ export function register(config) {
         navigator.serviceWorker.ready.then(() => {
           console.log(
             'This web app is being served cache-first by a service ' +
-              'worker. To learn more, visit https://cra.link/PWA'
+              'worker. To learn more, visit https://bit.ly/CRA-PWA'
           );
         });
       } else {
@@ -178,11 +178,6 @@ function registerValidSW(swUrl, config) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
-      // Check for updates periodically
-      setInterval(() => {
-        registration.update();
-      }, 1000 * 60 * 60); // Check every hour
-
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {
@@ -196,11 +191,8 @@ function registerValidSW(swUrl, config) {
               // content until all client tabs are closed.
               console.log(
                 'New content is available and will be used when all ' +
-                  'tabs for this page are closed. See https://cra.link/PWA.'
+                  'tabs for this page are closed. See https://bit.ly/CRA-PWA.'
               );
-
-              // Show notification to user about available update
-              showUpdateNotification();
 
               // Execute callback
               if (config && config.onUpdate) {
@@ -224,63 +216,6 @@ function registerValidSW(swUrl, config) {
     .catch((error) => {
       console.error('Error during service worker registration:', error);
     });
-}
-
-function showUpdateNotification() {
-  // Create and show notification element
-  const notification = document.createElement('div');
-  notification.className = 'sw-update-notification';
-  notification.innerHTML = `
-    <div class="sw-update-content">
-      <p>A new version of this app is available.</p>
-      <button id="sw-refresh-button">Refresh</button>
-    </div>
-  `;
-
-  // Add styles
-  const styles = document.createElement('style');
-  styles.textContent = `
-    .sw-update-notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #0C5F2C;
-      color: white;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 9999;
-      animation: slide-in 0.3s ease forwards;
-    }
-    
-    @keyframes slide-in {
-      from { transform: translateY(100px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    
-    .sw-update-content p {
-      margin: 0 0 12px 0;
-    }
-    
-    #sw-refresh-button {
-      background-color: white;
-      color: #0C5F2C;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-  `;
-
-  // Add to document
-  document.head.appendChild(styles);
-  document.body.appendChild(notification);
-
-  // Add click event
-  document.getElementById('sw-refresh-button').addEventListener('click', () => {
-    window.location.reload();
-  });
 }
 
 function checkValidServiceWorker(swUrl, config) {

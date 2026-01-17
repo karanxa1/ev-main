@@ -172,11 +172,13 @@ const CostEstimator = () => {
   };
 
   const handleCurrentSocChange = (event) => {
-    setCurrentSoc(event.target.value);
+    const value = Math.max(0, Math.min(100, Number(event.target.value) || 0));
+    setCurrentSoc(value);
   };
 
   const handleDesiredSocChange = (event) => {
-    setDesiredSoc(event.target.value);
+    const value = Math.max(0, Math.min(100, Number(event.target.value) || 0));
+    setDesiredSoc(value);
   };
 
   return (
@@ -222,6 +224,8 @@ const CostEstimator = () => {
             onChange={handleCurrentSocChange} 
             min="0" 
             max="100"
+            step="1"
+            placeholder="0-100"
           />
         </div>
 
@@ -234,6 +238,8 @@ const CostEstimator = () => {
             onChange={handleDesiredSocChange} 
             min="0" 
             max="100"
+            step="1"
+            placeholder="0-100"
           />
         </div>
       </div>

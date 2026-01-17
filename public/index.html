@@ -4,10 +4,10 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#0C5F2C" />
     <meta
       name="description"
-      content="EV Charging Network - Find and book charging stations across India"
+      content="India's largest network of EV charging stations. Find, book, and pay for charging sessions across major cities."
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
@@ -15,10 +15,122 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Add Inter font family -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <title>EV Charging Network</title>
+    <title>EV Charging Network - Find & Book Charging Stations</title>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="%PUBLIC_URL%/fonts/poppins-regular.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <!-- Fallback styles for when JavaScript is disabled -->
+    <style>
+      .js-disabled-message {
+        display: none;
+      }
+      
+      .no-js .js-disabled-message {
+        display: block;
+        padding: 2rem;
+        text-align: center;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin: 2rem auto;
+        max-width: 600px;
+      }
+      
+      .no-js .js-content {
+        display: none;
+      }
+      
+      .no-js .static-content {
+        display: block;
+      }
+      
+      .static-content {
+        display: none;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      
+      .static-header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+      
+      .static-features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+      }
+      
+      .static-feature {
+        padding: 1.5rem;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .static-contact {
+        text-align: center;
+        margin-top: 3rem;
+        padding: 2rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+      }
+      
+      @media (max-width: 768px) {
+        .static-content {
+          padding: 1rem;
+        }
+      }
+    </style>
   </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+  <body class="no-js">
+    <noscript>
+      <div class="js-disabled-message">
+        <h2>JavaScript Required</h2>
+        <p>This application requires JavaScript to function properly. Please enable JavaScript in your browser settings to continue.</p>
+        <p>In the meantime, here's some basic information about our service:</p>
+      </div>
+    </noscript>
+    
+    <!-- Static content for when JavaScript is disabled -->
+    <div class="static-content">
+      <header class="static-header">
+        <h1>EV Charging Network</h1>
+        <p>India's largest network of EV charging stations</p>
+      </header>
+      
+      <section class="static-features">
+        <div class="static-feature">
+          <h3>Find Stations</h3>
+          <p>Locate charging stations near you across major Indian cities</p>
+        </div>
+        <div class="static-feature">
+          <h3>Book & Pay</h3>
+          <p>Reserve your charging slot and pay securely</p>
+        </div>
+        <div class="static-feature">
+          <h3>24/7 Support</h3>
+          <p>Get help anytime with our dedicated support team</p>
+        </div>
+      </section>
+      
+      <section class="static-contact">
+        <h2>Contact Us</h2>
+        <p>Email: karanravirajput@gmail.com</p>
+        <p>Phone: +91 9309963483</p>
+        <p>Address: Pune, Maharashtra, India</p>
+      </section>
+    </div>
+    
+    <!-- Main app content (hidden when JavaScript is disabled) -->
+    <div id="root" class="js-content"></div>
+    
+    <!-- Enable JavaScript content -->
+    <script>
+      document.body.classList.remove('no-js');
+      document.body.classList.add('js-enabled');
+    </script>
   </body>
 </html>

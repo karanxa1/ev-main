@@ -2,8 +2,10 @@ import React from 'react';
 // Fix the Navigate import error
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext'; // Provides authentication context to the app
+import { ThemeProvider } from './contexts/ThemeContext'; // Provides theme context to the app
 import Login from './pages/auth/Login'; // Login page component
 import Signup from './pages/auth/Signup'; // Signup page component
+import PasswordReset from './pages/auth/PasswordReset'; // Password reset page component
 import HostDashboard from './components/host/HostDashboard'; // Dashboard for charger hosts
 import DriverDashboard from './pages/driver/DriverDashboard'; // Dashboard for EV drivers
 import PrivateRoute from './components/auth/PrivateRoute'; // Component to protect routes
@@ -12,6 +14,8 @@ import SelectVehiclePage from './pages/vehicle-selection/SelectVehiclePage'; // 
 import ChangeVehiclePage from './pages/change-vehicle/ChangeVehiclePage'; // Added import for ChangeVehiclePage
 import ProfilePage from './pages/profile/ProfilePage'; // Profile page component
 import TripsPage from './pages/trips/TripsPage'; // Import for TripsPage
+import PrivacyPolicy from './pages/legal/PrivacyPolicy'; // Import for Privacy Policy page
+import TermsAndConditions from './pages/legal/TermsAndConditions'; // Import for Terms & Conditions page
 import './App.css'; // Main application styles
 
 /**
@@ -34,10 +38,12 @@ function App() {
 
   return (
     <Router>
-      {/* AuthProvider makes authentication state (currentUser, login, logout, etc.) available to all child components */}
-      <AuthProvider>
-        {/* Main application container */}
-        <div className="app">
+      {/* ThemeProvider makes theme state available to all child components */}
+      <ThemeProvider>
+        {/* AuthProvider makes authentication state (currentUser, login, logout, etc.) available to all child components */}
+        <AuthProvider>
+          {/* Main application container */}
+          <div className="app">
           {/* Routes define the mapping between URL paths and components */}
           <Routes>
             {/* Public route for the Home page, accessible to all users */}
@@ -48,6 +54,13 @@ function App() {
             
             {/* Public route for the Signup page, accessible to unauthenticated users */}
             <Route path="/signup" element={<Signup />} /> {/* Route for the Signup page */}
+
+            {/* Public route for password reset confirmation */}
+            <Route path="/reset-password" element={<PasswordReset />} /> {/* Route for password reset */}
+
+            {/* Public routes for legal pages */}
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
 
             {/* Protected route for selecting a vehicle, accessible only to authenticated users */}
             <Route
@@ -118,6 +131,7 @@ function App() {
           </Routes>
         </div>
       </AuthProvider>
+    </ThemeProvider>
     </Router>
   );
 }

@@ -1,6 +1,7 @@
 {
-  "short_name": "EV Charging",
-  "name": "EV Charging Station Network",
+  "short_name": "EV Network",
+  "name": "EV Charging Network",
+  "description": "India's largest network of EV charging stations. Find, book, and pay for charging sessions across major cities.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,18 +9,50 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "favicon-16x16.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "16x16"
     },
     {
-      "src": "logo512.png",
+      "src": "favicon-32x32.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "32x32"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#0b9748",
-  "background_color": "#ffffff"
+  "theme_color": "#0C5F2C",
+  "background_color": "#FFFFFF",
+  "orientation": "portrait",
+  "categories": ["utilities", "travel", "business"],
+  "screenshots": [
+    {
+      "src": "og-image.jpg",
+      "type": "image/jpeg",
+      "sizes": "1200x630"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Find Stations",
+      "short_name": "Stations",
+      "description": "Find charging stations near you",
+      "url": "/stations",
+      "icons": [{ "src": "favicon-32x32.png", "sizes": "32x32" }]
+    },
+    {
+      "name": "My Bookings",
+      "short_name": "Bookings",
+      "description": "View your charging bookings",
+      "url": "/bookings",
+      "icons": [{ "src": "favicon-32x32.png", "sizes": "32x32" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }
